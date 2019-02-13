@@ -1,0 +1,115 @@
+<div class="card">
+    <div class="card-header">
+        商户信息
+    </div>
+    <div class="card-body">
+        <div class="form-group">
+            <label for="uid">商户ID</label>
+            <input type="text" class="form-control" id="uid" value="" disabled>
+        </div>
+        <div class="form-group">
+            <label for="key">商户密钥</label>
+            <input type="text" class="form-control" id="key" value="" disabled>
+        </div>
+        <div class="form-group">
+            <label for="balance">商户余额</label>
+            <input type="text" class="form-control" id="balance" value="" disabled>
+        </div>
+    </div>
+</div>
+<div class="card" style="margin-top: 2rem;">
+    <div class="card-header">
+        收款账号
+    </div>
+    <div class="card-body">
+        <div class="form-group">
+            <label for="settleType">结算方式</label>
+            <select class="form-control" id="settleType">
+                <option value="1">银行卡（手动）</option>
+                <option value="3">支付宝（手动）</option>
+                <option value="2">微信（手动）</option>
+                <option value="4" disabled>支付即时转账（自动）</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="account">收款账号</label>
+            <input type="text" class="form-control" id="account" value="" placeholder="请输入收款账号 必须填写正确否则后果自负">
+        </div>
+        <div class="form-group">
+            <label for="username">真实姓名</label>
+            <input type="text" class="form-control" id="username" value="" placeholder="请输入真实姓名 必须填写正确否则后果自负">
+        </div>
+        <button type="button" class="btn btn-primary float-right" data-type="settle" data-save>保存信息</button>
+    </div>
+</div>
+<div class="card" style="margin-top: 2rem;">
+    <div class="card-header">
+        联系方式
+    </div>
+    <div class="card-body">
+        <div class="form-group">
+            <label for="email">邮箱账号</label>
+            <input type="text" class="form-control" id="email" value="" placeholder="请输入邮箱账号">
+        </div>
+        <div class="form-group">
+            <label for="qq">ＱＱ账号</label>
+            <input type="text" class="form-control" id="qq" value="" placeholder="请输入QQ账号">
+        </div>
+        <div class="form-group">
+            <label for="domain">网站域名</label>
+            <input type="text" class="form-control" id="domain" value="" placeholder="请输入网站域名">
+        </div>
+        <button type="button" class="btn btn-primary float-right" data-type="connectInfo" data-save>保存信息</button>
+    </div>
+</div>
+<script>
+    $(function ($) {
+        $.getJSON('/user/api/info', function (data) {
+            if (data['status'] === 1) {
+                data = data['data'];
+                $('#uid').val(data['id']);
+                $('#key').val(data['key']);
+                $('#balance').val(data['balance'] / 100);
+                $('#settleType').val(data['clearType']);
+                $('#account').val(data['account']);
+                $('#username').val(data['username']);
+                $('#email').val(data['email']);
+                $('#qq').val(data['qq']);
+                $('#domain').val(data['domain']);
+            }
+        });
+        $('button[data-save]').click(function () {
+            var type = $(this).attr('data-type');
+            var data = {};
+            if (type === 'connectInfo') {
+                data = {
+                    'email': $('#email').val(),
+                    'qq': $('#qq').val(),
+                    'domain': $('#domain').val()
+                };
+            } else if (type === 'settle') {
+                data = {
+                    'settleType': $('#settleType').val(),
+                    'account': $('#account').val(),
+                    'username': $('#username').val()
+                };
+            }
+            data['type'] = type;
+            $.post('/user/api/Info', data, function (data) {
+                if (data['status'] === 0) {
+                    swal(data['msg'], {
+                        buttons: false,
+                        timer: 1500,
+                        icon: 'warning'
+                    });
+                    return true;
+                }
+                swal(data['msg'], {
+                    buttons: false,
+                    timer: 1500,
+                    icon: 'success'
+                });
+            }, 'json');
+        });
+    });
+</script>

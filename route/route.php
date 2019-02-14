@@ -8,9 +8,7 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-Route::rule('', function () {
-    return '<h1>木得首页，有时间就弄</h1>';
-});
+Route::rule('', 'admin/Index/index');
 Route::group('test', function () {
     Route::post('pay', 'user/Test/pay');
     Route::rule('', 'user/Test/loadTemplate');

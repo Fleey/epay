@@ -8,6 +8,10 @@ use think\Db;
 
 class Index extends Controller
 {
+    public function index(){
+        return $this->fetch('/IndexTemplate');
+    }
+
     public function loadTemplate($templateName = 'Login')
     {
         $config = getConfig();
@@ -160,7 +164,7 @@ class Index extends Controller
             ]);
             return json(['status' => 1, 'msg' => '批量更新结算状态成功']);
         } else if ($type == 'downloadSettle') {
-            $head   = ['商户流水号', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
+            $head   = ['结算流水号', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
             $body   = [];
             $result = Db::table('epay_settle')->field('clearType,account,username,money,addType')->where([
                 ['createTime', '=', $createTime],
@@ -186,6 +190,20 @@ class Index extends Controller
                         break;
                 }
                 $body[] = [$key, $clearName, $value['account'], $value['username'], $value['money'] / 100, $desc];
+            }
+            exportToExcel('pay_' . $createTime . '.csv', $head, $body);
+        } else if ($type == 'downloadSettleAuto') {
+            $head          = ['结算流水号', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
+            $body          = [];
+            $autoClearList = Db::table('epay_user')->where([
+                'clearType' => 4
+            ])->field('id,clearType,account,username')->cursor();
+            foreach ($autoClearList as $key => $value) {
+                $settleMoney = Db::table('epay_settle')->where([
+                    'uid'       => $value['id'],
+                    'clearType' => 4
+                ])->whereTime('createTime', $createTime)->sum('money');
+                $body[]      = [$key, '支付宝转账（自动）', $value['account'], $value['username'], $settleMoney / 100, '支付宝自动转账'];
             }
             exportToExcel('pay_' . $createTime . '.csv', $head, $body);
         }
@@ -223,6 +241,9 @@ class Index extends Controller
         $data['deposit'] = getPayUserAttr($uid, 'deposit');
         if ($data['deposit'] == '')
             $data['deposit'] = 0;
+        $data['settleMoney'] = getPayUserAttr($uid, 'settleMoney');
+        if ($data['settleMoney'] == '')
+            $data['settleMoney'] = 0;
         $data['payMoneyMax'] = getPayUserAttr($uid, 'payMoneyMax');
         if ($data['payMoneyMax'] == '')
             $data['payMoneyMax'] = $config['defaultMaxPayMoney'] / 100;
@@ -359,6 +380,7 @@ class Index extends Controller
         $balance        = input('post.balance/s', 0);
         $clearType      = input('post.clearType/s', 1);
         $deposit        = input('post.deposit/s', 0);
+        $settleMoney    = input('post.settleMoney/s', 0);
         $domain         = input('post.domain/s', '');
         $email          = input('post.email/s', '');
         $isBan          = input('post.isBan/d', 0);
@@ -391,6 +413,7 @@ class Index extends Controller
         if (!$result)
             return json(['status' => 0, 'msg' => '新增用户失败,请重试']);
         setPayUserAttr($result, 'deposit', decimalsToInt($deposit, 2));
+        setPayUserAttr($result, 'settleMoney', decimalsToInt($settleMoney, 2));
         setPayUserAttr($result, 'payMoneyMax', decimalsToInt($payMoneyMax, 2));
         setPayUserAttr($result, 'payDayMoneyMax', decimalsToInt($payDayMoneyMax, 2));
         return json(['status' => 1, 'msg' => '新增用户成功']);
@@ -411,6 +434,7 @@ class Index extends Controller
         $balance        = input('post.balance/s', 0);
         $clearType      = input('post.clearType/s', 1);
         $deposit        = input('post.deposit/s', 0);
+        $settleMoney    = input('post.settleMoney/s', 0);
         $domain         = input('post.domain/s', '');
         $email          = input('post.email/s', '');
         $isBan          = input('post.isBan/d', 0);
@@ -439,6 +463,7 @@ class Index extends Controller
             'isClear'   => $isClear
         ]);
         setPayUserAttr($uid, 'deposit', decimalsToInt($deposit, 2));
+        setPayUserAttr($uid, 'settleMoney', decimalsToInt($settleMoney, 2));
         setPayUserAttr($uid, 'payMoneyMax', decimalsToInt($payMoneyMax, 2));
         setPayUserAttr($uid, 'payDayMoneyMax', decimalsToInt($payDayMoneyMax, 2));
 

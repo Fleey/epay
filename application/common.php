@@ -178,9 +178,9 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
     //设置允许302转跳
 
-//    curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-//    curl_setopt($ch, CURLOPT_PROXY, '172.17.0.4'); //代理服务器地址
-//    curl_setopt($ch, CURLOPT_PROXYPORT, 1080); //代理服务器端口
+    curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+    curl_setopt($ch, CURLOPT_PROXY, '172.17.0.4'); //代理服务器地址
+    curl_setopt($ch, CURLOPT_PROXYPORT, 3389); //代理服务器端口
     //set proxy
 
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -544,25 +544,30 @@ function processOrder($tradeNo, $notify = true)
  */
 function settleUserDepositMoney($uid)
 {
-    $deposit = getPayUserAttr($uid, 'deposit');
-    if (empty($deposit))
+    $deposit     = getPayUserAttr($uid, 'deposit');
+    $settleMoney = getPayUserAttr($uid, 'settleMoney');
+    if (empty($deposit) || empty($settleMoney))
         return;
-    $deposit = intval($deposit) * 10;
-    //计算保证金
+    if (intval($settleMoney) < 20)
+        return;
+    //不允许低于0.2元
+    $deposit     = intval($deposit) * 10;
+    $settleMoney = intval($settleMoney) * 10;
+    //进制转换
     $userInfo = \think\Db::table('epay_user')->field('balance,account,username')->limit(1)->where('id', $uid)->select();
     if (empty($userInfo))
         return;
     $userBalance = $userInfo[0]['balance'];
     //注意用户余额三位小数
-    $temp1 = $deposit / 2 + $deposit;
-    if ($temp1 > $userBalance)
+    if (($userBalance - $deposit) < $settleMoney)
         return;
     //判断用户金额是否达到自动结算金额
+    $temp1        = ($userBalance - $deposit);
     $systemConfig = getConfig();
     $settleID     = date('Ymd') . rand(111, 999);
     //结算ID
     $aliPayModel   = new \app\pay\model\AliPayModel($systemConfig['alipay']);
-    $transferMoney = number_format(($userBalance - $deposit) / 1000, 2, '.', '');
+    $transferMoney = number_format($settleMoney / 1000, 2, '.', '');
     //需要转账的金额
     $transferResult = $aliPayModel->toAccountTransfer($settleID, $userInfo[0]['account'], $userInfo[0]['username'], $transferMoney);
     if ($transferResult) {

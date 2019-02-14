@@ -76,7 +76,7 @@
                         <span data-name="type"></span>
                     </div>
                     <div class="col-md-3 item">
-                        <span class="title">	创建时间</span>
+                        <span class="title">创建时间</span>
                         <span data-name="createTime"></span>
                     </div>
                     <div class="col-md-3 item">

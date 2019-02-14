@@ -2,19 +2,6 @@
     #orderInfo .item > span[data-name] {
         display: block;
     }
-
-    #orderInfo .item > span.title {
-        font-weight: 600;
-    }
-
-    #orderInfo {
-        margin-top: 6rem;
-    }
-
-    #orderInfo p.header {
-        font-weight: 600;
-        font-size: 16px;
-    }
 </style>
 <div class="card">
     <div class="card-body">
@@ -77,8 +64,13 @@
                     <div class="form-group" id="deposit" style="display: none;">
                         <label for="deposit">保证金金额</label>
                         <input type="text" class="form-control" data-name="deposit" value="" placeholder="保证金金额">
-                        <small class="form-text text-muted">自动转账规则 保证金/2=每满金额转账数目 100（保证金）/2 = 50
-                            （每满50就自动转账,100作为押金留底）
+                        <small class="form-text text-muted">自动转账规则 保留保证金 达到结算金额则进行结算
+                        </small>
+                    </div>
+                    <div class="form-group" id="settleMoney" style="display: none;">
+                        <label for="settleMoney">结算金额</label>
+                        <input type="text" class="form-control" data-name="settleMoney" value="" placeholder="结算金额">
+                        <small class="form-text text-muted">自动转账规则 保留保证金 达到结算金额则进行结算
                         </small>
                     </div>
                     <div class="form-group">

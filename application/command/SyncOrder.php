@@ -2,6 +2,9 @@
 
 namespace app\command;
 
+use app\pay\model\AliPayModel;
+use app\pay\model\QQPayModel;
+use app\pay\model\WxPayModel;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -48,6 +51,7 @@ class SyncOrder extends Command
         setServerConfig('totalMoney', $totalMoney);
         setServerConfig('totalMoneyRate', $totalRateMoney);
 
+
 //        $orderList = \think\Db::table('epay_order')->where([
 //            'status'   => 1,
 //            'isShield' => 0,
@@ -60,5 +64,39 @@ class SyncOrder extends Command
 //            $output->info('请求 tradeNo=>' . $tradeNo . ' 请求结算 =>' . $result . ' 时间 =>' . $value['createTime']);
 //        }
 //        $output->info('success');
+    }
+
+    private function buildCallBackUrlA(string $tradeNo, string $type)
+    {
+        $type = strtolower($type);
+        if ($type != 'notify' && $type != 'return')
+            return '';
+        //type is error
+        $orderData = \think\Db::table('pay_order')->where('trade_no', $tradeNo)->field('pid,trade_no,out_trade_no,type,name,money,' . $type . '_url')->limit(1)->select();
+        if (empty($orderData))
+            return '';
+        //order type
+        $orderData = $orderData[0];
+
+        $userKey = \think\Db::table('pay_user')->where('id', $orderData['pid'])->field('key')->limit(1)->select();
+        if (empty($userKey))
+            $userKey = '';
+        else
+            $userKey = $userKey[0]['key'];
+        //get user key
+//兼容层
+        $args        = [
+            'pid'          => $orderData['pid'],
+            'trade_no'     => $orderData['trade_no'],
+            'out_trade_no' => $orderData['out_trade_no'],
+            'type'         => $orderData['type'],
+            'name'         => $orderData['name'],
+            'money'        => $orderData['money'],
+            'trade_status' => 'TRADE_SUCCESS'
+        ];
+        $args        = argSort(paraFilter($args));
+        $sign        = signMD5(createLinkString($args), $userKey);
+        $callBackUrl = $orderData[$type . '_url'] . (strpos($orderData[$type . '_url'], '?') ? '&' : '?') . createLinkStringUrlEncode($args) . '&sign=' . $sign . '&sign_type=MD5';
+        return $callBackUrl;
     }
 }

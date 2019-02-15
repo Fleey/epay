@@ -69,7 +69,7 @@
                 data = data['data'];
                 $('#uid').val(data['id']);
                 $('#key').val(data['key']);
-                $('#balance').val(data['balance'] / 100);
+                $('#balance').val(data['balance'] / 1000);
                 $('#settleType').val(data['clearType']);
                 $('#account').val(data['account']);
                 $('#username').val(data['username']);

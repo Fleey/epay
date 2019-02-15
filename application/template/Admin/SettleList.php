@@ -39,6 +39,9 @@
         </table>
     </div>
 </div>
+<div class="col-md-12">
+    <div id="chartMap" style="height: 300px;margin-top: 35px;"></div>
+</div>
 <div class="modal fade" tabindex="-1" role="dialog" id="orderInfo">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">

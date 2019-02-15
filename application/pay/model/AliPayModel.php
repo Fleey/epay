@@ -2,6 +2,8 @@
 
 namespace app\pay\model;
 
+use think\Exception;
+
 class AliPayModel
 {
     private $httpVerifyUrl = 'http://mapi.alipay.com/gateway.do?service=notify_verify&';
@@ -44,7 +46,7 @@ class AliPayModel
         $requestData['sign'] = $sign;
 
         $requestUrl    = createLinkStringUrlEncode($requestData);
-        $requestResult = json_decode(curl($this->aliPayGateway . $requestUrl),true);
+        $requestResult = json_decode(curl($this->aliPayGateway . $requestUrl), true);
 
         if (empty($requestResult['alipay_fund_trans_toaccount_transfer_response']))
             return false;
@@ -105,6 +107,29 @@ class AliPayModel
         return $sign;
     }
 
+    public function selectPayRecord(string $orderID)
+    {
+        $requestData         = [
+            'app_id'      => $this->aliPayConfig['transferPartner'],
+            'method'      => 'alipay.trade.query',
+            'charset'     => 'utf-8',
+            'version'     => '1.0',
+            'sign_type'   => 'RSA2',
+            'timestamp'   => getDateTime(),
+            'biz_content' => json_encode([
+                'out_trade_no' => $orderID
+            ])
+        ];
+        $sign                = $this->buildSignRSA2($requestData);
+        $requestData['sign'] = $sign;
+
+        $requestUrl    = createLinkStringUrlEncode($requestData);
+        $requestResult = json_decode(curl($this->aliPayGateway . $requestUrl), true);
+        if ($requestResult === false)
+            throw new Exception('Curl异常，请联系站长处理');
+        return $requestResult;
+    }
+
     public function verifyData(string $type)
     {
         $type = strtolower($type);
@@ -149,8 +174,8 @@ class AliPayModel
      */
     public function getResponse($notify_id)
     {
-        $partner     = trim($this->aliPayConfig['partner']);
-        $verifyUrl   = $this->httpVerifyUrl . 'partner=' . $partner . '&notify_id=' . $notify_id;
+        $partner     = $this->aliPayConfig['partner'];
+        $verifyUrl   = $this->httpVerifyUrl . 'partner=' . $partner . '&ampnotify_id=' . $notify_id;
         $responseTxt = curl($verifyUrl);
         return $responseTxt;
     }

@@ -8,7 +8,8 @@ use think\Db;
 
 class Index extends Controller
 {
-    public function index(){
+    public function index()
+    {
         return $this->fetch('/IndexTemplate');
     }
 
@@ -151,7 +152,7 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
         $type       = input('get.type/s');
         $createTime = input('get.createTime/s');
-        if (empty($type) || empty($createTime))
+        if (empty($type))
             return json(['status' => 0, 'msg' => '请求参数不能为空']);
 
         if ($type == 'confirmSettle') {
@@ -164,13 +165,13 @@ class Index extends Controller
             ]);
             return json(['status' => 1, 'msg' => '批量更新结算状态成功']);
         } else if ($type == 'downloadSettle') {
-            $head   = ['结算流水号', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
+            $head   = ['商户ID', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
             $body   = [];
-            $result = Db::table('epay_settle')->field('clearType,account,username,money,addType')->where([
+            $result = Db::table('epay_settle')->field('uid,clearType,account,username,money,addType')->where([
                 ['createTime', '=', $createTime],
                 ['clearType', '<>', 4]
             ])->select();
-            foreach ($result as $key => $value) {
+            foreach ($result as $value) {
                 $clearName = '';
                 switch ($value['clearType']) {
                     case 1:
@@ -189,11 +190,11 @@ class Index extends Controller
                         $desc = '系统零时自动结账';
                         break;
                 }
-                $body[] = [$key, $clearName, $value['account'], $value['username'], $value['money'] / 100, $desc];
+                $body[] = [$value['uid'], $clearName, $value['account'], $value['username'], $value['money'] / 100, $desc];
             }
             exportToExcel('pay_' . $createTime . '.csv', $head, $body);
         } else if ($type == 'downloadSettleAuto') {
-            $head          = ['结算流水号', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
+            $head          = ['商户ID', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
             $body          = [];
             $autoClearList = Db::table('epay_user')->where([
                 'clearType' => 4
@@ -203,9 +204,22 @@ class Index extends Controller
                     'uid'       => $value['id'],
                     'clearType' => 4
                 ])->whereTime('createTime', $createTime)->sum('money');
-                $body[]      = [$key, '支付宝转账（自动）', $value['account'], $value['username'], $settleMoney / 100, '支付宝自动转账'];
+                $body[]      = [$value['id'], '支付宝转账（自动）', $value['account'], $value['username'], $settleMoney / 100, '支付宝自动转账'];
             }
             exportToExcel('pay_' . $createTime . '.csv', $head, $body);
+        } else if ($type == 'userSettleInfo') {
+            $uid = input('get.uid/d');
+            if (empty($uid))
+                return json(['status' => 0, 'msg' => 'uid is empty']);
+            $data = [];
+            for ($i = 6; $i >= 1; $i--) {
+                $data[] = ['createTime' => date('Y-m-d', strtotime('-' . $i . ' day'))];
+            }
+            $data[] = ['createTime' => date('Y-m-d', strtotime('now'))];
+            foreach ($data as $key => $value) {
+                $data[$key]['money'] = Db::table('epay_settle')->where(['uid' => $uid])->whereBetweenTime('createTime', $value['createTime'])->sum('money');
+            }
+            return json(['status' => 1, 'data' => $data]);
         }
     }
 

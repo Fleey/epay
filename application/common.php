@@ -528,7 +528,8 @@ function processOrder($tradeNo, $notify = true)
     //处理更新余额失败部分
     if ($notify) {
         $notifyUrl = buildCallBackUrl($tradeNo, 'notify');
-        curl($notifyUrl);
+        if (curl($notifyUrl) === false)
+            trace('异步回调异常 => ' .$notifyUrl, 'error');
         //回调事件
     }
 }

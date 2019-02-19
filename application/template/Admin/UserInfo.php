@@ -53,13 +53,16 @@
                         <input type="text" class="form-control" data-name="balance" value="" placeholder="请输入商户余额">
                     </div>
                     <div class="form-group">
-                        <label>结算类型</label>
-                        <select class="form-control" data-name="clearType">
-                            <option value="1">银行转账（手动）</option>
-                            <option value="2">微信转账（手动）</option>
-                            <option value="3">支付宝转账（手动）</option>
-                            <option value="4">支付宝转账（自动）</option>
+                        <label for="clearMode">结算方式</label>
+                        <select class="form-control" data-name="clearMode">
+                            <option value="0">凌晨自动结算</option>
+                            <option value="1">手动提交结算</option>
+                            <option value="2">系统自动结算</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>结算类型</label>
+                        <select class="form-control" data-name="clearType"></select>
                     </div>
                     <div class="form-group" id="deposit" style="display: none;">
                         <label for="deposit">保证金金额</label>
@@ -106,13 +109,6 @@
                     <div class="form-group">
                         <label for="qq">QQ账号</label>
                         <input type="text" class="form-control" data-name="qq" value="" placeholder="QQ账号">
-                    </div>
-                    <div class="form-group">
-                        <label for="isBan">是否结算</label>
-                        <select class="form-control" data-name="isClear">
-                            <option value="1">结算</option>
-                            <option value="0">不结算</option>
-                        </select>
                     </div>
                     <div class="form-group">
                         <label for="isBan">是否封禁</label>

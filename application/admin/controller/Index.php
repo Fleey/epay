@@ -25,10 +25,9 @@ class Index extends Controller
         $username = session('username', '', 'admin');
         if (empty($username) && $templateName != 'Login')
             $this->redirect('/admin/Login', [], 302);
-        $mysql = db();
         if ($templateName == 'Dashboard') {
-            $data['totalOrder'] = $mysql->table('epay_order')->cache(60)->count('id');
-            $data['totalUser']  = $mysql->table('epay_user')->cache(60)->count('id');
+            $data['totalOrder'] = Db::table('epay_order')->cache(60)->count('id');
+            $data['totalUser']  = Db::table('epay_user')->cache(60)->count('id');
             $data['totalMoney'] = getServerConfig('totalMoney');
             if (empty($data['totalMoney']))
                 $data['totalMoney'] = 0;
@@ -41,27 +40,27 @@ class Index extends Controller
             }
             $data['settleRecord'][] = ['createTime' => date('Y-m-d', strtotime('now'))];
             foreach ($data['settleRecord'] as $key => $value) {
-                $data['settleRecord'][$key]['money'] = db()->table('epay_settle')->whereBetweenTime('createTime', $value['createTime'])->cache(300)->sum('money');
+                $data['settleRecord'][$key]['money'] = Db::table('epay_settle')->whereBetweenTime('createTime', $value['createTime'])->cache(300)->sum('money');
             }
             $data['statistics'] = [
                 'yesterday' => [
                     [
                         'type'       => 1,
-                        'totalMoney' => db()->table('epay_order')->where([
+                        'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 1,
                             'status' => 1
                         ])->cache(600)->whereTime('endTime', 'yesterday')->sum('money')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => db()->table('epay_order')->where([
+                        'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 2,
                             'status' => 1
                         ])->cache(600)->whereTime('endTime', 'yesterday')->sum('money')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => db()->table('epay_order')->where([
+                        'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 3,
                             'status' => 1
                         ])->cache(600)->whereTime('endTime', 'yesterday')->sum('money')
@@ -70,21 +69,21 @@ class Index extends Controller
                 'today'     => [
                     [
                         'type'       => 1,
-                        'totalMoney' => db()->table('epay_order')->where([
+                        'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 1,
                             'status' => 1
                         ])->cache(300)->whereTime('endTime', 'today')->sum('money')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => db()->table('epay_order')->where([
+                        'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 2,
                             'status' => 1
                         ])->cache(300)->whereTime('endTime', 'today')->sum('money')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => db()->table('epay_order')->where([
+                        'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 3,
                             'status' => 1
                         ])->cache(300)->whereTime('endTime', 'today')->sum('money')
@@ -123,16 +122,16 @@ class Index extends Controller
                 $time   = date('Y-m-d', strtotime('-' . $i . ' day'));
                 $data[] = [
                     'createTime' => $time,
-                    'totalMoney' => \think\Db::table('epay_settle')->where([
+                    'totalMoney' => Db::table('epay_settle')->where([
                         'clearType' => 4
                     ])->whereBetweenTime('createTime', $time)->sum('money')
                 ];
             }
         } else {
-            $settleTimeList = \think\Db::table('epay_settle')->where('clearType', '<>', 4)->order('createTime desc')->limit(15)->group('createTime')->field('createTime')->select();
+            $settleTimeList = Db::table('epay_settle')->where('clearType', 3)->order('createTime desc')->limit(15)->group('createTime')->field('createTime')->select();
             $data           = [];
             foreach ($settleTimeList as $value) {
-                $result = \think\Db::table('epay_settle')->where('clearType', '<>', 4)->where('createTime', $value['createTime'])->sum('money');
+                $result = Db::table('epay_settle')->where('clearType', 3)->where('createTime', $value['createTime'])->sum('money');
                 if (!empty($result))
                     $data[] = [
                         'createTime' => $value['createTime'],
@@ -156,20 +155,20 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '请求参数不能为空']);
 
         if ($type == 'confirmSettle') {
-            Db::table('epay_settle')->where([
-                ['createTime', '=', $createTime],
-                ['clearType', '<>', 4]
-            ])->update([
-                'status'     => 1,
-                'updateTime' => getDateTime()
-            ]);
+            $settleList = Db::table('epay_settle')->where([
+                'createTime' => $createTime,
+                'addType'    => 1
+            ])->field('id,uid')->cursor();
+            foreach ($settleList as $value) {
+                $this->confirmSettle($value['id'], $value['uid']);
+            }
             return json(['status' => 1, 'msg' => '批量更新结算状态成功']);
         } else if ($type == 'downloadSettle') {
             $head   = ['商户ID', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
             $body   = [];
             $result = Db::table('epay_settle')->field('uid,clearType,account,username,money,addType')->where([
                 ['createTime', '=', $createTime],
-                ['clearType', '<>', 4]
+                ['addType', '=', 1]
             ])->select();
             foreach ($result as $value) {
                 $clearName = '';
@@ -246,8 +245,7 @@ class Index extends Controller
         $uid = input('get.uid/d');
         if (empty($uid))
             return json(['status' => 0, 'msg' => '用户uid不能为空']);
-        $mysql  = db();
-        $result = $mysql->table('epay_user')->where('id', $uid)->limit(1)->select();
+        $result = Db::table('epay_user')->where('id', $uid)->limit(1)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '用户不存在,请重试']);
         $data            = $result[0];
@@ -264,6 +262,9 @@ class Index extends Controller
         $data['payDayMoneyMax'] = getPayUserAttr($uid, 'payDayMoneyMax');
         if ($data['payDayMoneyMax'] == '')
             $data['payDayMoneyMax'] = 0;
+        $data['isSettleApply'] = getPayUserAttr($uid, 'isSettleApply');
+        if ($data['isSettleApply'] == '')
+            $data['isSettleApply'] = 0;
         return json(['status' => 1, 'data' => $data]);
     }
 
@@ -294,7 +295,7 @@ class Index extends Controller
         if (empty($tradeNo))
             return json(['status' => 0, 'msg' => '订单号码不能为空']);
 
-        $result = \think\Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
             'status' => $status
         ]);
         return json(['status' => $result, 'msg' => '更新订单状态' . ($result ? '成功' : '失败')]);
@@ -336,7 +337,7 @@ class Index extends Controller
         $id = input('post.id/d');
         if (empty($id))
             return json(['status' => 0, 'msg' => '参数不能为空']);
-        $result = db()->table('epay_settle')->where('id', $id)->field('status,clearType,money,uid')->limit(1)->select();
+        $result = Db::table('epay_settle')->where('id', $id)->field('status,clearType,addType,money,uid')->limit(1)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '订单不存在']);
         if ($result[0]['status'])
@@ -345,11 +346,9 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '订单结算类型有误']);
         if ($result[0]['money'] <= 0)
             return json(['status' => 0, 'msg' => '订单结算金额有误']);
-        $result = db()->table('epay_settle')->where('id', $id)->update([
-            'status'     => 1,
-            'updateTime' => getDateTime()
-        ]);
-        return json(['status' => $result, 'msg' => $result ? '操作成功' : '操作失败']);
+
+        $result = $this->confirmSettle($id, $result[0]['uid']);
+        return json(['status' => $result ? 1 : 0, 'msg' => $result ? '操作成功' : '操作失败']);
     }
 
     public function postSetAdmin()
@@ -393,12 +392,12 @@ class Index extends Controller
 
         $balance        = input('post.balance/s', 0);
         $clearType      = input('post.clearType/s', 1);
+        $clearMode      = input('post.clearMode/d', 0);
         $deposit        = input('post.deposit/s', 0);
         $settleMoney    = input('post.settleMoney/s', 0);
         $domain         = input('post.domain/s', '');
         $email          = input('post.email/s', '');
         $isBan          = input('post.isBan/d', 0);
-        $isClear        = input('post.isClear/d', 0);
         $payDayMoneyMax = input('post.payDayMoneyMax/s', 0);
         $payMoneyMax    = input('post.payMoneyMax/s', 0);
         $qq             = input('post.qq/s', 0);
@@ -413,6 +412,7 @@ class Index extends Controller
         $result = db()->table('epay_user')->insertGetId([
             'key'        => getRandChar(32),
             'balance'    => decimalsToInt($balance, 3),
+            'clearMode'  => $clearMode,
             'clearType'  => $clearType,
             'domain'     => $domain,
             'email'      => $email,
@@ -421,7 +421,6 @@ class Index extends Controller
             'rate'       => $rate,
             'username'   => $username,
             'account'    => $account,
-            'isClear'    => $isClear,
             'createTime' => getDateTime()
         ]);
         if (!$result)
@@ -447,40 +446,41 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '用户不存在']);
         $balance        = input('post.balance/s', 0);
         $clearType      = input('post.clearType/s', 1);
+        $clearMode      = input('post.clearMode/d', 0);
         $deposit        = input('post.deposit/s', 0);
         $settleMoney    = input('post.settleMoney/s', 0);
         $domain         = input('post.domain/s', '');
         $email          = input('post.email/s', '');
         $isBan          = input('post.isBan/d', 0);
-        $isClear        = input('post.isClear/d', 0);
         $payDayMoneyMax = input('post.payDayMoneyMax/s', 0);
         $payMoneyMax    = input('post.payMoneyMax/s', 0);
         $qq             = input('post.qq/s', 0);
         $rate           = input('post.rate/s', 0);
         $username       = input('post.username/s', '');
         $account        = input('post.account/s', '');
+        $isSettleApply  = input('post.isSettleApply/s', '');
 
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
             $rate = 10000;
 
-        db()->table('epay_user')->where('id', $uid)->limit(1)->update([
+        Db::table('epay_user')->where('id', $uid)->limit(1)->update([
             'balance'   => decimalsToInt($balance, 3),
             'clearType' => $clearType,
+            'clearMode' => $clearMode,
             'domain'    => $domain,
             'email'     => $email,
             'isBan'     => $isBan,
             'qq'        => $qq,
             'rate'      => $rate,
             'username'  => $username,
-            'account'   => $account,
-            'isClear'   => $isClear
+            'account'   => $account
         ]);
         setPayUserAttr($uid, 'deposit', decimalsToInt($deposit, 2));
         setPayUserAttr($uid, 'settleMoney', decimalsToInt($settleMoney, 2));
         setPayUserAttr($uid, 'payMoneyMax', decimalsToInt($payMoneyMax, 2));
         setPayUserAttr($uid, 'payDayMoneyMax', decimalsToInt($payDayMoneyMax, 2));
-
+        setPayUserAttr($uid, 'isSettleApply', $isSettleApply);
         return json(['status' => 1, 'msg' => '保存用户信息成功']);
     }
 
@@ -522,6 +522,19 @@ class Index extends Controller
         return json(['status' => $result, 'msg' => '更新状态' . ($result ? '成功' : '失败')]);
     }
 
+    public function postDeleteSettleRecord()
+    {
+        $username = session('username', '', 'admin');
+        if (empty($username))
+            return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
+        $settleID = input('post.id/d');
+        if (empty($settleID))
+            return json(['status' => 0, 'msg' => '结算号码不能为空']);
+
+        $result = Db::table('epay_settle')->where('id', $settleID)->limit(1)->delete();
+        return json(['status' => $result ? 1 : 0, 'msg' => '删除结算申请' . ($result ? '成功' : '失败')]);
+    }
+
     public function postNotified()
     {
         $username = session('username', '', 'admin');
@@ -542,6 +555,7 @@ class Index extends Controller
         trace('[手动重新通知] 管理员操作 tradeNo=>' . $tradeNo, 'info');
         return json(['status' => 1, 'url' => $callbackUrl]);
     }
+
 
     /**
      * @return array
@@ -570,5 +584,26 @@ class Index extends Controller
 
         $SearchTable = new SearchTable(db(), $searchTable, $startSite, $getLength, $order, $searchValue, $args);
         return json($SearchTable->getData());
+    }
+
+    private function confirmSettle($settleID, $uid)
+    {
+        $result = Db::table('epay_settle')->where('id', $settleID)->field('status,clearType,addType,money,uid')->limit(1)->select();
+        if (empty($result))
+            return false;
+        $userInfo    = Db::table('epay_user')->where('id', $uid)->field('balance')->limit(1)->select();
+        $updateMoney = $userInfo[0]['balance'] - ($result[0]['money'] * 10);
+        if ($updateMoney < 0)
+            return json(['status' => 0, 'msg' => '更新用户金额有误,请联系技术人员处理']);
+        $updateUserResult = Db::table('epay_user')->where('id', $result[0]['uid'])->limit(1)->update([
+            'balance' => $updateMoney
+        ]);
+        if (!$updateUserResult)
+            return json(['status' => 0, 'msg' => '更新用户余额失败,请重试']);
+        $result = Db::table('epay_settle')->where('id', $settleID)->update([
+            'status'     => 1,
+            'updateTime' => getDateTime()
+        ]);
+        return $result != 0;
     }
 }

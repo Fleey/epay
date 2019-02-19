@@ -29,6 +29,14 @@
                     结算记录
                 </a>
             </li>
+            <?php if ($isSettleApply) { ?>
+                <li class="nav-item">
+                    <a class="nav-link" data-href="SettleApply">
+                        <i data-feather="inbox"></i>
+                        申请结算
+                    </a>
+                </li>
+            <?php } ?>
             <li class="nav-item">
                 <a class="nav-link" data-href="UserInfo">
                     <i data-feather="user"></i>

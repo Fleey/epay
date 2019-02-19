@@ -20,7 +20,8 @@ class Settle extends Command
     {
         // 指令输出
         $userData   = \think\Db::table('epay_user')->field('id,clearType,account,username,rate')->where([
-            ['clearType', 'in', [1, 2, 3]]
+            ['clearType', 'in', [1, 2, 3]],
+            ['clearMode', '=', 0]
         ])->cursor();
         $settleTime = getDateTime();
         foreach ($userData as $value) {

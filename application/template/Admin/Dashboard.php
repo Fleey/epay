@@ -99,7 +99,7 @@
                         <p><b>POST许可</b> <br><?php echo ini_get('post_max_size'); ?></p>
                     </div>
                     <div class="col-md-3">
-                        <p><b>聚合支付程序版本</b> <br>v1.0.0</p>
+                        <p><b>聚合支付程序版本</b> <br>v1.1.0</p>
                     </div>
                 </div>
             </div>

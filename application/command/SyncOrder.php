@@ -2,9 +2,6 @@
 
 namespace app\command;
 
-use app\pay\model\AliPayModel;
-use app\pay\model\QQPayModel;
-use app\pay\model\WxPayModel;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -37,11 +34,11 @@ class SyncOrder extends Command
                 'isShield' => 0
             ])->whereTime('endTime', 'today')->sum('money');
             $totalRateMoney += $totalMoney * ($rate / 100);
-            if ($value['clearType'] != 4) {
-                \think\Db::table('epay_user')->where('id', $uid)->limit(1)->update([
-                    'balance' => $totalMoney * ($rate / 100) * 10
-                ]);
-            }
+//            if ($value['clearType'] != 4) {
+//                \think\Db::table('epay_user')->where('id', $uid)->limit(1)->update([
+//                    'balance' => $totalMoney * ($rate / 100) * 10
+//                ]);
+//            }
             //not auto settle
         }
         $totalMoney = \think\Db::table('epay_order')->where([

@@ -4,6 +4,7 @@ namespace app\pay\controller;
 
 use think\App;
 use think\Controller;
+use think\Db;
 
 class Index extends Controller
 {
@@ -22,7 +23,7 @@ class Index extends Controller
      */
     public function submit()
     {
-        if(empty($_SERVER['HTTP_USER_AGENT']))
+        if (empty($_SERVER['HTTP_USER_AGENT']))
             exit();
         if ($_SERVER['HTTP_USER_AGENT'] == 'Mozilla/4.0 (compatible; MSIE 9.0; Windows NT 6.1)')
             exit();
@@ -55,6 +56,19 @@ class Index extends Controller
         if ($userData[0]['isBan'])
             return $this->fetch('/SystemMessage', ['msg' => '商户已封禁，无法支付！']);
 
+        if (empty($this->getData['money']))
+            return $this->fetch('/SystemMessage', ['msg' => '金额(money)不能为空']);
+        if (empty($this->getData['type']))
+            return $this->fetch('/SystemMessage', ['msg' => '支付类型(type)不能为空']);
+        if(empty($this->getData['out_trade_no']))
+            return $this->fetch('/SystemMessage', ['msg' => '订单号(out_trade_no)不能为空']);
+        if(empty($this->getData['name']))
+            return $this->fetch('/SystemMessage', ['msg' => '商品名称(name)不能为空']);
+        if(empty($this->getData['notify_url']))
+            return $this->fetch('/SystemMessage', ['msg' => '通知地址(notify_url)不能为空']);
+        if(empty($this->getData['return_url']))
+            return $this->fetch('/SystemMessage', ['msg' => '回调地址(return_url)不能为空']);
+
         $type        = $this->getData['type'];
         $tradeNoOut  = $this->getData['out_trade_no'];
         $notifyUrl   = strip_tags($this->getData['notify_url']);
@@ -63,16 +77,12 @@ class Index extends Controller
         $money       = decimalsToInt($this->getData['money'], 2);
         $siteName    = empty($this->getData['sitename']) ? '聚合支付平台' : urlencode(base64_encode($this->getData['sitename']));
         //build param
-        if (empty($tradeNoOut))
-            return $this->fetch('/SystemMessage', ['msg' => '订单号(out_trade_no)不能为空']);
         if (empty($notifyUrl))
             return $this->fetch('/SystemMessage', ['msg' => '通知地址(notify_url)不能为空']);
         if (empty($returnUrl))
             return $this->fetch('/SystemMessage', ['msg' => '回调地址(return_url)不能为空']);
         if (empty($productName))
             return $this->fetch('/SystemMessage', ['msg' => '商品名称(name)不能为空']);
-        if (empty($this->getData['money']))
-            return $this->fetch('/SystemMessage', ['msg' => '金额(money)不能为空']);
         if ($money <= 0)
             return $this->fetch('/SystemMessage', ['msg' => '金额(money)格式有误']);
         if ($money > 100000)
@@ -118,7 +128,7 @@ class Index extends Controller
 
         $tradeNo = date('YmdHis') . rand(11111, 99999);
 
-        $result = db()->table('epay_order')->insert([
+        $result = Db::table('epay_order')->insert([
             'uid'         => $uid,
             'tradeNo'     => $tradeNo,
             'tradeNoOut'  => $tradeNoOut,

@@ -97,6 +97,7 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-type="deleteRecord">删除申请</button>
                 <button type="button" class="btn btn-primary" data-type="confirmPay">确认付款</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             </div>
@@ -139,6 +140,17 @@
                                     <option value="all">所有</option>
                                     <option value="1">已完成</option>
                                     <option value="0">未操作</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="clearMode" class="col-md-3 control-label">结算类型</label>
+                            <div class="col-md-8">
+                                <select class="form-control" id="clearMode" style="width: 100%;">
+                                    <option value="all">所有</option>
+                                    <option value="1">凌晨自动结算</option>
+                                    <option value="3">手动提交结算</option>
+                                    <option value="2">系统自动结算</option>
                                 </select>
                             </div>
                         </div>

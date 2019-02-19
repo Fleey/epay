@@ -164,6 +164,8 @@ class SearchTable
                 $queryResult = $queryResult->where('uid', $this->args['uid']);
             if (isset($this->args['clearType']))
                 $queryResult = $queryResult->where('clearType', $this->args['clearType']);
+            if (isset($this->args['clearMode']))
+                $queryResult = $queryResult->where('addType', $this->args['clearMode']);
             if (isset($this->args['account']))
                 $queryResult = $queryResult->where('account', 'like', '%' . $this->args['account'] . '%');
             if (isset($this->args['username']))

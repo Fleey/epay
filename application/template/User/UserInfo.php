@@ -23,7 +23,15 @@
     </div>
     <div class="card-body">
         <div class="form-group">
-            <label for="settleType">结算方式</label>
+            <label for="settleMode">结算方式</label>
+            <select class="form-control" id="settleMode" disabled>
+                <option value="0">凌晨自动结算</option>
+                <option value="1">手动提交结算</option>
+                <option value="2">系统自动结算</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="settleType">结算类型</label>
             <select class="form-control" id="settleType">
                 <option value="1">银行卡（手动）</option>
                 <option value="3">支付宝（手动）</option>
@@ -67,10 +75,13 @@
         $.getJSON('/user/api/info', function (data) {
             if (data['status'] === 1) {
                 data = data['data'];
+                if (data['clearMode'] === 2)
+                    $('#settleType').attr("disabled", "disabled");
                 $('#uid').val(data['id']);
                 $('#key').val(data['key']);
                 $('#balance').val(data['balance'] / 1000);
                 $('#settleType').val(data['clearType']);
+                $('#settleMode').val(data['clearMode']);
                 $('#account').val(data['account']);
                 $('#username').val(data['username']);
                 $('#email').val(data['email']);

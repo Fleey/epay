@@ -45,19 +45,4 @@ class QQPayModel
         $result = curl('https://qpay.qq.com/cgi-bin/pay/qpay_unified_order.cgi', [], 'post', $xml, 'xml');
         return xmlToArray($result);
     }
-
-    public function selectOrderRecord(string $orderID)
-    {
-        $data         = [
-            'mch_id'       => $this->qqPayConfig['mchid'],
-            'sub_mch_id'   => $this->qqPayConfig['mchid'],
-            'nonce_str'    => getRandChar(32),
-            'out_trade_no' => $orderID
-        ];
-        $data['sign'] = $this->signParam($data);
-        $xml          = arrayToXml($data);
-        $result       = curl('https://qpay.qq.com/cgi-bin/pay/qpay_order_query.cgi', [], 'post', $xml, 'xml');
-        return $result;
-
-    }
 }

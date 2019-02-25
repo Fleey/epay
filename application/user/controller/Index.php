@@ -181,7 +181,7 @@ class Index extends Controller
         $tradeNo = input('post.tradeNo/s');
         if (empty($tradeNo))
             return json(['status' => 0, 'msg' => '请求参数有误']);
-        $result = db()->table('epay_order')->where([
+        $result = Db::table('epay_order')->where([
             'tradeNo' => $tradeNo,
             'uid'     => $uid
         ])->field('status')->limit(1)->select();

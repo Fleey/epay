@@ -102,8 +102,7 @@ class Index extends Controller
         $tradeNo = input('get.tradeNo/s');
         if (empty($tradeNo))
             return json(['status' => 0, 'msg' => '平台订单ID不能为空']);
-        $mysql     = db();
-        $orderInfo = $mysql->table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->select();
+        $orderInfo = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->select();
         if (empty($orderInfo))
             return json(['status' => 0, 'msg' => '平台订单ID不存在']);
         $orderInfo[0]['tradeNo'] = (string)$orderInfo[0]['tradeNo'];
@@ -128,10 +127,10 @@ class Index extends Controller
                 ];
             }
         } else {
-            $settleTimeList = Db::table('epay_settle')->where('clearType', 3)->order('createTime desc')->limit(15)->group('createTime')->field('createTime')->select();
+            $settleTimeList = Db::table('epay_settle')->where('addType', 1)->order('createTime desc')->limit(15)->group('createTime')->field('createTime')->select();
             $data           = [];
             foreach ($settleTimeList as $value) {
-                $result = Db::table('epay_settle')->where('clearType', 3)->where('createTime', $value['createTime'])->sum('money');
+                $result = Db::table('epay_settle')->where('addType', 1)->where('createTime', $value['createTime'])->sum('money');
                 if (!empty($result))
                     $data[] = [
                         'createTime' => $value['createTime'],
@@ -230,7 +229,7 @@ class Index extends Controller
         $id = input('get.id/d');
         if (empty($id))
             return json(['status' => 0, 'msg' => '参数不能为空']);
-        $result = db()->table('epay_settle')->where('id', $id)->limit(1)->select();
+        $result = Db::table('epay_settle')->where('id', $id)->limit(1)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '结算记录不存在']);
         return json(['status' => 1, 'data' => $result[0]]);
@@ -380,7 +379,7 @@ class Index extends Controller
         $uid = input('post.uid/d');
         if (empty($uid))
             return json(['status' => 0, 'msg' => '删除用户信息失败']);
-        $result = db()->table('epay_user')->where('id', $uid)->limit(1)->delete();
+        $result = Db::table('epay_user')->where('id', $uid)->limit(1)->delete();
         return json(['status' => $result, 'msg' => '操作' . ($result ? '成功' : '失败')]);
     }
 
@@ -409,7 +408,7 @@ class Index extends Controller
         if ($rate > 10000)
             $rate = 10000;
 
-        $result = db()->table('epay_user')->insertGetId([
+        $result = Db::table('epay_user')->insertGetId([
             'key'        => getRandChar(32),
             'balance'    => decimalsToInt($balance, 3),
             'clearMode'  => $clearMode,
@@ -441,7 +440,7 @@ class Index extends Controller
         $uid = input('post.uid/d');
         if (empty($uid))
             return json(['status' => 0, 'msg' => '保存用户信息失败']);
-        $result = db()->table('epay_user')->where('id', $uid)->field('id')->limit(1)->select();
+        $result = Db::table('epay_user')->where('id', $uid)->field('id')->limit(1)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '用户不存在']);
         $balance        = input('post.balance/s', 0);
@@ -493,9 +492,8 @@ class Index extends Controller
         $uid = input('post.uid/d');
         if (empty($uid))
             return json(['status' => 0, 'msg' => '用户id无效']);
-        $mysql  = db();
         $key    = getRandChar(32);
-        $result = $mysql->table('epay_user')->where('id', $uid)->limit(1)->update([
+        $result = Db::table('epay_user')->where('id', $uid)->limit(1)->update([
             'key' => $key
         ]);
         if (!$result)
@@ -515,8 +513,7 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '订单号码无效']);
         if ($status != 0 && $status != 1)
             return json(['status' => 0, 'msg' => '请求状态有误']);
-        $mysql  = db();
-        $result = $mysql->table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
             'isShield' => $status
         ]);
         return json(['status' => $result, 'msg' => '更新状态' . ($result ? '成功' : '失败')]);
@@ -544,7 +541,7 @@ class Index extends Controller
         $tradeNo = input('post.tradeNo/s');
         if (empty($tradeNo))
             return json(['status' => 0, 'msg' => '请求参数有误']);
-        $result = db()->table('epay_order')->where([
+        $result = Db::table('epay_order')->where([
             'tradeNo' => $tradeNo
         ])->field('status')->limit(1)->select();
         if (empty($result))
@@ -582,7 +579,7 @@ class Index extends Controller
 
         $args = input('post.args/a');
 
-        $SearchTable = new SearchTable(db(), $searchTable, $startSite, $getLength, $order, $searchValue, $args);
+        $SearchTable = new SearchTable($searchTable, $startSite, $getLength, $order, $searchValue, $args);
         return json($SearchTable->getData());
     }
 
@@ -594,12 +591,12 @@ class Index extends Controller
         $userInfo    = Db::table('epay_user')->where('id', $uid)->field('balance')->limit(1)->select();
         $updateMoney = $userInfo[0]['balance'] - ($result[0]['money'] * 10);
         if ($updateMoney < 0)
-            return json(['status' => 0, 'msg' => '更新用户金额有误,请联系技术人员处理']);
+            $updateMoney = 0;
         $updateUserResult = Db::table('epay_user')->where('id', $result[0]['uid'])->limit(1)->update([
             'balance' => $updateMoney
         ]);
         if (!$updateUserResult)
-            return json(['status' => 0, 'msg' => '更新用户余额失败,请重试']);
+            return false;
         $result = Db::table('epay_settle')->where('id', $settleID)->update([
             'status'     => 1,
             'updateTime' => getDateTime()

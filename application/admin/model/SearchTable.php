@@ -8,14 +8,13 @@
 
 namespace app\admin\model;
 
+use think\Db;
 use think\db\Query;
 use think\db\Where;
 use think\Exception;
 
 class SearchTable
 {
-    private $mysql;
-    //数据库句柄
     private $searchTable;
     //直接查询表
     private $startSite;
@@ -35,7 +34,6 @@ class SearchTable
 
     /**
      * SearchTable constructor.
-     * @param $mysql \think\db\Query
      * @param string $searchTable
      * @param int $startSite
      * @param int $getLength
@@ -44,11 +42,8 @@ class SearchTable
      * @param array $args
      * @throws Exception
      */
-    public function __construct(Query $mysql, string $searchTable, int $startSite, int $getLength, $order, $searchValue, $args = [])
+    public function __construct(string $searchTable, int $startSite, int $getLength, $order, $searchValue, $args = [])
     {
-        if (!$mysql) {
-            throw new Exception('数据库句柄异常', 500);
-        }
         $tableList = [
             'epay_order',
             'epay_user',
@@ -63,7 +58,6 @@ class SearchTable
         if ($startSite < 0) {
             $startSite = 0;
         }
-        $this->mysql       = $mysql;
         $this->searchTable = $searchTable;
         $this->startSite   = $startSite;
         $this->getLength   = $getLength;
@@ -80,14 +74,13 @@ class SearchTable
      */
     public function getData()
     {
-        $mysql  = $this->mysql;
-        $result = $mysql->table($this->searchTable);
+        $result = Db::table($this->searchTable);
         $result = $this->sortData($result);
         $result = $this->searchValue($result);
         $result = $this->searchArgs($result);
         $result = $result->limit($this->startSite, $this->getLength)->select();
 
-        $recordsFiltered = db()->table($this->searchTable);
+        $recordsFiltered = Db::table($this->searchTable);
         $recordsFiltered = $this->searchArgs($recordsFiltered);
         $recordsFiltered = $this->searchValue($recordsFiltered);
         $recordsFiltered = $recordsFiltered->count();

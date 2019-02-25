@@ -47,8 +47,7 @@ class Index extends Controller
         if (empty($uid))
             return $this->fetch('/SystemMessage', ['msg' => 'PID不存在！']);
 
-        $mysql    = db();
-        $userData = $mysql->table('epay_user')->limit(1)->field('key,isBan')->where('id', $uid)->select();
+        $userData = Db::table('epay_user')->limit(1)->field('key,isBan')->where('id', $uid)->select();
         if (empty($userData))
             return $this->fetch('/SystemMessage', ['msg' => '签名校验失败，请返回重试！']);
         if (!verifyMD5($param, $userData[0]['key'], $this->getData['sign']))
@@ -174,8 +173,7 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '未付款']);
         if (empty($type))
             return json(['status' => 0, 'msg' => '未付款']);
-        $mysql  = db();
-        $result = $mysql->table('epay_order')->field('status')->limit(1)->where('tradeNo', $tradeNo)->select();
+        $result = Db::table('epay_order')->field('status')->limit(1)->where('tradeNo', $tradeNo)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '未付款']);
         $returnData = ['status' => $result[0]['status'], 'msg' => $result[0]['status'] ? '已付款' : '未付款'];

@@ -5,6 +5,7 @@ namespace app\pay\controller;
 use app\pay\model\QQPayModel;
 use think\App;
 use think\Controller;
+use think\Db;
 
 class QQPay extends Controller
 {
@@ -29,8 +30,7 @@ class QQPay extends Controller
             $siteName = '易支付';
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
-        $mysql  = db();
-        $result = $mysql->table('epay_order')->where('tradeNo', $tradeNo)->field('money,productName,status,type,createTime')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('money,productName,status,type,createTime')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
         if ($result[0]['type'] != 2)
@@ -93,7 +93,7 @@ class QQPay extends Controller
         $moneyType = $requestData['fee_type'];
         //币种
 
-        $result = db()->table('epay_order')->where('tradeNo', $tradeNoOut)->field('status')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNoOut)->field('status')->limit(1)->select();
         if (empty($result))
             return xml(['return_code' => 'FAIL', 'return_msg' => '订单无效']);
         if ($result[0]['status'])
@@ -101,7 +101,7 @@ class QQPay extends Controller
         //订单已经付款成功
 
         if ($requestData['trade_state'] == 'SUCCESS') {
-            db()->table('epay_order')->where('tradeNo', $tradeNoOut)->limit(1)->update([
+            Db::table('epay_order')->where('tradeNo', $tradeNoOut)->limit(1)->update([
                 'status'  => 1,
                 'endTime' => getDateTime()
             ]);

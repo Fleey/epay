@@ -62,7 +62,7 @@ class WxPayModel
      * @param string $type
      * @return array|bool|mixed|object
      */
-    public function selectWxPayRecord(string $orderID, string $type)
+    public function selectWxPayRecord(string $orderID, string $type = 'out_trade_no')
     {
         if ($type != 'out_trade_no' && $type != 'transaction_id')
             return false;
@@ -110,6 +110,8 @@ class WxPayModel
         ];
         if ($type == 'NATIVE')
             $requestData['product_id'] = '010086';
+        if($type == 'MWEB')
+            $requestData['scene_info'] = json_encode(['h5_info'=>['type'=>'','wap_url'=>url('/','',false,true),'wap_name'=>'余额充值']]);
 
         $requestData['sign'] = $this->signParam($requestData);
 

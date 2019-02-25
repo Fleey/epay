@@ -23,22 +23,22 @@ class SyncOrder extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
-        $userData       = \think\Db::table('epay_user')->field('id,rate,clearType')->cursor();
+        $userData = \think\Db::table('epay_user')->field('id,rate,clearType')->where('clearMode', 0)->cursor();
         $totalRateMoney = 0;
         foreach ($userData as $value) {
-            $uid            = $value['id'];
-            $rate           = $value['rate'] / 100;
-            $totalMoney     = \think\Db::table('epay_order')->where([
-                'uid'      => $uid,
-                'status'   => 1,
+            $uid = $value['id'];
+            $rate = $value['rate'] / 100;
+            $totalMoney = \think\Db::table('epay_order')->where([
+                'uid' => $uid,
+                'status' => 1,
                 'isShield' => 0
             ])->whereTime('endTime', 'today')->sum('money');
             $totalRateMoney += $totalMoney * ($rate / 100);
-//            if ($value['clearType'] != 4) {
-//                \think\Db::table('epay_user')->where('id', $uid)->limit(1)->update([
-//                    'balance' => $totalMoney * ($rate / 100) * 10
-//                ]);
-//            }
+            if ($value['clearType'] != 4) {
+                \think\Db::table('epay_user')->where('id', $uid)->limit(1)->update([
+                    'balance' => $totalMoney * ($rate / 100) * 10
+                ]);
+            }
             //not auto settle
         }
         $totalMoney = \think\Db::table('epay_order')->where([
@@ -82,17 +82,17 @@ class SyncOrder extends Command
             $userKey = $userKey[0]['key'];
         //get user key
 //兼容层
-        $args        = [
-            'pid'          => $orderData['pid'],
-            'trade_no'     => $orderData['trade_no'],
+        $args = [
+            'pid' => $orderData['pid'],
+            'trade_no' => $orderData['trade_no'],
             'out_trade_no' => $orderData['out_trade_no'],
-            'type'         => $orderData['type'],
-            'name'         => $orderData['name'],
-            'money'        => $orderData['money'],
+            'type' => $orderData['type'],
+            'name' => $orderData['name'],
+            'money' => $orderData['money'],
             'trade_status' => 'TRADE_SUCCESS'
         ];
-        $args        = argSort(paraFilter($args));
-        $sign        = signMD5(createLinkString($args), $userKey);
+        $args = argSort(paraFilter($args));
+        $sign = signMD5(createLinkString($args), $userKey);
         $callBackUrl = $orderData[$type . '_url'] . (strpos($orderData[$type . '_url'], '?') ? '&' : '?') . createLinkStringUrlEncode($args) . '&sign=' . $sign . '&sign_type=MD5';
         return $callBackUrl;
     }

@@ -153,7 +153,7 @@
         ]
     };
     $(function () {
-        $.getScript('https://cdn.bootcss.com/echarts/4.2.0-rc.2/echarts.min.js', function () {
+        $.getScript('/static/js/resource/echarts.min.js', function () {
             var chartMap = echarts.init(document.getElementById('chartMap'));
             $(window).resize(function () {
                 chartMap.resize();

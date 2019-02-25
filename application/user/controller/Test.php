@@ -8,11 +8,11 @@ class Test extends Controller
 {
     private $partner = '1000';
     //商户ID
-    private $key = 'l81jA1s4sba4Ccj83vm41Cts9yGtb84J';
+    private $key = 'QOwfoFwMg8dMDM5CDqmkwFBHHcW3hF3C';
     //商户Key
 
     private $signType = 'md5';
-    private $apiUrl = 'http://pay.cn/submit.php?';
+    private $apiUrl = 'http://vip.115x.cn/submit.php?';
 
     //api url
 

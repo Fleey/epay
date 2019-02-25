@@ -5,6 +5,7 @@ namespace app\pay\controller;
 use app\pay\model\AliPayModel;
 use think\App;
 use think\Controller;
+use think\Db;
 
 class Alipay extends Controller
 {
@@ -26,8 +27,7 @@ class Alipay extends Controller
         $tradeNo = input('get.tradeNo');
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
-        $mysql  = db();
-        $result = $mysql->table('epay_order')->where('tradeNo', $tradeNo)->field('money,productName,status,type')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('money,productName,status,type')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
         if ($result[0]['type'] != 3)
@@ -79,7 +79,7 @@ class Alipay extends Controller
         //订单状态已经被更新
 
         if ($tradeStatus == 'TRADE_SUCCESS') {
-            db()->table('epay_order')->where('tradeNo', $tradeNoOut)->limit(1)->update([
+            Db::table('epay_order')->where('tradeNo', $tradeNoOut)->limit(1)->update([
                 'status'  => 1,
                 'endTime' => getDateTime()
             ]);
@@ -109,7 +109,7 @@ class Alipay extends Controller
         $buyerEmail = input('get.buyer_email');
         //买家支付宝
 
-        $result = db()->table('epay_order')->where('tradeNo', $tradeNoOut)->field('status')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNoOut)->field('status')->limit(1)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => 'fail']);
         //判断订单是否存在
@@ -117,7 +117,7 @@ class Alipay extends Controller
             return json(['status' => 0, 'msg' => 'fail']);
         //订单状态已经被更新
         if ($tradeStatus == 'TRADE_SUCCESS') {
-            db()->table('epay_order')->where('tradeNo', $tradeNoOut)->limit(1)->update([
+            Db::table('epay_order')->where('tradeNo', $tradeNoOut)->limit(1)->update([
                 'status'  => 1,
                 'endTime' => getDateTime()
             ]);

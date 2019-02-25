@@ -20,6 +20,7 @@ Route::group('Pay', function () {
     Route::rule('Status', 'pay/Index/OrderStatus');
 });
 Route::rule('install', function () {
+    exit();
     if (file_exists(env('CONFIG_PATH') . 'install.lock'))
         return '您已经安装过了 如果不是已经安装过请删掉 install.lock文件';
 

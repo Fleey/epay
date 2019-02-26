@@ -20,9 +20,11 @@ class Index extends Controller
         //是否允许用户申请结算
         if (empty($uid) && $templateName != 'Login')
             $this->redirect('/user/Login', [], 302);
-        if($templateName != 'Login'){
+        if ($templateName != 'Login') {
             $userInfo              = Db::table('epay_user')->where('id', $uid)->cache(60)->limit(1)->field('clearMode,key,balance,rate')->select();
             $data['isSettleApply'] = $userInfo[0]['clearMode'] == 1 ? true : false;
+        } else {
+            $data['isGeetest'] = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);
         }
         if ($templateName == 'Dashboard') {
             $data['beforeSettleRecord'] = Db::table('epay_order')->where([

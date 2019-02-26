@@ -35,6 +35,20 @@
         <button type="button" class="btn btn-outline-primary float-right" id="setAdmin">保存</button>
     </div>
 </div>
+<div class="card" style="margin-top: 2rem;">
+    <div class="card-body">
+        <h5 class="card-title">极验证配置</h5>
+        <div class="form-group">
+            <label for="geetestCaptchaID">CAPTCHA_ID</label>
+            <input type="text" class="form-control" data-name="geetestCaptchaID" placeholder="CAPTCHA_ID">
+        </div>
+        <div class="form-group">
+            <label for="geetestPrivateKey">PRIVATE_KEY</label>
+            <input type="text" class="form-control" data-name="geetestPrivateKey" placeholder="PRIVATE_KEY">
+        </div>
+        <button type="button" class="btn btn-outline-primary float-right" data-save>保存</button>
+    </div>
+</div>
 <script>
     $(function () {
         $('[data-name]').each(function (key, value) {

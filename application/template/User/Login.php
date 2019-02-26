@@ -28,8 +28,12 @@
     <button class="btn btn-lg btn-primary btn-block" type="button" id="login">登陆</button>
     <p class="mt-5 mb-3 text-muted text-center"><?php echo $webName; ?>&copy; 2017-2018</p>
 </form>
-<?php include_once env('APP_PATH') . '/template/User/Footer.php'; ?>
-<script src="/static/js/AuthCode.js"></script>
-<script src="/static/js/user/login.js"></script>
+<?php
+include_once env('APP_PATH') . '/template/User/Footer.php';
+if (!$isGeetest)
+    echo '<script src="/static/js/AuthCode.js"></script><script src="/static/js/user/loginV1.js"></script>';
+else
+    echo '<script src="/static/js/user/gt.js"></script><script src="/static/js/user/loginV2.js"></script>'
+?>
 </body>
 </html>

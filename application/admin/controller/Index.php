@@ -588,15 +588,17 @@ class Index extends Controller
         $result = Db::table('epay_settle')->where('id', $settleID)->field('status,clearType,addType,money,uid')->limit(1)->select();
         if (empty($result))
             return false;
-        $userInfo    = Db::table('epay_user')->where('id', $uid)->field('balance')->limit(1)->select();
-        $updateMoney = $userInfo[0]['balance'] - ($result[0]['money'] * 10);
-        if ($updateMoney < 0)
-            $updateMoney = 0;
-        $updateUserResult = Db::table('epay_user')->where('id', $result[0]['uid'])->limit(1)->update([
-            'balance' => $updateMoney
-        ]);
-        if (!$updateUserResult)
-            return false;
+        $userInfo = Db::table('epay_user')->where('id', $uid)->field('balance,clearMode')->limit(1)->select();
+        if ($userInfo[0]['clearMode'] == 1) {
+            $updateMoney = $userInfo[0]['balance'] - ($result[0]['money'] * 10);
+            if ($updateMoney < 0)
+                $updateMoney = 0;
+            $updateUserResult = Db::table('epay_user')->where('id', $result[0]['uid'])->limit(1)->update([
+                'balance' => $updateMoney
+            ]);
+            if (!$updateUserResult)
+                return false;
+        }
         $result = Db::table('epay_settle')->where('id', $settleID)->update([
             'status'     => 1,
             'updateTime' => getDateTime()

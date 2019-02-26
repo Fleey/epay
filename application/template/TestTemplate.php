@@ -3,8 +3,8 @@
     <title><?php echo $webName; ?> - 在线测试</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="https://cdn.bootcss.com/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/resource/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.staticfile.org/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container" style="padding-top:70px;">

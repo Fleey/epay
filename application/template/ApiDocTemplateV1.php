@@ -12,14 +12,12 @@
     <meta name="description" content="<?php echo $webName; ?>"/>
     <meta content="Fleey" name="author"/>
 
-    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <link href="https://cdn.bootcss.com/animate.css/3.7.0/animate.min.css" rel="stylesheet">
+    <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdn.staticfile.org/animate.css/3.7.0/animate.min.css" rel="stylesheet">
     <link href="/static/css/doc/style.min.css" rel="stylesheet"/>
     <link href="/static/css/doc/style-responsive.min.css" rel="stylesheet"/>
     <link href="/static/css/doc/blue.css" rel="stylesheet">
-
-    <script src="https://cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
 </head>
 <body data-spy="scroll" data-target="#header-navbar" data-offset="51">
 <div id="page-container" class="fade">
@@ -1240,14 +1238,9 @@
     </div>
 </div>
 
-<script src="https://cdn.bootcss.com/jquery/1.9.1/jquery.min.js"></script>
-<script src="https://cdn.bootcss.com/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<!--[if lt IE 9]>
-<script src="https://cdn.bootcss.com/html5shiv/r29/html5.min.js"></script>
-<script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
-<![endif]-->
-<script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<script src="https://cdn.bootcss.com/scrollmonitor/1.2.0/scrollMonitor.js"></script>
+<script src="https://cdn.staticfile.org/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.js"></script>
+<script src="https://cdn.staticfile.org/scrollmonitor/1.2.0/scrollMonitor.js"></script>
 
 <script src="/static/js/doc/app.js"></script>
 <script>

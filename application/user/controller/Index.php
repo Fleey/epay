@@ -21,7 +21,7 @@ class Index extends Controller
         if (empty($uid) && $templateName != 'Login')
             $this->redirect('/user/Login', [], 302);
         if ($templateName != 'Login') {
-            $userInfo              = Db::table('epay_user')->where('id', $uid)->limit(1)->field('clearMode,key,balance,rate')->select();
+            $userInfo              = Db::table('epay_user')->where('id', $uid)->cache(60)->limit(1)->field('clearMode,key,balance,rate')->select();
             $data['isSettleApply'] = $userInfo[0]['clearMode'] == 1 ? true : false;
         } else {
             $data['isGeetest'] = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);

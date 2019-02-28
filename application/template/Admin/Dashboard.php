@@ -99,12 +99,41 @@
                         <p><b>POST许可</b> <br><?php echo ini_get('post_max_size'); ?></p>
                     </div>
                     <div class="col-md-3">
-                        <p><b>聚合支付程序版本</b> <br>v1.1.0</p>
+                        <p><b>聚合支付程序版本</b> <br><?php echo config('app_version'); ?></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <?php
+    $result       = curl('http://update.moxi666.cn/version.json');
+    $isNeedUpdate = false;
+    if ($result != false) {
+        $result = json_decode($result, true);
+        if (!empty($result['version'])) {
+            if (config('app_version') != $result['version'])
+                $isNeedUpdate = true;
+        }
+    }
+    if ($isNeedUpdate) {
+        ?>
+        <div class="col-md-6" style="margin-top: 2rem;">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">检测到新版本发布</h5>
+                    <div class="row">
+                        <div class="col-md-5">
+                            <p><b>最新聚合支付程序</b>
+                                <br><?php echo $result['version']; ?></p>
+                        </div>
+                        <div class="col-md-7">
+                            <button class="btn btn-primary float-right btn-sm" data-update-program>立刻更新</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php } ?>
 </div>
 
 <script>
@@ -159,6 +188,29 @@
                 chartMap.resize();
             });
             chartMap.setOption(option);
+        });
+        $('button[data-update-program]').click(function () {
+            swal({
+                title: '请稍后...',
+                text: '切勿关闭浏览器,正在为您更新程序',
+                showConfirmButton: false
+            });
+            $.getJSON('/admin/api/UpdateProgram', function (data) {
+                swal.close();
+                if (data['status'] === 0) {
+                    swal('更新系统失败', data['msg'], 'error');
+                    return;
+                }
+                swal({
+                    title: '更新系统成功',
+                    text: data['msg'],
+                    showConfirmButton: false,
+                    type: 'success'
+                });
+                setTimeout(function () {
+                    window.location.reload()
+                }, 2000);
+            }, 'json');
         });
     });
 </script>

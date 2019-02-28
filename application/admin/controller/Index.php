@@ -5,6 +5,7 @@ namespace app\admin\controller;
 use app\admin\model\SearchTable;
 use think\Controller;
 use think\Db;
+use ZipArchive;
 
 class Index extends Controller
 {
@@ -280,6 +281,38 @@ class Index extends Controller
         if (empty($config[$keyName]))
             $config[$keyName] = '';
         return json(['status' => 1, 'data' => $config[$keyName]]);
+    }
+
+    public function getUpdateProgram()
+    {
+        $username = session('username', '', 'admin');
+        if (empty($username))
+            return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
+        $result = curl('http://update.moxi666.cn/version.json');
+        if ($result === false)
+            return json(['status' => 0, 'msg' => '更新服务器异常，请联系管理员处理']);
+        $result = json_decode($result, true);
+        if (empty($result['version']) || empty($result['downloadPath']))
+            return json(['status' => 0, 'msg' => '更新服务器异常，请联系管理员处理']);
+        $downloadPath  = $result['downloadPath'];
+        $latestVersion = $result['version'];
+        if (config('app_version') == $latestVersion)
+            return json(['status' => 0, 'msg' => '程序版本已经是最新，无法继续升级']);
+        if (getServerConfig('isUpdateLoading') == 'yes')
+            return json(['status' => 0, 'msg' => '正在更新程序，无法多次运行']);
+        setServerConfig('isUpdateLoading', 'yes');
+        set_time_limit(0);
+        $result = file_put_contents('../epay-' . $latestVersion . '.zip', file_get_contents($downloadPath));
+        if ($result) {
+            $zip    = new ZipArchive;
+            $result = $zip->open('../epay-' . $latestVersion . '.zip');
+            if ($result === true) {
+                $zip->extractTo('../');
+                $zip->close();
+            }
+        }
+        setServerConfig('isUpdateLoading', 'no');
+        return json(['status' => 1, 'msg' => '更新系统成功,稍后将为您刷新页面']);
     }
 
     public function postOrderStatus()

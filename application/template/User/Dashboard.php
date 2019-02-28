@@ -23,7 +23,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">今日交易额（未扣手续费）</h5>
-                <p class="card-text">￥<?php echo number_format($balance * ($rate / 100), 2) ?> RMB</p>
+                <p class="card-text">￥<?php echo number_format($balance * (1 + (1 - ($rate / 100))), 2); ?> RMB</p>
             </div>
         </div>
     </div>

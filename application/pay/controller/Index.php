@@ -59,13 +59,13 @@ class Index extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '金额(money)不能为空']);
         if (empty($this->getData['type']))
             return $this->fetch('/SystemMessage', ['msg' => '支付类型(type)不能为空']);
-        if(empty($this->getData['out_trade_no']))
+        if (empty($this->getData['out_trade_no']))
             return $this->fetch('/SystemMessage', ['msg' => '订单号(out_trade_no)不能为空']);
-        if(empty($this->getData['name']))
+        if (empty($this->getData['name']))
             return $this->fetch('/SystemMessage', ['msg' => '商品名称(name)不能为空']);
-        if(empty($this->getData['notify_url']))
+        if (empty($this->getData['notify_url']))
             return $this->fetch('/SystemMessage', ['msg' => '通知地址(notify_url)不能为空']);
-        if(empty($this->getData['return_url']))
+        if (empty($this->getData['return_url']))
             return $this->fetch('/SystemMessage', ['msg' => '回调地址(return_url)不能为空']);
 
         $type        = $this->getData['type'];
@@ -84,8 +84,6 @@ class Index extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '商品名称(name)不能为空']);
         if ($money <= 0)
             return $this->fetch('/SystemMessage', ['msg' => '金额(money)格式有误']);
-        if ($money > 100000)
-            return $this->fetch('/SystemMessage', ['msg' => '超出最大限额']);
 
         $maxPayMoney = getPayUserAttr($uid, 'maxPayMoney');
         if (!empty($maxPayMoney)) {

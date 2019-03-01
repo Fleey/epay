@@ -12,7 +12,6 @@ class Test extends Controller
     //商户Key
 
     private $signType = 'md5';
-    private $apiUrl = 'http://vip.115x.cn/submit.php?';
 
     //api url
 
@@ -26,9 +25,9 @@ class Test extends Controller
     {
         $getData = input('post.');
 
-        $notify_url = 'http://vip.115x.cn/usk/notify_url.php';
+        $notify_url = url('/usk/notify_url.php','',false,true);
         //需http://格式的完整路径，不能加?id=123这类自定义参数
-        $return_url = 'http://vip.115x.cn/epay_return.php';
+        $return_url = url('/usk/epay_return.php','',false,true);
         //需http://格式的完整路径，不能加?id=123这类自定义参数，不能写成http://localhost/  页面跳转同步通知页面路径
         $out_trade_no = $getData['WIDout_trade_no'];
         //商户网站订单系统中唯一订单号，必填
@@ -71,7 +70,7 @@ class Test extends Controller
 
         $param['sign']      = $sign;
         $param['sign_type'] = $this->signType;
-        $html               = '<form id="alipaysubmit" name="alipaysubmit" action="' . $this->apiUrl . '_input_charset=utf-8" method="post">';
+        $html               = '<form id="alipaysubmit" name="alipaysubmit" action="' .  url('/submit.php?','',false,true) . '_input_charset=utf-8" method="post">';
         foreach ($param as $key => $value) {
             $html .= '<input type="hidden" name="' . $key . '" value="' . $value . '"/>';
         }

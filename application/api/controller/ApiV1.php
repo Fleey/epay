@@ -122,6 +122,9 @@ class ApiV1 extends Controller
                 ->field('type,tradeNo as trade_no,tradeNoOut as out_trade_no,productName as name,createTime as addtime,endTime as endtime,status,money')->where('uid', $uid)->page($page, $limit)->select();
             if (empty($selectResult))
                 return json(['code' => 0, 'msg' => '暂无查询到更多的订单']);
+            foreach ($selectResult as $key => $value) {
+                $selectResult[$key]['trade_no'] = (string)$value['trade_no'];
+            }
             return json([
                 'code' => 1,
                 'msg'  => '查询结算记录成功！',

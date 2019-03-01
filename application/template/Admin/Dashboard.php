@@ -196,7 +196,6 @@
                 showConfirmButton: false
             });
             $.getJSON('/admin/api/UpdateProgram', function (data) {
-                swal.close();
                 if (data['status'] === 0) {
                     swal('更新系统失败', data['msg'], 'error');
                     return;

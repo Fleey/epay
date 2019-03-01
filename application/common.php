@@ -173,6 +173,7 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 //    curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+    curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
     //设置允许302转跳
@@ -530,10 +531,18 @@ function processOrder($tradeNo, $notify = true)
     if ($notify) {
         $notifyUrl = buildCallBackUrl($tradeNo, 'notify');
         if (curl($notifyUrl) === false)
-            if (curl($notifyUrl) === false)
-                trace('异步回调异常 => ' . $notifyUrl.' 时间 => '.getDateTime(), 'error');
+            addCallBackLog($notifyUrl);
         //回调事件
     }
+}
+
+function addCallBackLog($url)
+{
+    \think\Db::table('epay_callback')->insert([
+        'url'        => $url,
+        'status'     => 0,
+        'createTime' => getDateTime()
+    ]);
 }
 
 /**

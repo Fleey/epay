@@ -119,7 +119,7 @@ class ApiV1 extends Controller
             if ($limit > 50)
                 $limit = 50;
             $selectResult = Db::table('epay_order')
-                ->field('type,tradeNo as trade_no,tradeNoOut as out_trade_no,productName as name,createTime as addtime,endTime as endtime,status,money')->where('uid', $uid)->page($page, $limit)->select();
+                ->field('type,tradeNo as trade_no,tradeNoOut as out_trade_no,productName as name,createTime as addtime,endTime as endtime,status,money')->order('createTime desc')->where('uid', $uid)->page($page, $limit)->select();
             if (empty($selectResult))
                 return json(['code' => 0, 'msg' => '暂无查询到更多的订单']);
             foreach ($selectResult as $key => $value) {

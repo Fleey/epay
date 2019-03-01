@@ -168,11 +168,10 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 //    curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
@@ -182,6 +181,8 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156'); //代理服务器地址
     curl_setopt($ch, CURLOPT_PROXYPORT, 16819); //代理服务器端口
     //set proxy
+    curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
+    //gzip
 
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -529,7 +530,8 @@ function processOrder($tradeNo, $notify = true)
     if ($notify) {
         $notifyUrl = buildCallBackUrl($tradeNo, 'notify');
         if (curl($notifyUrl) === false)
-            trace('异步回调异常 => ' .$notifyUrl, 'error');
+            if (curl($notifyUrl) === false)
+                trace('异步回调异常 => ' . $notifyUrl.' 时间 => '.getDateTime(), 'error');
         //回调事件
     }
 }

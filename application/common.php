@@ -531,15 +531,16 @@ function processOrder($tradeNo, $notify = true)
     if ($notify) {
         $notifyUrl = buildCallBackUrl($tradeNo, 'notify');
         if (curl($notifyUrl) === false)
-            addCallBackLog($notifyUrl);
+            addCallBackLog($orderInfo[0]['uid'], $notifyUrl);
         //回调事件
     }
 }
 
-function addCallBackLog($url)
+function addCallBackLog($uid, $url)
 {
     \think\Db::table('epay_callback')->insert([
         'url'        => $url,
+        'uid'        => $uid,
         'status'     => 0,
         'createTime' => getDateTime()
     ]);

@@ -2,13 +2,10 @@
 
 namespace app\command;
 
-use app\pay\model\AliPayModel;
-use app\pay\model\QQPayModel;
-use app\pay\model\WxPayModel;
+
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
-use think\Db;
 
 class SyncOrder extends Command
 {
@@ -27,11 +24,12 @@ class SyncOrder extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
+//        exit(dump($this->curl($this->buildCallBackUrlA(' 2019030213595927171','notify'))));
 //        $userData = \think\Db::table('test')->cursor();
 //        $i        = 0;
 //        foreach ($userData as $value) {
 //            $i++;
-            $isPaySuccess = false;
+//            $isPaySuccess = false;
 //            if ($value['type'] == 'wxpay') {
 //                $wxModel = new WxPayModel([
 //                    'appid' => 'wx9036bbf0548da6ff',
@@ -61,10 +59,10 @@ class SyncOrder extends Command
 //                    if ($result['trade_status'] == 'TRADE_SUCCESS')
 //                        $isPaySuccess = true;
 //            }
-//            $result = Db::table('epay_order')->where('tradeNo', $value['order'])->limit(1)->field('id')->select();
+//            $result = Db::table('pay_order')->where('trade_no', $value['order'])->limit(1)->field('id')->select();
 //            if (!empty($result)) {
-//                Db::table('epay_order')->where('tradeNo', $value['order'])->limit(1)->update(['status' => 1]);
-//                $this->curl(buildCallBackUrl($value['order'], 'notify'));
+//                Db::table('pay_order')->where('trade_no', $value['order'])->limit(1)->update(['status' => 1]);
+//                $this->curl($this->buildCallBackUrlA($value['order'], 'notify'));
 //                echo 'success ';
 //            }
 //            echo $i . PHP_EOL;
@@ -100,7 +98,7 @@ class SyncOrder extends Command
 
         $callbackList = \think\Db::table('epay_callback')->where('status', 1)->field('id,url')->cursor();
         foreach ($callbackList as $value) {
-            $result = file_get_contents($value['url'], false, stream_context_create([
+            $result = @file_get_contents($value['url'], false, stream_context_create([
                 'http' => [
                     'method'  => 'GET',
                     'timeout' => 5
@@ -142,39 +140,41 @@ class SyncOrder extends Command
 //        }
 //        $output->info('success');
     }
+
     private function buildCallBackUrlA(string $tradeNo, string $type)
     {
         $type = strtolower($type);
         if ($type != 'notify' && $type != 'return')
-            return '';
+            return '1';
         //type is error
         $orderData = \think\Db::table('pay_order')->where('trade_no', $tradeNo)->field('pid,trade_no,out_trade_no,type,name,money,' . $type . '_url')->limit(1)->select();
         if (empty($orderData))
-            return '';
+            return '2';
         //order type
         $orderData = $orderData[0];
 
         $userKey = \think\Db::table('pay_user')->where('id', $orderData['pid'])->field('key')->limit(1)->select();
         if (empty($userKey))
-            $userKey = '';
+            $userKey = '3';
         else
             $userKey = $userKey[0]['key'];
         //get user key
 //兼容层
-        $args = [
-            'pid' => $orderData['pid'],
-            'trade_no' => $orderData['trade_no'],
+        $args        = [
+            'pid'          => $orderData['pid'],
+            'trade_no'     => $orderData['trade_no'],
             'out_trade_no' => $orderData['out_trade_no'],
-            'type' => $orderData['type'],
-            'name' => $orderData['name'],
-            'money' => $orderData['money'],
+            'type'         => $orderData['type'],
+            'name'         => $orderData['name'],
+            'money'        => $orderData['money'],
             'trade_status' => 'TRADE_SUCCESS'
         ];
-        $args = argSort(paraFilter($args));
-        $sign = signMD5(createLinkString($args), $userKey);
+        $args        = argSort(paraFilter($args));
+        $sign        = signMD5(createLinkString($args), $userKey);
         $callBackUrl = $orderData[$type . '_url'] . (strpos($orderData[$type . '_url'], '?') ? '&' : '?') . createLinkStringUrlEncode($args) . '&sign=' . $sign . '&sign_type=MD5';
         return $callBackUrl;
     }
+
     protected function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlEncode = true)
     {
         if (empty($url))

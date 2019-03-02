@@ -44,7 +44,7 @@ class AliPayModel
         $requestData['sign'] = $sign;
 
         $requestUrl    = createLinkStringUrlEncode($requestData);
-        $requestResult = json_decode(curl($this->aliPayGateway . $requestUrl),true);
+        $requestResult = json_decode(curl($this->aliPayGateway . $requestUrl), true);
 
         if (empty($requestResult['alipay_fund_trans_toaccount_transfer_response']))
             return false;
@@ -54,7 +54,7 @@ class AliPayModel
         if ($isSuccess) {
             trace('支付宝即时转账成功 金额 =>' . $money . ' 转账账号 =>' . $account . ' 转账名字 =>' . $toRealName, 'info');
         } else {
-              trace('支付宝即时转账失败 失败原因 =>' . $requestResult['msg'] . ' 请求内容 =>' . json_encode($requestResult), 'info');
+            trace('支付宝即时转账失败 失败原因 =>' . $requestResult['msg'] . ' 请求内容 =>' . json_encode($requestResult), 'info');
         }
         return $isSuccess;
     }
@@ -92,6 +92,29 @@ class AliPayModel
         openssl_sign($paramUrl, $sign, $privateKey, 'SHA256');
         //签名数据
         return base64_encode($sign);
+    }
+
+    public function selectPayRecord(string $orderID)
+    {
+        $requestData         = [
+            'app_id'      => $this->aliPayConfig['transferPartner'],
+            'method'      => 'alipay.trade.query',
+            'charset'     => 'utf-8',
+            'version'     => '1.0',
+            'sign_type'   => 'RSA2',
+            'timestamp'   => getDateTime(),
+            'biz_content' => json_encode([
+                'out_trade_no' => $orderID
+            ])
+        ];
+        $sign                = $this->buildSignRSA2($requestData);
+        $requestData['sign'] = $sign;
+
+        $requestUrl    = createLinkStringUrlEncode($requestData);
+        $requestResult = json_decode(curl($this->aliPayGateway . $requestUrl), true);
+        if ($requestResult === false)
+            throw new Exception('Curl异常，请联系站长处理');
+        return $requestResult;
     }
 
     public function buildSignMD5(array $param)

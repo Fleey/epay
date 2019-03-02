@@ -53,8 +53,14 @@ Route::group('user', function () {
     Route::controller('api', 'user/Index');
     Route::rule('[:templateName]', 'user/Index/loadTemplate');
 });
+Route::group('api', function () {
+    Route::controller('v2', 'api/ApiV2');
+});
+Route::group('doc', function () {
+    Route::rule('v1', 'api/ApiV1/loadTemplate');
+    Route::rule('v2', 'api/ApiV2/loadTemplate');
+});
 Route::rule('submit.php', 'pay/Index/submit');
-Route::rule('doc.php', 'api/ApiV1/loadTemplate');
 Route::rule('api.php', 'api/ApiV1/apiCtrl');
 Route::rule('qrcode.php', 'api/ApiV1/apiQrCode');
 return [

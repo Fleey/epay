@@ -11,12 +11,18 @@ class QQPay extends Controller
 {
     private $systemConfig;
     private $qqPayConfig;
+    private $notifyUrl;
 
     public function __construct(App $app = null)
     {
         parent::__construct($app);
         $this->systemConfig = getConfig();
         $this->qqPayConfig  = $this->systemConfig['qqpay'];
+        if (empty($this->systemConfig['notifyDomain'])) {
+            $this->notifyUrl = url('/Pay/QQPay/Notify', '', false, true);
+        } else {
+            $this->notifyUrl = $this->systemConfig['notifyDomain'] . '/Pay/QQPay/Notify';
+        }
     }
 
     /**

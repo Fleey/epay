@@ -30,6 +30,20 @@ class QQPayModel
         return $stringA;
     }
 
+    public function selectPayRecord($tradeNo)
+    {
+        $param = [
+            'mch_id'       => $this->qqPayConfig['mchid'],
+            'nonce_str'    => getRandChar(32),
+            'out_trade_no' => $tradeNo
+        ];
+        $param['sign']      = $this->signParam($param);
+        $xml                = arrayToXml($param);
+        //build xml
+        $result = curl('https://qpay.qq.com/cgi-bin/pay/qpay_order_query.cgi', [], 'post', $xml, 'xml');
+        return xmlToArray($result);
+    }
+
     /**
      * 获取付款二维码
      * @param array $param

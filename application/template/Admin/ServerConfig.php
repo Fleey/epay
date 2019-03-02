@@ -23,6 +23,17 @@
 </div>
 <div class="card" style="margin-top: 2rem;">
     <div class="card-body">
+        <h5 class="card-title">支付回调域名配置</h5>
+        <div class="form-group">
+            <label for="notifyDomain">回调域名</label>
+            <input type="text" class="form-control" data-name="notifyDomain" placeholder="请输入回调域名">
+            <small class="form-text text-muted">例如 http://www.baidu.com</small>
+        </div>
+        <button type="button" class="btn btn-outline-primary float-right" data-save>保存</button>
+    </div>
+</div>
+<div class="card" style="margin-top: 2rem;">
+    <div class="card-body">
         <h5 class="card-title">管理员账号</h5>
         <div class="form-group">
             <label for="username"></label>

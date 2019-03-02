@@ -11,12 +11,21 @@ class Alipay extends Controller
 {
     private $alipayConfig;
     private $systemConfig;
+    private $notifyUrl;
+    private $returnUrl;
 
     public function __construct(App $app = null)
     {
         parent::__construct($app);
         $this->systemConfig = getConfig();
         $this->alipayConfig = $this->systemConfig['alipay'];
+        if (empty($this->systemConfig['notifyDomain'])) {
+            $this->notifyUrl = url('/Pay/Alipay/Notify', '', false, true);
+            $this->returnUrl = url('/Pay/Alipay/Return', '', false, true);
+        }else{
+            $this->notifyUrl = $this->systemConfig['notifyDomain'].'/Pay/Alipay/Notify';
+            $this->returnUrl = $this->systemConfig['notifyDomain'].'/Pay/Alipay/Return';
+        }
     }
 
     /*
@@ -40,8 +49,8 @@ class Alipay extends Controller
             'partner'        => $this->alipayConfig['partner'],
             'seller_id'      => $this->alipayConfig['partner'],
             'payment_type'   => 1,
-            'notify_url'     => url('/Pay/Alipay/Notify', '', false, true),
-            'return_url'     => url('/Pay/Alipay/Return', '', false, true),
+            'notify_url'     =>  $this->notifyUrl,
+            'return_url'     =>  $this->returnUrl,
             'subject'        => $result[0]['productName'],
             'out_trade_no'   => $tradeNo,
             'total_fee'      => $result[0]['money'] / 100,

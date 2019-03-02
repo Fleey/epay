@@ -124,6 +124,7 @@ class ApiV1 extends Controller
                 return json(['code' => 0, 'msg' => '暂无查询到更多的订单']);
             foreach ($selectResult as $key => $value) {
                 $selectResult[$key]['trade_no'] = (string)$value['trade_no'];
+                $selectResult[$key]['money']    = $value['money'] / 100;
             }
             return json([
                 'code' => 1,

@@ -6,7 +6,7 @@
 <!--<![endif]-->
 <head>
     <meta charset="utf-8"/>
-    <title>开发文档 | <?php echo $webName; ?></title>
+    <title>开发文档V1 | <?php echo $webName; ?></title>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
     <meta name="keywords" content="<?php echo $webName; ?>">
     <meta name="description" content="<?php echo $webName; ?>"/>

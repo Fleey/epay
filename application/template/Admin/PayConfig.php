@@ -35,8 +35,8 @@
             <small class="form-text text-muted">合作身份者id，以2088开头的16位纯数字</small>
         </div>
         <div class="form-group">
-            <label for="transferPrivateKey">应用公钥</label>
-            <textarea type="text" class="form-control" data-name="transferPrivateKey" placeholder="应用公钥"></textarea>
+            <label for="transferPrivateKey">应用私钥</label>
+            <textarea type="text" class="form-control" data-name="transferPrivateKey" placeholder="应用私钥"></textarea>
             <small class="form-text text-muted">长度一般都很长，建议使用工具生成然后丢蚂蚁金服<a href="https://docs.open.alipay.com/291/106097">下载地址</a></small>
         </div>
         <button type="button" class="btn btn-outline-primary float-right" data-save>保存</button>

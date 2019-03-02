@@ -10,11 +10,17 @@ use think\Db;
 class WxPay extends Controller
 {
     private $systemConfig;
+    private $notifyUrl;
 
     public function __construct(App $app = null)
     {
         parent::__construct($app);
         $this->systemConfig = getConfig();
+        if (empty($this->systemConfig['notifyDomain'])) {
+            $this->notifyUrl =  url('/Pay/WxPay/Notify', '', false, true);
+        } else {
+            $this->notifyUrl = $this->systemConfig['notifyDomain'] . '/Pay/WxPay/Notify';
+        }
     }
 
     /**
@@ -46,13 +52,13 @@ class WxPay extends Controller
         //is wx browser
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay']);
         if ($isWxBrowser) {
-            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'JSAPI');
+            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'JSAPI',$this->notifyUrl);
             //手机微信内置浏览器支付
         } else if ($this->request->isMobile()) {
-            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'MWEB');
+            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'MWEB',$this->notifyUrl);
             //手机端微信支付
         } else {
-            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE');
+            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE',$this->notifyUrl);
             //PC端微信支付
         }
         if ($requestResult['return_code'] != 'SUCCESS')

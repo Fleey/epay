@@ -91,9 +91,10 @@ class WxPayModel
      * 微信PC版本支付
      * @param array $tradeData
      * @param string $type
+     * @param string $notifyUrl
      * @return array|mixed|object
      */
-    public function sendPayRequest(array $tradeData, string $type)
+    public function sendPayRequest(array $tradeData, string $type, string $notifyUrl)
     {
         $productName = '充值不到账联系客服QQ：21101787';
         $requestUrl  = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
@@ -105,13 +106,13 @@ class WxPayModel
             'total_fee'        => $tradeData['money'],
             'spbill_create_ip' => request()->ip(),
             'trade_type'       => $type,
-            'notify_url'       => url('/Pay/WxPay/Notify', '', false, true),
+            'notify_url'       => $notifyUrl,
             'nonce_str'        => getRandChar(32)
         ];
         if ($type == 'NATIVE')
             $requestData['product_id'] = '010086';
-        if($type == 'MWEB')
-            $requestData['scene_info'] = json_encode(['h5_info'=>['type'=>'','wap_url'=>url('/','',false,true),'wap_name'=>'余额充值']]);
+        if ($type == 'MWEB')
+            $requestData['scene_info'] = json_encode(['h5_info' => ['type' => '', 'wap_url' => url('/', '', false, true), 'wap_name' => '余额充值']]);
 
         $requestData['sign'] = $this->signParam($requestData);
 

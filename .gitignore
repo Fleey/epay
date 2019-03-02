@@ -2,6 +2,7 @@
 /.vscode
 /vendor
 *.log
-thinkphp
 .env
 .DS_Store
+/config/database.php
+/config/config.txt

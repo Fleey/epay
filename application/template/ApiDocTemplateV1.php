@@ -1212,7 +1212,7 @@
                         <hr/>
                         <h2 id="sdk0">SDK下载</h2>
                         <blockquote>
-                            <a href="./PhpSDK-1.0.zip" style="color:blue">PhpSDK.zip</a><br/>
+                            <a href="/static/sdk/PhpSDK-1.0.zip" style="color:blue">PhpSDK.zip</a><br/>
                             PHP 版本：V1.0
                         </blockquote>
                         <blockquote>

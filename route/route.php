@@ -11,6 +11,8 @@
 Route::rule('', 'admin/Index/index');
 Route::group('test', function () {
     Route::post('pay', 'user/Test/pay');
+    Route::get('return', 'user/Test/getReturn');
+    Route::get('notify', 'user/Test/getNotify');
     Route::rule('', 'user/Test/loadTemplate');
 });
 Route::group('Pay', function () {

@@ -25,9 +25,9 @@ class Test extends Controller
     {
         $getData = input('post.');
 
-        $notify_url = url('/usk/notify_url.php','',false,true);
+        $notify_url = url('/test/notify', '', false, true);
         //需http://格式的完整路径，不能加?id=123这类自定义参数
-        $return_url = url('/usk/epay_return.php','',false,true);
+        $return_url = url('/test/return', '', false, true);
         //需http://格式的完整路径，不能加?id=123这类自定义参数，不能写成http://localhost/  页面跳转同步通知页面路径
         $out_trade_no = $getData['WIDout_trade_no'];
         //商户网站订单系统中唯一订单号，必填
@@ -53,6 +53,66 @@ class Test extends Controller
         return $this->buildRequestForm($param);
     }
 
+    public function getNotify()
+    {
+        $getData = input('get.');
+        $pid     = $getData['pid'];
+        //商户号
+        $tradeNo = $getData['trade_no'];
+        //小老弟订单号
+        $tradeNoOut = $getData['out_trade_no'];
+        //	商户系统内部的订单号
+        $payType = $getData['type'];
+        //alipay:支付宝,tenpay:财付通,
+        //qqpay:QQ钱包,wxpay:微信支付,
+        //alipaycode:支付宝扫码,jdpay:京东支付
+        $productName = $getData['name'];
+        //商品名称
+        $money    = $getData['money'];
+        $status   = $getData['trade_status'];
+        $sign     = $getData['sign'];
+        $signType = $getData['sign_type'];
+
+        if ($signType != 'MD5')
+            return $this->fetch('/SystemMessage', ['msg' => '验证签名算法不支持！']);
+        if ($this->buildSign($getData) != $getData['sign'])
+            return $this->fetch('/SystemMessage', ['msg' => '签名效验不正确！']);
+
+        //下面做你想做的事情
+
+        return '<h1 style="text-align: center;">您已经成功支付</h1>';
+    }
+
+    public function getReturn()
+    {
+        $getData = input('get.');
+        $pid     = $getData['pid'];
+        //商户号
+        $tradeNo = $getData['trade_no'];
+        //小老弟订单号
+        $tradeNoOut = $getData['out_trade_no'];
+        //	商户系统内部的订单号
+        $payType = $getData['type'];
+        //alipay:支付宝,tenpay:财付通,
+        //qqpay:QQ钱包,wxpay:微信支付,
+        //alipaycode:支付宝扫码,jdpay:京东支付
+        $productName = $getData['name'];
+        //商品名称
+        $money    = $getData['money'];
+        $status   = $getData['trade_status'];
+        $sign     = $getData['sign'];
+        $signType = $getData['sign_type'];
+
+        if ($signType != 'MD5')
+            return $this->fetch('/SystemMessage', ['msg' => '验证签名算法不支持！']);
+        if ($this->buildSign($getData) != $getData['sign'])
+            return $this->fetch('/SystemMessage', ['msg' => '签名效验不正确！']);
+
+        //下面做你想做的事情
+
+        return '<h1 style="text-align: center;">您已经成功支付</h1>';
+    }
+
     private function buildSign(array $param)
     {
         $param = paraFilter($param);
@@ -64,13 +124,14 @@ class Test extends Controller
         return $sign;
     }
 
+
     private function buildRequestForm(array $param)
     {
         $sign = $this->buildSign($param);
 
         $param['sign']      = $sign;
         $param['sign_type'] = $this->signType;
-        $html               = '<form id="alipaysubmit" name="alipaysubmit" action="' .  url('/submit.php?','',false,true) . '_input_charset=utf-8" method="post">';
+        $html               = '<form id="alipaysubmit" name="alipaysubmit" action="' . url('/submit.php?', '', false, true) . '_input_charset=utf-8" method="post">';
         foreach ($param as $key => $value) {
             $html .= '<input type="hidden" name="' . $key . '" value="' . $value . '"/>';
         }

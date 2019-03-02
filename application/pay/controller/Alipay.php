@@ -63,6 +63,8 @@ class Alipay extends Controller
         $getData = input('get.');
         if (empty($getData['out_trade_no']))
             return $this->fetch('/SystemMessage', ['msg' => '支付同步回调异常，请联系网站管理员处理！']);
+        if (empty($getData['sign']))
+            return $this->fetch('/SystemMessage', ['msg' => '回调签名异常,请联系管理员处理！']);
 
         $verifyResult = $aliPayModel->verifyData('get');
         if (!$verifyResult)
@@ -70,7 +72,7 @@ class Alipay extends Controller
 
         $tradeNoOut  = $getData['out_trade_no'];
         $tradeStatus = $getData['trade_status'];
-        $result      = db()->table('epay_order')->where('tradeNo', $tradeNoOut)->field('status,return_url')->limit(1)->select();
+        $result      = Db::table('epay_order')->where('tradeNo', $tradeNoOut)->field('status,return_url')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '订单不存在，请联系管理员处理！']);
         //判断订单是否存在

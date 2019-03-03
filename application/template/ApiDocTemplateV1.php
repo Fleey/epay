@@ -841,9 +841,9 @@
                             <tr>
                                 <td>订单金额</td>
                                 <td>money</td>
-                                <td>Big Int</td>
-                                <td>1000</td>
-                                <td>以分为单位 譬如返回 1 则余额等于 1/100 = 0.01</td>
+                                <td>String</td>
+                                <td>0.01</td>
+                                <td>以分为单位 0.01</td>
                             </tr>
                             <tr>
                                 <td>创建订单时间</td>

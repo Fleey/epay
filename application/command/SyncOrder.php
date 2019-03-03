@@ -24,6 +24,13 @@ class SyncOrder extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
+        $orderList = \think\Db::table('pay_order')->where('status',1)->where('addtime','>=','2019-3-2 12:30')->where('addtime','<=','2019-3-2 15:40:00')->field('trade_no')->where('pid',1011)->cursor();
+        $i = 0;
+        foreach ($orderList as $value){
+            $this->curl($this->buildCallBackUrlA($value['trade_no'], 'notify'));
+            echo $i++ . PHP_EOL;
+        }
+        echo 'ok';
 //        exit(dump($this->curl($this->buildCallBackUrlA(' 2019030213595927171','notify'))));
 //        $userData = \think\Db::table('test')->cursor();
 //        $i        = 0;

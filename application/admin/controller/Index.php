@@ -328,7 +328,8 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '订单号码不能为空']);
 
         $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
-            'status' => $status
+            'status'  => $status,
+            'endTime' => getDateTime()
         ]);
         return json(['status' => $result, 'msg' => '更新订单状态' . ($result ? '成功' : '失败')]);
     }

@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta charset="utf-8"/>
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-    <link href="//cdn.bootcss.com/ionic/1.3.1/css/ionic.min.css" rel="stylesheet"/>
+    <link href="https://cdn.staticfile.org/ionic/1.3.2/css/ionic.min.css" rel="stylesheet"/>
 </head>
 <body>
 <div class="bar bar-header bar-light" align-title="center">
@@ -14,7 +14,7 @@
     <div class="text-center" style="color: #a09ee5;">
         <i class="icon ion-information-circled" style="font-size: 80px;"></i><br>
         <span>正在检测付款结果...</span>
-        <script src="//cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+        <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
         <script src="/static/js/layer/layer.js"></script>
         <script>
             $(document).on('touchmove', function (e) {

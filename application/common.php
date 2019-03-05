@@ -503,7 +503,7 @@ function processOrder($tradeNo, $notify = true)
     if (!$orderInfo[0]['status'])
         return;
     //订单无效
-    $userInfo = \think\Db::table('epay_user')->where('id', $orderInfo[0]['uid'])->field('balance,clearType,account,username,rate')->limit(1)->select();
+    $userInfo = \think\Db::table('epay_user')->where('id', $orderInfo[0]['uid'])->field('clearType,account,username,rate')->limit(1)->select();
     if (empty($userInfo))
         return;
 
@@ -515,9 +515,7 @@ function processOrder($tradeNo, $notify = true)
 
     $addMoneyRate = $orderInfo[0]['money'] * ($rate / 100);
     //累计金额方便统计
-    $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->update([
-        'balance' => $userInfo[0]['balance'] + ($addMoneyRate * 10)
-    ]);
+    $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance',$addMoneyRate * 10)->update();
     if ($userInfo[0]['clearType'] == 4) {
         settleUserDepositMoney($orderInfo[0]['uid']);
         //支付宝自动转账
@@ -583,9 +581,7 @@ function settleUserDepositMoney($uid)
     //需要转账的金额
     $transferResult = $aliPayModel->toAccountTransfer($settleID, $userInfo[0]['account'], $userInfo[0]['username'], $transferMoney);
     if ($transferResult) {
-        $updateUserResult = \think\Db::table('epay_user')->where('id', $uid)->limit(1)->update([
-            'balance' => $userBalance - ($transferMoney * 1000)
-        ]);
+        $updateUserResult = \think\Db::table('epay_user')->where('id', $uid)->limit(1)->dec('balance', ($transferMoney * 1000))->update();
         if (!$updateUserResult)
             trace('自动结算用户余额有误 uid=>' . $uid . ' 目标金额=>' . $transferMoney, 'error');
         else
@@ -604,6 +600,7 @@ function settleUserDepositMoney($uid)
     }
     //开始转账
 }
+
 
 /**
  * @param string $key

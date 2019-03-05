@@ -44,7 +44,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/doc.php" target="_blank">
+                <a class="nav-link" href="/doc/v1" target="_blank">
                     <i data-feather="book-open"></i>
                     开发文档
                 </a>

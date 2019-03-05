@@ -624,12 +624,7 @@ class Index extends Controller
             return false;
         $userInfo = Db::table('epay_user')->where('id', $uid)->field('balance,clearMode')->limit(1)->select();
         if ($userInfo[0]['clearMode'] == 1) {
-            $updateMoney = $userInfo[0]['balance'] - ($result[0]['money'] * 10);
-            if ($updateMoney < 0)
-                $updateMoney = 0;
-            $updateUserResult = Db::table('epay_user')->where('id', $result[0]['uid'])->limit(1)->update([
-                'balance' => $updateMoney
-            ]);
+            $updateUserResult = Db::table('epay_user')->where('id', $result[0]['uid'])->limit(1)->dec('balance', $result[0]['money'] * 10)->update();
             if (!$updateUserResult)
                 return false;
         }

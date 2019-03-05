@@ -27,16 +27,23 @@ class Index extends Controller
             $data['isGeetest'] = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);
         }
         if ($templateName == 'Dashboard') {
-            $data['beforeSettleRecord'] = Db::table('epay_order')->where([
-                ['uid', '=', $uid],
-                ['isShield', '=', 0],
-                ['status', '=', 1],
-            ])->cache(300)->whereTime('endTime', 'yesterday')->sum('money');
-            $data['balance']            = $userInfo[0]['balance'] / 1000;
-            $data['key']                = $userInfo[0]['key'];
-            $data['uid']                = $uid;
-            $data['rate']               = $userInfo[0]['rate'] / 100;
-            $data['totalOrder']         = Db::table('epay_order')->where('uid', $uid)->cache(120)->count('id');
+            $data['balance']    = $userInfo[0]['balance'] / 1000;
+            $data['key']        = $userInfo[0]['key'];
+            $data['uid']        = $uid;
+            $data['rate']       = $userInfo[0]['rate'] / 100;
+            $data['totalOrder'] = Db::table('epay_order')->where('uid', $uid)->cache(120)->count('id');
+
+            $data['todayOrderTotalMoney'] = Db::table('epay_order')->whereTime('endTime', 'today')->where([
+                'uid'      => $uid,
+                'status'   => 1,
+                'isShield' => 0
+            ])->cache(120)->sum('money');
+
+            $data['yesterdayOrderTotalMoney'] = Db::table('epay_order')->whereTime('endTime', 'yesterday')->where([
+                'uid'      => $uid,
+                'status'   => 1,
+                'isShield' => 0
+            ])->cache(300)->sum('money');
 
             $data['settleRecord'] = [];
             for ($i = 6; $i >= 1; $i--) {
@@ -46,6 +53,7 @@ class Index extends Controller
             foreach ($data['settleRecord'] as $key => $value) {
                 $data['settleRecord'][$key]['money'] = Db::table('epay_settle')->where('uid', $uid)->whereBetweenTime('createTime', $value['createTime'])->cache(300)->sum('money');
             }
+
         } else if ($templateName == 'SettleApply') {
             if (!$data['isSettleApply'])
                 return '<h3 class="text-center" style="margin-top: 12rem;">管理员暂未允许您手动提交结算申请，请联系管理员处理</h3>';

@@ -82,6 +82,8 @@ class Index extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '回调地址(return_url)不能为空']);
         if (empty($productName))
             return $this->fetch('/SystemMessage', ['msg' => '商品名称(name)不能为空']);
+        if (strlen($productName) > 64)
+            return $this->fetch('/SystemMessage', ['msg' => '商品名称(name)长度不能超过64个字符']);
         if ($money <= 0)
             return $this->fetch('/SystemMessage', ['msg' => '金额(money)格式有误']);
 
@@ -119,9 +121,7 @@ class Index extends Controller
         }
         //check is open pay
 
-        $clientIpv4 = $this->request->ip();
-        if (strlen($clientIpv4) > 15)
-            return $this->fetch('/SystemMessage', ['msg' => '请使用Ipv4访问本域名，暂时不支持使用ipv6进行访问']);
+        $clientIpv4 = $this->request->ip(1);
 
         $tradeNo = date('YmdHis') . rand(11111, 99999);
 

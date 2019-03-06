@@ -25,7 +25,8 @@
     "ext-simplexml": "*",
     "ext-libxml": "*",
     "ext-openssl": "*",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-zip": "*"
   },
   "autoload": {
     "psr-4": {

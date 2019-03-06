@@ -10,7 +10,7 @@ $(function ($) {
         route(url, false);
     });
     $('.exit').click(function () {
-        $.getJSON('/auth/user/exit',function (data) {
+        $.getJSON('/auth/user/exit', function (data) {
             swal(data['msg'], {
                 buttons: false,
                 timer: 1500,
@@ -21,22 +21,27 @@ $(function ($) {
             }, 1500);
         });
     });
-    feather.replace();
+    if (('onhashchange' in window) && ((typeof document.documentMode === 'undefined') || document.documentMode === 8)) {
+        window.onhashchange = function () {
+            var hashPath = location.hash.substring(1);
+            route(hashPath, true);
+        }
+    }
 });
 
 function route(url, isFirst, args, isGetPageData) {
     isGetPageData = isGetPageData !== undefined;
     var html = '';
     if (!isGetPageData) {
-        var sidebarDom = $('.sidebar-sticky');
+        var sidebarDom = $('.sidebar-nav');
         var clickDom = sidebarDom.find('a[data-href="' + url + '"]');
-        if (clickDom.is('.active') && !isFirst) {
+        if (clickDom.parent().is('.selected') && !isFirst) {
             return;
         }
         location.hash = url;
-        sidebarDom.find('a.active').removeClass('active');
+        sidebarDom.find('li.selected').removeClass('selected');
 
-        clickDom.addClass('active');
+        clickDom.parent().addClass('selected');
     }
     $.ajax({
         url: baseUrl + 'user/' + url,
@@ -48,11 +53,9 @@ function route(url, isFirst, args, isGetPageData) {
                 html = data;
                 return true;
             }
-
             window.history.pushState(null, null, baseUrl + 'user/Index#' + url);
             //增加历史地址
-            $('#main').html(data);
-            feather.replace();
+            $('.page-wrapper').html(data);
         },
         error: function (XMLHttpRequest, textStatus, errorThrown) {
             if (isGetPageData)

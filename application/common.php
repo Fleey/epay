@@ -178,9 +178,9 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
     //设置允许302转跳
 
-    curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-    curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156'); //代理服务器地址
-    curl_setopt($ch, CURLOPT_PROXYPORT, 16819); //代理服务器端口
+    //curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+    //curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156'); //代理服务器地址
+    //curl_setopt($ch, CURLOPT_PROXYPORT, 16819); //代理服务器端口
     //set proxy
     curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
     //gzip

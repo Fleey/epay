@@ -26,6 +26,8 @@ class Index extends Controller
         $username = session('username', '', 'admin');
         if (empty($username) && $templateName != 'Login')
             $this->redirect('/admin/Login', [], 302);
+        else
+            $data['isGeetest'] = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);
         if ($templateName == 'Dashboard') {
             $data['totalOrder'] = Db::table('epay_order')->cache(60)->count('id');
             $data['totalUser']  = Db::table('epay_user')->cache(60)->count('id');
@@ -41,7 +43,7 @@ class Index extends Controller
             }
             $data['settleRecord'][] = ['createTime' => date('Y-m-d', strtotime('now'))];
             foreach ($data['settleRecord'] as $key => $value) {
-                $data['settleRecord'][$key]['money'] = Db::table('epay_settle')->whereBetweenTime('createTime', $value['createTime'])->cache(300)->sum('money');
+                $data['settleRecord'][$key]['money'] = Db::table('epay_settle')->whereBetweenTime('createTime', $value['createTime'])->sum('money');
             }
             $data['statistics'] = [
                 'yesterday' => [
@@ -50,21 +52,21 @@ class Index extends Controller
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 1,
                             'status' => 1
-                        ])->cache(600)->whereTime('endTime', 'yesterday')->sum('money')
+                        ])->whereTime('endTime', 'yesterday')->sum('money')
                     ],
                     [
                         'type'       => 1,
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 2,
                             'status' => 1
-                        ])->cache(600)->whereTime('endTime', 'yesterday')->sum('money')
+                        ])->whereTime('endTime', 'yesterday')->sum('money')
                     ],
                     [
                         'type'       => 1,
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 3,
                             'status' => 1
-                        ])->cache(600)->whereTime('endTime', 'yesterday')->sum('money')
+                        ])->whereTime('endTime', 'yesterday')->sum('money')
                     ]
                 ],
                 'today'     => [
@@ -73,21 +75,21 @@ class Index extends Controller
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 1,
                             'status' => 1
-                        ])->cache(300)->whereTime('endTime', 'today')->sum('money')
+                        ])->whereTime('endTime', 'today')->sum('money')
                     ],
                     [
                         'type'       => 1,
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 2,
                             'status' => 1
-                        ])->cache(300)->whereTime('endTime', 'today')->sum('money')
+                        ])->whereTime('endTime', 'today')->sum('money')
                     ],
                     [
                         'type'       => 1,
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 3,
                             'status' => 1
-                        ])->cache(300)->whereTime('endTime', 'today')->sum('money')
+                        ])->whereTime('endTime', 'today')->sum('money')
                     ]
                 ]
             ];

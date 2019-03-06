@@ -3,30 +3,40 @@
         display: block;
     }
 </style>
-<div class="card">
-    <div class="card-body">
-        <h5 class="card-title">商户列表</h5>
-        <button class="btn w96 btn-outline-primary btn-sm float-right" data-toggle="modal" data-target="#searchFilter">
-            高级搜索
-        </button>
-        <button class="btn w96 btn-outline-primary btn-sm float-right" style="margin-right: 15px;" data-toggle="modal"
-                id="addUser">
-            新增商户
-        </button>
-        <table id="orderList" class="table table-bordered table-hover">
-            <thead>
-            <tr>
-                <th>UID</th>
-                <th>密匙</th>
-                <th>余额</th>
-                <th>结算账号</th>
-                <th>结算名称</th>
-                <th>账号状态</th>
-                <th>操作</th>
-            </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+<div class="page-content container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">商户列表</h5>
+                    <button class="btn w96 btn-outline-primary btn-sm float-right" data-toggle="modal"
+                            data-target="#searchFilter">
+                        高级搜索
+                    </button>
+                    <button class="btn w96 btn-outline-primary btn-sm float-right" style="margin-right: 15px;"
+                            data-toggle="modal"
+                            id="addUser">
+                        新增商户
+                    </button>
+                    <div class="table-responsive">
+                        <table id="orderList" class="table no-wrap user-table mb-0 table-hover">
+                            <thead>
+                            <tr>
+                                <th>UID</th>
+                                <th>密匙</th>
+                                <th>余额</th>
+                                <th>结算账号</th>
+                                <th>结算名称</th>
+                                <th>账号状态</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <div class="modal fade" tabindex="-1" role="dialog" id="userInfo">

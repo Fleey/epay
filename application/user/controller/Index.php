@@ -39,11 +39,28 @@ class Index extends Controller
                 'isShield' => 0
             ])->cache(120)->sum('money');
 
-            $data['yesterdayOrderTotalMoney'] = Db::table('epay_order')->whereTime('endTime', 'yesterday')->where([
-                'uid'      => $uid,
-                'status'   => 1,
-                'isShield' => 0
-            ])->cache(300)->sum('money');
+            $data['yesterdayOrderTypeCount'] = [
+                'wx'  => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
+                    'uid'      => $uid,
+                    'status'   => 1,
+                    'type'     => 1,
+                    'isShield' => 0
+                ])->sum('money'),
+                'qq'  => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
+                    'uid'      => $uid,
+                    'status'   => 1,
+                    'type'     => 2,
+                    'isShield' => 0
+                ])->sum('money'),
+                'ali' => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
+                    'uid'      => $uid,
+                    'status'   => 1,
+                    'type'     => 3,
+                    'isShield' => 0
+                ])->sum('money')
+            ];
+
+            $data['yesterdayOrderTotalMoney'] = $data['yesterdayOrderTypeCount']['wx'] + $data['yesterdayOrderTypeCount']['qq'] + $data['yesterdayOrderTypeCount']['ali'];
 
             $data['settleRecord'] = [];
             for ($i = 6; $i >= 1; $i--) {

@@ -145,7 +145,7 @@ $(function () {
                         });
                         var option = {
                                 title: {
-                                    text: '近七天结算金额统计',
+                                    text: '该用户近七天结算金额统计',
                                 },
                                 tooltip: {
                                     trigger: 'axis',
@@ -182,11 +182,13 @@ $(function () {
                                         areaStyle: {}
                                     }
                                 ]
-                            }
-                        ;
+                            };
+                        $('#userSettleInfo').show();
                         var chartMap = echarts.init(document.getElementById('chartMap'));
                         $(window).resize(function () {
-                            chartMap.resize();
+                            setTimeout(function () {
+                                chartMap.resize();
+                            }, 200);
                         });
                         chartMap.setOption(option);
                     });

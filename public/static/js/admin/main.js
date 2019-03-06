@@ -11,34 +11,37 @@ $(function ($) {
     });
     $('.exit').click(function () {
         $.getJSON('/auth/admin/exit', function (data) {
-            swal({
-                title:'',
-                text: data['msg'],
-                showConfirmButton: false,
+            swal(data['msg'], {
+                buttons: false,
                 timer: 1500,
-                type: 'success'
+                icon: 'success'
             });
             setTimeout(function () {
                 window.location.href = baseUrl + 'admin/Login';
             }, 1500);
         });
     });
-    feather.replace();
+    if (('onhashchange' in window) && ((typeof document.documentMode === 'undefined') || document.documentMode === 8)) {
+        window.onhashchange = function () {
+            var hashPath = location.hash.substring(1);
+            route(hashPath, true);
+        }
+    }
 });
 
 function route(url, isFirst, args, isGetPageData) {
     isGetPageData = isGetPageData !== undefined;
     var html = '';
     if (!isGetPageData) {
-        var sidebarDom = $('.sidebar-sticky');
+        var sidebarDom = $('.sidebar-nav');
         var clickDom = sidebarDom.find('a[data-href="' + url + '"]');
-        if (clickDom.is('.active') && !isFirst) {
+        if (clickDom.parent().is('.selected') && !isFirst) {
             return;
         }
         location.hash = url;
-        sidebarDom.find('a.active').removeClass('active');
+        sidebarDom.find('li.selected').removeClass('selected');
 
-        clickDom.addClass('active');
+        clickDom.parent().addClass('selected');
     }
     $.ajax({
         url: baseUrl + 'admin/' + url,
@@ -53,8 +56,7 @@ function route(url, isFirst, args, isGetPageData) {
 
             window.history.pushState(null, null, baseUrl + 'admin/Index#' + url);
             //增加历史地址
-            $('#main').html(data);
-            feather.replace();
+            $('.page-wrapper').html(data);
         },
         error: function (XMLHttpRequest, textStatus, errorThrown) {
             if (isGetPageData)

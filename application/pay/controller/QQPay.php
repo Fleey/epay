@@ -27,6 +27,9 @@ class QQPay extends Controller
 
     /**
      * @return mixed|\think\response\Redirect
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function getSubmit()
     {

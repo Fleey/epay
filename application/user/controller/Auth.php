@@ -3,6 +3,7 @@
 namespace app\user\controller;
 
 use think\Controller;
+use think\Db;
 use tools\AuthCode;
 use tools\Geetest;
 
@@ -96,17 +97,13 @@ class Auth extends Controller
         if (empty($password))
             return json(['status' => 0, 'msg' => '密码不能为空']);
         if (strlen($password) != 32) {
-            session('CheckUserLoginAuthCode', null);
             return json(['status' => -1, 'msg' => '账号或密码不正确']);
         }
-        $mysql  = db();
-        $result = $mysql->table('epay_user')->where('id', $uid)->field('key,isBan')->limit(1)->select();
+        $result = Db::table('epay_user')->where('id', $uid)->field('key,isBan')->limit(1)->select();
         if (empty($result)) {
-            session('CheckUserLoginAuthCode', null);
             return json(['status' => -1, 'msg' => '账号或密码不正确']);
         }
         if ($result[0]['key'] != $password) {
-            session('CheckUserLoginAuthCode', null);
             return json(['status' => -1, 'msg' => '账号或密码不正确']);
         }
         if ($result[0]['isBan'])

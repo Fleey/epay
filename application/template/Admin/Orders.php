@@ -1,42 +1,36 @@
 <style>
-    #orderInfo .item > span[data-name] {
-        display: block;
-    }
-
-    #orderInfo .item > span.title {
-        font-weight: 600;
-    }
-
-    #orderInfo {
-        margin-top: 6rem;
-    }
-
-    #orderInfo p.header {
-        font-weight: 600;
-        font-size: 16px;
-    }
+    #orderInfo .item > span[data-name]{display: block;}#orderInfo .item > span.title{font-weight: 600;}#orderInfo{margin-top: 6rem;}#orderInfo p.header{font-weight: 600;font-size: 16px;}
 </style>
-<div class="card">
-    <div class="card-body">
-        <h5 class="card-title">订单列表</h5>
-        <button class="btn w96 btn-outline-primary btn-sm float-right" data-toggle="modal" data-target="#searchFilter">
-            高级搜索
-        </button>
-        <table id="orderList" class="table table-bordered table-hover">
-            <thead>
-            <tr>
-                <th>订单号</th>
-                <th>商户订单号</th>
-                <th>商品名称</th>
-                <th>金额</th>
-                <th>支付方式</th>
-                <th>支付状态</th>
-                <th>创建时间</th>
-                <th>操作</th>
-            </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+<div class="page-content container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">订单列表</h5>
+                    <button class="btn w96 btn-outline-primary btn-sm float-right" data-toggle="modal"
+                            data-target="#searchFilter">
+                        高级搜索
+                    </button>
+                    <div class="table-responsive">
+                        <table id="orderList" class="table no-wrap user-table mb-0 table-hover">
+                            <thead>
+                            <tr>
+                                <th>订单号</th>
+                                <th>商户订单号</th>
+                                <th>商品名称</th>
+                                <th>金额</th>
+                                <th>支付方式</th>
+                                <th>支付状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <div class="modal fade" tabindex="-1" role="dialog" id="orderInfo">

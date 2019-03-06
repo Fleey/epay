@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use think\Controller;
 use tools\AuthCode;
+use tools\Geetest;
 
 class Auth extends Controller
 {
@@ -54,8 +55,26 @@ class Auth extends Controller
     {
         $username = input('post.username/s');
         $password = input('post.password/s');
-        if (!session('CheckAdminLoginAuthCode'))
-            return json(['status' => 0, 'msg' => '还没有通过人机验证']);
+        $config    = getConfig();
+        $isGeetest = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);
+        if (!$isGeetest) {
+            if (!session('CheckAdminLoginAuthCode'))
+                return json(['status' => 0, 'msg' => '还没有通过人机验证']);
+            return json(['status' => 0, 'msg' => '极验证接口尚未开启']);
+        } else {
+            $data  = [
+                'client_type' => $this->request->isMobile() ? 'h5' : 'web',
+                'ip_address'  => $this->request->ip()
+            ];
+            $gtSDK = new Geetest($config['geetestCaptchaID'], $config['geetestPrivateKey']);
+            if (session('gtServerStatus')) {
+                $result = $gtSDK->success_validate(input('post.geetest_challenge'), input('post.geetest_validate'), input('post.geetest_seccode'), $data);
+            } else {
+                $result = $gtSDK->fail_validate(input('post.geetest_challenge'), input('post.geetest_validate'), input('post.geetest_seccode'));
+            }
+            if(!$result)
+                return json(['status' => 0, 'msg' => '还没有通过人机验证']);
+        }
         if (empty($username))
             return json(['status' => 0, 'msg' => '账号不能为空']);
         if (empty($password))

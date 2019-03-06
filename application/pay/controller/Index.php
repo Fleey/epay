@@ -20,6 +20,9 @@ class Index extends Controller
     /**
      * 聚合支付 提交创建订单部分
      * @return mixed|\think\response\Redirect
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function submit()
     {
@@ -82,8 +85,21 @@ class Index extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '回调地址(return_url)不能为空']);
         if (empty($productName))
             return $this->fetch('/SystemMessage', ['msg' => '商品名称(name)不能为空']);
-        if (strlen($productName) > 64)
+        if (mb_strlen($productName) > 64)
             return $this->fetch('/SystemMessage', ['msg' => '商品名称(name)长度不能超过64个字符']);
+
+        {
+            $badWordList = str_replace('，', ',', $this->systemConfig['goodsFilter']['keyWord']);
+            $badWordList = str_replace('、', ',', $badWordList);
+            $badWordList = explode(',', $badWordList);
+            if (!empty($badWordList)) {
+                $blackReg = '/' . implode('|', $badWordList) . '/i';
+                if (preg_match($blackReg, $productName, $matches))
+                    return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['goodsFilter']['tips']]);
+            }
+        }
+        //检测违禁词
+
         if ($money <= 0)
             return $this->fetch('/SystemMessage', ['msg' => '金额(money)格式有误']);
 

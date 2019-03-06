@@ -1,59 +1,64 @@
-<nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
-    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#"><?php echo $webName; ?> 聚合支付后台</a>
-
-    <ul class="navbar-nav px-3">
-        <li class="nav-item text-nowrap">
-            <a class="nav-link exit" href="javascript:void();">注销账号</a>
-        </li>
-    </ul>
-</nav>
-<!--header-->
-<nav class="col-md-2 d-none d-md-block bg-light sidebar">
-    <div class="sidebar-sticky">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link active" data-href="Dashboard">
-                    <i data-feather="home"></i>
-                    仪表盘 <span class="sr-only">(current)</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-href="Orders">
-                    <i data-feather="file-text"></i>
-                    订单管理
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-href="UserInfo">
-                    <i data-feather="users"></i>
-                    商户管理
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-href="SettleList">
-                    <i data-feather="inbox"></i>
-                    结算记录
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-href="SettleInfo">
-                    <i data-feather="inbox"></i>
-                    结算操作
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-href="PayConfig">
-                    <i data-feather="settings"></i>
-                    支付接口配置
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-href="ServerConfig">
-                    <i data-feather="settings"></i>
-                    网站配置
-                </a>
-            </li>
-        </ul>
-
+<aside class="left-sidebar">
+    <div class="scroll-sidebar">
+        <nav class="sidebar-nav">
+            <ul id="sidebarnav">
+                <li class="sidebar-item">
+                    <a class="sidebar-link waves-effect waves-dark sidebar-link" data-href="Dashboard"
+                       aria-expanded="false">
+                        <i class="mdi mdi-av-timer"></i>
+                        <span class="hide-menu">仪表盘</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link waves-effect waves-dark sidebar-link" data-href="Orders"
+                       aria-expanded="false">
+                        <i class="mdi mdi-file-document-box"></i>
+                        <span class="hide-menu">订单管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link waves-effect waves-dark sidebar-link" data-href="UserInfo"
+                       aria-expanded="false">
+                        <i class="mdi mdi-account-multiple"></i>
+                        <span class="hide-menu">商户管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link waves-effect waves-dark sidebar-link" data-href="SettleList"
+                       aria-expanded="false">
+                        <i class="mdi mdi-book-open"></i>
+                        <span class="hide-menu">结算记录</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link waves-effect waves-dark sidebar-link" data-href="SettleInfo"
+                       aria-expanded="false">
+                        <i class="mdi mdi-book-open-page-variant"></i>
+                        <span class="hide-menu">结算操作</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link waves-effect waves-dark sidebar-link" data-href="PayConfig"
+                       aria-expanded="false">
+                        <i class="mdi mdi-key-variant"></i>
+                        <span class="hide-menu">支付接口配置</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link waves-effect waves-dark sidebar-link" data-href="ServerConfig"
+                       aria-expanded="false">
+                        <i class="mdi mdi-settings"></i>
+                        <span class="hide-menu">网站配置</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link waves-effect waves-dark sidebar-link exit" href="javascript:void(0);"
+                       aria-expanded="false">
+                        <i class="fa fa-power-off"></i>
+                        <span class="hide-menu">注销账户</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
-</nav>
+</aside>

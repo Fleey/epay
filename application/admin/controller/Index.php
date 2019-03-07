@@ -416,6 +416,10 @@ class Index extends Controller
         if (empty($uid))
             return json(['status' => 0, 'msg' => '删除用户信息失败']);
         $result = Db::table('epay_user')->where('id', $uid)->limit(1)->delete();
+        if ($result) {
+            Db::table('epay_settle')->where('uid', $uid)->delete();
+            Db::table('epay_order')->where('uid', $uid)->delete();
+        }
         return json(['status' => $result, 'msg' => '操作' . ($result ? '成功' : '失败')]);
     }
 
@@ -561,7 +565,7 @@ class Index extends Controller
         $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
             'isShield' => $status
         ]);
-        if($result){
+        if ($result) {
             if ($status)
                 Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate * 10)->update();
             else

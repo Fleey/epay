@@ -9,12 +9,15 @@ $(function () {
         'deferRender': true,
         "order": [[0, 'desc']],
         'ajax': {
-            url: baseUrl + 'admin/api/SearchTable',
+            url: baseUrl + 'cy2018/api/SearchTable',
             type: 'post',
             data: {
                 searchTable: 'epay_user'
             }
         },
+        destroy: true,
+        retrieve: true,
+        "bRetrieve": true,
         'columns': [
             {}, {}, {
                 'render': function (data) {
@@ -42,13 +45,12 @@ $(function () {
             //渲染完成事件
         }
     };
-
-    $('#orderList').DataTable(dataTableConfig);
+    $('#orderList1').DataTable(dataTableConfig);
 
     $('button[data-type="reloadNotify"]').click(function () {
         var tradeNo = $('span[data-name="tradeNo"]').text();
         $.ajax({
-            url: '/admin/api/Notified',
+            url: '/cy2018/api/Notified',
             type: 'post',
             async: false,
             data: {
@@ -70,10 +72,10 @@ $(function () {
 
 
     $('#cancelSearchFilter').bind('click', function () {
-        var dataTable = $('#orderList').dataTable();
+        var dataTable = $('#orderList1').dataTable();
         dataTable.fnDestroy();
         dataTableConfig['ajax'] = {
-            url: baseUrl + 'admin/api/searchTable',
+            url: baseUrl + 'cy2018/api/searchTable',
             type: 'post',
             data: {
                 searchTable: 'epay_user'
@@ -87,7 +89,7 @@ $(function () {
         $('#payType').val('all');
         $('#productMinPrice').val('');
         $('#productMaxPrice').val('');
-        $('#orderList').dataTable(dataTableConfig);
+        $('#orderList1').dataTable(dataTableConfig);
         $('#searchFilter').modal('hide');
         $('#cancelSearchFilter').hide();
     });
@@ -98,18 +100,18 @@ $(function () {
         var username = $('#username').val();
         var email = $('#email').val();
 
-        var dataTable = $('#orderList').dataTable();
+        var dataTable = $('#orderList1').dataTable();
 
         if (!uid && !key && !account && !username && !email) {
             dataTableConfig['ajax'] = {
-                url: baseUrl + 'admin/api/searchTable',
+                url: baseUrl + 'cy2018/api/searchTable',
                 type: 'post',
                 data: {
                     searchTable: 'epay_user'
                 }
             };
             dataTable.fnDestroy();
-            $('#orderList').dataTable(dataTableConfig);
+            $('#orderList1').dataTable(dataTableConfig);
             $('#searchFilter').modal('hide');
             $('#cancelSearchFilter').hide();
             return true;
@@ -128,12 +130,12 @@ $(function () {
         if (email)
             data['args']['email'] = email;
         dataTableConfig['ajax'] = {
-            url: baseUrl + 'admin/api/searchTable',
+            url: baseUrl + 'cy2018/api/searchTable',
             type: 'post',
             data: data
         };
         $('#cancelSearchFilter').show();
-        $('#orderList').dataTable(dataTableConfig);
+        $('#orderList1').dataTable(dataTableConfig);
         $('#searchFilter').modal('hide');
     });
     $('select[data-name="clearMode"]').change(function () {
@@ -162,14 +164,14 @@ $(function () {
             text: '正在积极等待服务器响应',
             showConfirmButton: false
         });
-        var requestUrl = $('#userInfo').attr('data-status') == 'add' ? '/admin/api/AddUser' : '/admin/api/UserInfo';
+        var requestUrl = $('#userInfo').attr('data-status') == 'add' ? '/cy2018/api/AddUser' : '/cy2018/api/UserInfo';
         $.post(requestUrl, requestData, function (data) {
             if (data['status'] !== 1) {
                 swal('请求失败', data['msg'], 'error');
                 return true;
             }
             swal('请求成功', data['msg'], 'success');
-            $('#orderList').dataTable().fnDraw(false);
+            $('#orderList1').dataTable().fnDraw(false);
             $('#userInfo').modal('hide');
         });
     });
@@ -191,13 +193,13 @@ $(function () {
                     text: '正在积极等待服务器响应',
                     showConfirmButton: false
                 });
-                $.post('/admin/api/DeleteUser', {uid: uid}, function (data) {
+                $.post('/cy2018/api/DeleteUser', {uid: uid}, function (data) {
                     if (data['status'] !== 1) {
                         swal('请求失败', data['msg'], 'error');
                         return true;
                     }
                     swal('请求成功', '账号已经删除', 'success');
-                    $('#orderList').dataTable().fnDraw(false);
+                    $('#orderList1').dataTable().fnDraw(false);
                     $('#userInfo').modal('hide');
                 }, 'json');
             });
@@ -209,13 +211,13 @@ $(function () {
             text: '正在积极等待服务器响应',
             showConfirmButton: false
         });
-        $.post('/admin/api/ReloadKey', {uid: uid}, function (data) {
+        $.post('/cy2018/api/ReloadKey', {uid: uid}, function (data) {
             if (data['status'] !== 1) {
                 swal('请求失败', data['msg'], 'error');
                 return true;
             }
             $('input[data-name="key"]').val(data['key']);
-            $('#orderList').dataTable().fnDraw(false);
+            $('#orderList1').dataTable().fnDraw(false);
             swal('请求成功', '新的密匙为：' + data['key'], 'success');
         }, 'json');
     });
@@ -230,7 +232,7 @@ $(function () {
         $('#userInfo').modal('show').attr('data-status', 'add');
         $('select[data-name="clearMode"]').change();
     });
-    $('#orderList>tbody').on('click', 'td>div.btn-group [data-type]', function () {
+    $('#orderList1>tbody').on('click', 'td>div.btn-group [data-type]', function () {
         var clickDom = $(this);
         var clickType = $(this).attr('data-type');
         var uid = $(this).parent().parent().parent().find('td:nth-child(1)').text();
@@ -240,7 +242,7 @@ $(function () {
                 text: '正在积极等待服务器响应',
                 showConfirmButton: false
             });
-            $.getJSON(baseUrl + 'admin/api/UserInfo', {
+            $.getJSON(baseUrl + 'cy2018/api/UserInfo', {
                 uid: uid
             }, function (data) {
                 if (data['status'] !== 1) {

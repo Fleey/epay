@@ -26,7 +26,7 @@
                         高级搜索
                     </button>
                     <div class="table-responsive">
-                    <table id="orderList" class="table no-wrap user-table mb-0 table-hover">
+                    <table id="orderList2" class="table no-wrap user-table mb-0 table-hover">
                         <thead>
                         <tr>
                             <th>#</th>

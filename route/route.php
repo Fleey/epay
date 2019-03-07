@@ -45,7 +45,7 @@ Route::group('auth', function () {
     Route::controller('user', 'user/Auth');
     Route::controller('admin', 'admin/Auth');
 });
-Route::group('admin', function () {
+Route::group('cy2018', function () {
     Route::controller('api', 'admin/Index');
     Route::rule('[:templateName]', 'admin/Index/loadTemplate');
 });

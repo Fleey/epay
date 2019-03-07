@@ -17,7 +17,7 @@ $(function ($) {
                 icon: 'success'
             });
             setTimeout(function () {
-                window.location.href = baseUrl + 'admin/Login';
+                window.location.href = baseUrl + 'cy2018/Login';
             }, 1500);
         });
     });
@@ -44,7 +44,7 @@ function route(url, isFirst, args, isGetPageData) {
         clickDom.parent().addClass('selected');
     }
     $.ajax({
-        url: baseUrl + 'admin/' + url,
+        url: baseUrl + 'cy2018/' + url,
         async: !isGetPageData,
         type: 'get',
         cache: true,
@@ -54,7 +54,7 @@ function route(url, isFirst, args, isGetPageData) {
                 return true;
             }
 
-            window.history.pushState(null, null, baseUrl + 'admin/Index#' + url);
+            window.history.pushState(null, null, baseUrl + 'cy2018/Index#' + url);
             //增加历史地址
             $('.page-wrapper').html(data);
         },

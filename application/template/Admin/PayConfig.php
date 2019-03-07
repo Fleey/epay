@@ -142,7 +142,7 @@
         $('div[data-config-name]').each(function (key, value) {
             var dataDom = $(value);
             var configName = dataDom.attr('data-config-name');
-            $.getJSON('/admin/api/Config', {keyName: configName}, function (data) {
+            $.getJSON('/cy2018/api/Config', {keyName: configName}, function (data) {
                 if (data['status'] === 1) {
                     $.each(data['data'], function (keyName, configValue) {
                         if (typeof configValue === "boolean") {
@@ -166,7 +166,7 @@
                 }
                 configData[keyName] = configValue;
             });
-            $.post('/admin/api/Config', {
+            $.post('/cy2018/api/Config', {
                 keyName: configName,
                 isArray: true,
                 data: configData

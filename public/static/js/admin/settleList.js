@@ -9,12 +9,15 @@ $(function () {
         'deferRender': true,
         'order': [[0, 'desc']],
         'ajax': {
-            url: baseUrl + 'admin/api/SearchTable',
+            url: baseUrl + 'cy2018/api/SearchTable',
             type: 'post',
             data: {
                 searchTable: 'epay_settle'
             }
         },
+        destroy: true,
+        retrieve: true,
+        "bRetrieve": true,
         'columns': [
             {}, {}, {
                 'render': function (data) {
@@ -56,15 +59,14 @@ $(function () {
             //渲染完成事件
         }
     };
-
-    $('#orderList').DataTable(dataTableConfig);
+    $('#orderList2').DataTable(dataTableConfig);
 
 
     $('#cancelSearchFilter').bind('click', function () {
-        var dataTable = $('#orderList').dataTable();
+        var dataTable = $('#orderList2').dataTable();
         dataTable.fnDestroy();
         dataTableConfig['ajax'] = {
-            url: baseUrl + 'admin/api/searchTable',
+            url: baseUrl + 'cy2018/api/searchTable',
             type: 'post',
             data: {
                 searchTable: 'epay_settle'
@@ -77,7 +79,7 @@ $(function () {
         $('#maxMoney').val('');
         $('#status').val('all');
         $('#clearType').val('all');
-        $('#orderList').dataTable(dataTableConfig);
+        $('#orderList2').dataTable(dataTableConfig);
         $('#searchFilter').modal('hide');
         $('#cancelSearchFilter').hide();
     });
@@ -91,18 +93,19 @@ $(function () {
         var status = $('#status').val();
         var clearMode = $('#clearMode').val();
 
-        var dataTable = $('#orderList').dataTable();
+        var dataTable = $('#orderList2').dataTable();
         dataTable.fnDestroy();
 
         if (!uid && !account && !username && clearType === 'all' && status === 'all' && clearMode === 'all' && !minMoney && !maxMoney) {
             dataTableConfig['ajax'] = {
-                url: baseUrl + 'admin/api/searchTable',
+                url: baseUrl + 'cy2018/api/searchTable',
                 type: 'post',
                 data: {
                     searchTable: 'epay_settle'
-                }
+                },
+                destroy: true
             };
-            $('#orderList').dataTable(dataTableConfig);
+            $('#orderList2').dataTable(dataTableConfig);
             $('#searchFilter').modal('hide');
             $('#cancelSearchFilter').hide();
             return true;
@@ -126,15 +129,16 @@ $(function () {
         if (clearMode !== 'all')
             data['args']['clearMode'] = clearMode;
         dataTableConfig['ajax'] = {
-            url: baseUrl + 'admin/api/searchTable',
+            url: baseUrl + 'cy2018/api/searchTable',
             type: 'post',
             data: data
         };
         $('#cancelSearchFilter').show();
-        $('#orderList').dataTable(dataTableConfig);
+        $('#orderList2').fnDestroy();
+        $('#orderList2').dataTable(dataTableConfig);
         $('#searchFilter').modal('hide');
         if (uid) {
-            $.getJSON('/admin/api/SettleOperate', {type: 'userSettleInfo', uid: uid}, function (data) {
+            $.getJSON('/cy2018/api/SettleOperate', {type: 'userSettleInfo', uid: uid}, function (data) {
                 if (data['status'] === 1) {
                     $.getScript('/static/js/resource/echarts.min.js', function () {
                         var dateList = [];
@@ -214,7 +218,7 @@ $(function () {
                     text: '正在积极等待服务器响应',
                     showConfirmButton: false
                 });
-                $.post('/admin/api/deleteSettleRecord', {id: id}, function (data) {
+                $.post('/cy2018/api/deleteSettleRecord', {id: id}, function (data) {
                     if (data['status'] !== 1) {
                         swal('请求失败', data['msg'], 'error');
                         return true;
@@ -226,7 +230,7 @@ $(function () {
                         timer: 1500,
                         type: 'success'
                     });
-                    $('#orderList').dataTable().fnDraw(false);
+                    $('#orderList2').dataTable().fnDraw(false);
                     $('#orderInfo').modal('hide');
                 }, 'json');
             });
@@ -249,7 +253,7 @@ $(function () {
                     text: '正在积极等待服务器响应',
                     showConfirmButton: false
                 });
-                $.post('/admin/api/confirmSettle', {id: id}, function (data) {
+                $.post('/cy2018/api/confirmSettle', {id: id}, function (data) {
                     if (data['status'] !== 1) {
                         swal('请求失败', data['msg'], 'error');
                         return true;
@@ -261,12 +265,12 @@ $(function () {
                         timer: 1500,
                         type: 'success'
                     });
-                    $('#orderList').dataTable().fnDraw(false);
+                    $('#orderList2').dataTable().fnDraw(false);
                     $('#orderInfo').modal('hide');
                 }, 'json');
             });
     });
-    $('#orderList>tbody').on('click', 'td>div.btn-group [data-type]', function () {
+    $('#orderList2>tbody').on('click', 'td>div.btn-group [data-type]', function () {
         var clickDom = $(this);
         var clickType = $(this).attr('data-type');
         var id = $(this).parent().parent().parent().find('td:nth-child(1)').text();
@@ -276,7 +280,7 @@ $(function () {
                 text: '正在积极等待服务器响应',
                 showConfirmButton: false
             });
-            $.getJSON(baseUrl + 'admin/api/settleInfo', {
+            $.getJSON(baseUrl + 'cy2018/api/settleInfo', {
                 id: id
             }, function (data) {
                 if (data['status'] !== 1) {

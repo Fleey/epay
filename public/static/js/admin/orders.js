@@ -8,13 +8,16 @@ $(function () {
         'aLengthMenu': [15, 25, 50],
         'deferRender': true,
         "order": [[0, 'desc']],
+        "bRetrieve": true,
         'ajax': {
-            url: baseUrl + 'admin/api/SearchTable',
+            url: baseUrl + 'cy2018/api/SearchTable',
             type: 'post',
             data: {
                 searchTable: 'epay_order'
             }
         },
+        retrieve: true,
+        destroy: true,
         'columns': [
             {}, {}, {}, {
                 'render': function (data) {
@@ -55,13 +58,12 @@ $(function () {
             //渲染完成事件
         }
     };
-
     $('#orderList').DataTable(dataTableConfig);
 
     $('button[data-type="reloadNotify"]').click(function () {
         var tradeNo = $('span[data-name="tradeNo"]').text();
         $.ajax({
-            url: '/admin/api/Notified',
+            url: '/cy2018/api/Notified',
             type: 'post',
             async: false,
             data: {
@@ -90,7 +92,7 @@ $(function () {
             text: '正在积极等待服务器响应',
             showConfirmButton: false
         });
-        $.post('/admin/api/SetShield', {
+        $.post('/cy2018/api/SetShield', {
             tradeNo: tradeNo,
             status: status
         }, function (data) {
@@ -112,7 +114,7 @@ $(function () {
         var dataTable = $('#orderList').dataTable();
         dataTable.fnDestroy();
         dataTableConfig['ajax'] = {
-            url: baseUrl + 'admin/api/searchTable',
+            url: baseUrl + 'cy2018/api/searchTable',
             type: 'post',
             data: {
                 searchTable: 'epay_order'
@@ -144,7 +146,7 @@ $(function () {
 
         if (!uid && !tradeNo && !tradeNoOut && payType === 'all' && status === 'all' && !productMinPrice && !productMaxPrice) {
             dataTableConfig['ajax'] = {
-                url: baseUrl + 'admin/api/searchTable',
+                url: baseUrl + 'cy2018/api/searchTable',
                 type: 'post',
                 data: {
                     searchTable: 'epay_order'
@@ -173,7 +175,7 @@ $(function () {
         if (productMaxPrice)
             data['args']['productMaxPrice'] = productMaxPrice;
         dataTableConfig['ajax'] = {
-            url: baseUrl + 'admin/api/searchTable',
+            url: baseUrl + 'cy2018/api/searchTable',
             type: 'post',
             data: data
         };
@@ -192,7 +194,7 @@ $(function () {
                 text: '正在积极等待服务器响应',
                 showConfirmButton: false
             });
-            $.getJSON(baseUrl + 'admin/api/OrderInfo', {
+            $.getJSON(baseUrl + 'cy2018/api/OrderInfo', {
                 tradeNo: tradeNo
             }, function (data) {
                 if (data['status'] !== 1) {
@@ -247,7 +249,7 @@ $(function () {
                 },
                 function (isConfirm) {
                     if (isConfirm) {
-                        $.post('/admin/api/OrderStatus', {
+                        $.post('/cy2018/api/OrderStatus', {
                             status: $('#changeOrderStatus').val(),
                             tradeNo: tradeNo
                         }, function (data) {

@@ -1,5 +1,5 @@
 $(function () {
-    $.getJSON('/admin/api/SettleRecord', {type:'auto'}, function (data) {
+    $.getJSON('/cy2018/api/SettleRecord', {type:'auto'}, function (data) {
         if (data['status'] === 0)
             return true;
         var tempDom = $('#orderList1>tbody');
@@ -15,11 +15,11 @@ $(function () {
             var clickType = $(this).attr('data-type');
             var settleTime = $(this).parent().parent().parent().find(':nth-child(3)').text();
             if (clickType === 'downloadSettle') {
-                window.open('/admin/api/SettleOperate?type=downloadSettleAuto&createTime=' + settleTime);
+                window.open('/cy2018/api/SettleOperate?type=downloadSettleAuto&createTime=' + settleTime);
             }
         });
     });
-    $.getJSON('/admin/api/SettleRecord', {}, function (data) {
+    $.getJSON('/cy2018/api/SettleRecord', {}, function (data) {
         if (data['status'] === 0)
             return true;
         var tempDom = $('#orderList>tbody');
@@ -36,7 +36,7 @@ $(function () {
             var clickType = $(this).attr('data-type');
             var settleTime = $(this).parent().parent().parent().find(':nth-child(3)').text();
             if (clickType === 'confirmSettle') {
-                $.getJSON('/admin/api/SettleOperate', {
+                $.getJSON('/cy2018/api/SettleOperate', {
                     type: 'confirmSettle',
                     createTime: settleTime
                 }, function (data) {
@@ -58,7 +58,7 @@ $(function () {
                         });
                 });
             } else if (clickType === 'downloadSettle') {
-                window.open('/admin/api/SettleOperate?type=downloadSettle&createTime=' + settleTime);
+                window.open('/cy2018/api/SettleOperate?type=downloadSettle&createTime=' + settleTime);
             }
         });
     });

@@ -60,7 +60,7 @@ $(function ($) {
                     icon: 'success'
                 });
                 setTimeout(function () {
-                    window.location.href = baseUrl + 'admin/Index';
+                    window.location.href = baseUrl + 'cy2018/Index';
                 }, 1500);
             });
         });

@@ -549,9 +549,25 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '订单号码无效']);
         if ($status != 0 && $status != 1)
             return json(['status' => 0, 'msg' => '请求状态有误']);
+        $orderInfo = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('money,uid')->select();
+        if (empty($orderInfo))
+            return json(['status' => 0, 'msg' => '订单不存在无法更改屏蔽状态']);
+        $userInfo = Db::table('epay_user')->where('id', $orderInfo[0]['uid'])->field('rate')->limit(1)->select();
+
+        $rate         = $userInfo[0]['rate'] / 100;
+        $addMoneyRate = $orderInfo[0]['money'] * ($rate / 100);
+        //计算费率
+
         $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
             'isShield' => $status
         ]);
+        if($result){
+            if ($status)
+                Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate * 10)->update();
+            else
+                Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->dec('balance', $addMoneyRate * 10)->update();
+        }
+        //订单状态更新成功才操作这个
         return json(['status' => $result, 'msg' => '更新状态' . ($result ? '成功' : '失败')]);
     }
 

@@ -249,7 +249,7 @@
                 text: '切勿关闭浏览器,正在为您更新程序',
                 showConfirmButton: false
             });
-            $.getJSON('/admin/api/UpdateProgram', function (data) {
+            $.getJSON('/cy2018/api/UpdateProgram', function (data) {
                 if (data['status'] === 0) {
                     swal('更新系统失败', data['msg'], 'error');
                     return;

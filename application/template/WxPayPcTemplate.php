@@ -107,7 +107,7 @@
         });
     }
 
-    window.onload = getOrderStatus();
+    window.onload = getOrderStatus;
 </script>
 </body>
 </html>

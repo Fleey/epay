@@ -86,7 +86,7 @@ class Alipay extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '订单不存在，请联系管理员处理！']);
         //判断订单是否存在
         if ($result[0]['status'])
-            return $this->fetch('/SystemMessage', ['msg' => '订单已经支付成功！']);
+            return redirect(buildCallBackUrl($tradeNoOut, 'return'));
         //订单状态已经被更新
 
         if ($tradeStatus == 'TRADE_SUCCESS') {

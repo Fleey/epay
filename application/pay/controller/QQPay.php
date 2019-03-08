@@ -51,7 +51,7 @@ class QQPay extends Controller
             'out_trade_no'     => $tradeNo,
             'body'             => $result[0]['productName'],
             'fee_type'         => 'CNY',
-            'notify_url'       => url('/Pay/QQPay/Notify', '', false, true),
+            'notify_url'       => $this->notifyUrl,
             'spbill_create_ip' => getClientIp(),
             'total_fee'        => $result[0]['money'],
             'trade_type'       => 'NATIVE'

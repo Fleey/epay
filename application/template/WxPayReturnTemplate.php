@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta charset="utf-8"/>
@@ -14,8 +14,8 @@
     <div class="text-center" style="color: #a09ee5;">
         <i class="icon ion-information-circled" style="font-size: 80px;"></i><br>
         <span>正在检测付款结果...</span>
-        <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
-        <script src="/static/js/layer/layer.js"></script>
+        <script src="/static/js/resource/jquery.min.js"></script>
+        <script src="https://cdn.staticfile.org/layer/2.3/layer.js"></script>
         <script>
             $(document).on('touchmove', function (e) {
                 e.preventDefault();
@@ -52,7 +52,7 @@
                 });
             }
 
-            window.onload = getOrderStatus();
+            window.onload = getOrderStatus;
         </script>
     </div>
 </div>

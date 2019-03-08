@@ -67,7 +67,7 @@
 <script src="/static/js/resource/app.min.js"></script>
 <script src="/static/js/resource/app.init.js"></script>
 
-<script href="/static/js/resource/sweetalert.min.js"></script>
+<script src="/static/js/resource/sweetalert.min.js"></script>
 <script src="/static/js/resource/perfect-scrollbar.jquery.min.js"></script>
 <script src="/static/js/resource/sparkline.js"></script>
 <script src="/static/js/resource/waves.js"></script>

@@ -40,5 +40,41 @@
     </div>
 </div>
 <script>
-    $(function($){$.getJSON('/user/api/info',function(data){if(data['status']===1){data=data['data'];var money=(data['balance']/1000).toFixed(3);$('#balance').text(money.substring(0,money.lastIndexOf('.')+3));$('#settleType').val(data['clearType']);$('#account').val(data['account']);$('#username').val(data['username'])}});$('#settleAll').click(function(){$('#settleMoney').val($('#balance').text())});$('#settleApply').click(function(){var settleMoney=$('#settleMoney').val();$.post('/user/api/settleApply',{money:settleMoney},function(data){if(data['status']===0){swal(data['msg'],{buttons:false,timer:1500,icon:'warning'});return true}swal(data['msg'],{buttons:false,timer:1500,icon:'success'})},'json')})});
+    $(function ($) {
+        $.getJSON('/user/api/info', function (data) {
+            if (data['status'] === 1) {
+                data = data['data'];
+                var money = (data['balance'] / 1000).toFixed(3);
+                $('#balance').text(money.substring(0, money.lastIndexOf('.') + 3));
+                $('#settleType').val(data['clearType']);
+                $('#account').val(data['account']);
+                $('#username').val(data['username'])
+            }
+        });
+        $('#settleAll').click(function () {
+            $('#settleMoney').val($('#balance').text())
+        });
+        $('#settleApply').click(function () {
+            var settleMoney = $('#settleMoney').val();
+            $.post('/user/api/settleApply', {money: settleMoney}, function (data) {
+                if (data['status'] === 0) {
+                    swal({
+                        title: '',
+                        text: data['msg'],
+                        showConfirmButton: false,
+                        timer: 1500,
+                        type: 'error'
+                    });
+                    return true
+                }
+                swal({
+                    title: '',
+                    text: data['msg'],
+                    showConfirmButton: false,
+                    timer: 1500,
+                    type: 'success'
+                });
+            }, 'json')
+        })
+    });
 </script>

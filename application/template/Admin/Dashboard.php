@@ -200,35 +200,42 @@
         ]
     };
     var option1 = {
-        title: {
-            text: '收入类型统计',
-        },
-        color: ['#f06966','#6abe83'],
-        legend: {},
-        tooltip: {},
-        toolbox: {
-            feature: {
-                dataView: {show: true, readOnly: false},
-                magicType: {show: true, type: ['bar', 'bar']},
-                restore: {show: true},
-                saveAsImage: {show: true}
-            }
-        },
-        dataset: {
-            source: [
-                ['product', '今天', '昨天'],
-                ['微信', <?php  echo ($statistics['today'][0]['totalMoney'] / 100) . ',' . $statistics['yesterday'][0]['totalMoney'] / 100; ?>],
-                ['财付通',<?php  echo ($statistics['today'][1]['totalMoney'] / 100) . ',' . $statistics['yesterday'][1]['totalMoney'] / 100; ?>],
-                ['支付宝',<?php  echo ($statistics['today'][2]['totalMoney'] / 100) . ',' . $statistics['yesterday'][2]['totalMoney'] / 100; ?>]
+            title: {
+                text: '收入类型统计',
+            },
+            color: ['#f06966', '#6abe83'],
+            legend: {},
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    crossStyle: {
+                        color: '#999'
+                    }
+                }
+            },
+            toolbox: {
+                feature: {
+                    dataView: {show: true, readOnly: false},
+                    restore: {show: true},
+                    saveAsImage: {show: true}
+                }
+            },
+            xAxis: {type: 'category', data: ["微信", "财付通", "支付宝"]},
+            yAxis: {},
+            series: [
+                {
+                    name: '今天',
+                    type: 'bar',
+                    data: ["<?php  echo ($statistics['today'][0]['totalMoney'] / 100) . '","' . ($statistics['today'][1]['totalMoney'] / 100) . '","' . $statistics['today'][2]['totalMoney'] / 100; ?>"]
+                },
+                {
+                    name: '昨天',
+                    type: 'bar',
+                    data: ["<?php  echo ($statistics['yesterday'][0]['totalMoney'] / 100) . '","' . ($statistics['yesterday'][1]['totalMoney'] / 100) . '","' . ($statistics['yesterday'][2]['totalMoney'] / 100);?>"]
+                }
             ]
-        },
-        xAxis: {type: 'category'},
-        yAxis: {},
-        series: [
-            {type: 'bar'},
-            {type: 'bar'}
-        ]
-    };
+        };
 
     $(function () {
         $.getScript('/static/js/resource/echarts.min.js', function () {
@@ -238,7 +245,7 @@
                 setTimeout(function () {
                     chartMap.resize();
                     chartMap1.resize();
-                },200)
+                }, 200)
             });
             chartMap.setOption(option);
             chartMap1.setOption(option1);

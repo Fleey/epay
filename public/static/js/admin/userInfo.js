@@ -1,4 +1,5 @@
 $(function () {
+    var isRequest = false;
     var dataTableConfig = {
         'language': {url: '/static/zh_CN.txt'},
         'serverSide': true,
@@ -151,6 +152,8 @@ $(function () {
         }
     });
     $('button[data-type="save"]').click(function () {
+        if (isRequest)
+            return;
         var requestData = {};
         $('#userInfo [data-name]').each(function (key, value) {
             var inputDom = $(value);
@@ -164,8 +167,10 @@ $(function () {
             text: '正在积极等待服务器响应',
             showConfirmButton: false
         });
+        isRequest = true;
         var requestUrl = $('#userInfo').attr('data-status') == 'add' ? '/cy2018/api/AddUser' : '/cy2018/api/UserInfo';
         $.post(requestUrl, requestData, function (data) {
+            isRequest = false;
             if (data['status'] !== 1) {
                 swal('请求失败', data['msg'], 'error');
                 return true;

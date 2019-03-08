@@ -39,9 +39,9 @@ $(function () {
                 }
             }, {
                 'render': function (data) {
-                    return data == 1 ? '已完成' : '未完成';
+                    return data == 1 ? '<span style="color: green;">已完成</span>' : '<span style="color: red;">未完成</span>';
                 }
-            }
+            },{}
         ],
         'columnDefs': [
             {
@@ -52,7 +52,7 @@ $(function () {
                     html += '</div>';
                     return html;
                 },
-                'targets': 7
+                'targets': 8
             }
         ],
         'fnDrawCallback': function (obj) {
@@ -134,7 +134,6 @@ $(function () {
             data: data
         };
         $('#cancelSearchFilter').show();
-        $('#orderList2').fnDestroy();
         $('#orderList2').dataTable(dataTableConfig);
         $('#searchFilter').modal('hide');
         if (uid) {

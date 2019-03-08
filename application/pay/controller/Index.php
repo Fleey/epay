@@ -137,7 +137,7 @@ class Index extends Controller
         }
         //check is open pay
 
-        $clientIpv4 = $this->request->ip(1);
+        $clientIpv4 = $this->request->ip(0, true);
 
         $tradeNo = date('YmdHis') . rand(11111, 99999);
 

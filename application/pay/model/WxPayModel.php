@@ -104,7 +104,7 @@ class WxPayModel
             'body'             => $productName,
             'out_trade_no'     => $tradeData['tradeNo'],
             'total_fee'        => $tradeData['money'],
-            'spbill_create_ip' => request()->ip(),
+            'spbill_create_ip' => request()->ip(0, true),
             'trade_type'       => $type,
             'notify_url'       => $notifyUrl,
             'nonce_str'        => getRandChar(32)

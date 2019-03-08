@@ -3,6 +3,7 @@
 namespace app\admin\controller;
 
 use think\Controller;
+use think\Db;
 use tools\AuthCode;
 use tools\Geetest;
 
@@ -53,8 +54,8 @@ class Auth extends Controller
      */
     public function postLogin()
     {
-        $username = input('post.username/s');
-        $password = input('post.password/s');
+        $username  = input('post.username/s');
+        $password  = input('post.password/s');
         $config    = getConfig();
         $isGeetest = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);
         if (!$isGeetest) {
@@ -72,7 +73,7 @@ class Auth extends Controller
             } else {
                 $result = $gtSDK->fail_validate(input('post.geetest_challenge'), input('post.geetest_validate'), input('post.geetest_seccode'));
             }
-            if(!$result)
+            if (!$result)
                 return json(['status' => 0, 'msg' => '还没有通过人机验证']);
         }
         if (empty($username))
@@ -92,6 +93,13 @@ class Auth extends Controller
             session('CheckAdminLoginAuthCode', null);
             return json(['status' => -1, 'msg' => '账号或密码不正确']);
         }
+        Db::table('epay_log')->insert([
+            'uid'        => 1,
+            'type'       => 1,
+            'ipv4'       => getClientIp(),
+            'createTime' => getDateTime(),
+            'data'       => 'login admin system'
+        ]);
         session('username', $username, 'admin');
         //save data
         return json(['status' => 1, 'msg' => '登陆成功']);

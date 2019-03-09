@@ -6,6 +6,7 @@ namespace app\command;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
+use think\Db;
 
 class Test extends Command
 {
@@ -24,11 +25,21 @@ class Test extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
-        $orderList = \think\Db::table('epay_order')->where('status',1)->where('createTime','>=','2019-3-2 12:30')->where('createTime','<=','2019-3-2 15:40:00')->field('tradeNo')->cursor();
-        $i = 0;
-        foreach ($orderList as $value){
-            $this->curl(buildCallBackUrl($value['tradeNo'], 'notify'));
-            echo $i++ . PHP_EOL;
+        $userData       = \think\Db::table('epay_user')->field('id,rate,clearType')->where('clearMode', 0)->cursor();
+        foreach ($userData as $value) {
+            $uid            = $value['id'];
+            $rate           = $value['rate'] / 100;
+            $totalMoney     = \think\Db::table('epay_order')->where([
+                'uid'      => $uid,
+                'status'   => 1,
+                'isShield' => 0
+            ])->whereTime('endTime', 'today')->sum('money');
+            if ($value['clearType'] != 4) {
+                \think\Db::table('epay_user')->where('id', $uid)->limit(1)->update([
+                    'balance' => $totalMoney * ($rate / 100) * 10
+                ]);
+            }
+            //not auto settle
         }
         echo 'ok';
     }

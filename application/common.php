@@ -627,7 +627,7 @@ function getIpSite(String $ip)
     $content = curl("http://api.map.baidu.com/location/ip?ak=2TGbi6zzFm5rjYKqPPomh9GBwcgLW5sS&ip={$ip}&coor=bd09ll");
     if ($content === false)
         return '未知登陆地区';
-    $json = json_decode($content);
+    $json = json_decode($content,true);
     if (empty($json['content']['address']))
         return '未知登陆地区';
     return $json['content']['address'];

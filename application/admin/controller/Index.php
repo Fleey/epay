@@ -160,9 +160,9 @@ class Index extends Controller
             $settleList = Db::table('epay_settle')->where([
                 'createTime' => $createTime,
                 'addType'    => 1
-            ])->field('id,uid')->cursor();
+            ])->field('id')->cursor();
             foreach ($settleList as $value) {
-                $this->confirmSettle($value['id'], $value['uid']);
+                $this->confirmSettle($value['id']);
             }
             return json(['status' => 1, 'msg' => '批量更新结算状态成功']);
         } else if ($type == 'downloadSettle') {
@@ -382,7 +382,7 @@ class Index extends Controller
         if ($result[0]['money'] <= 0)
             return json(['status' => 0, 'msg' => '订单结算金额有误']);
 
-        $result = $this->confirmSettle($id, $result[0]['uid']);
+        $result = $this->confirmSettle($id);
         return json(['status' => $result ? 1 : 0, 'msg' => $result ? '操作成功' : '操作失败']);
     }
 
@@ -639,7 +639,7 @@ class Index extends Controller
         return json($SearchTable->getData());
     }
 
-    private function confirmSettle($settleID, $uid)
+    private function confirmSettle($settleID)
     {
         $result = Db::table('epay_settle')->where('id', $settleID)->field('status,clearType,addType,money,uid')->limit(1)->select();
         if (empty($result))

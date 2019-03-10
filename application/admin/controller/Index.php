@@ -25,7 +25,7 @@ class Index extends Controller
         ];
         $username = session('username', '', 'admin');
         if (empty($username) && $templateName != 'Login')
-            $this->redirect('/admin/Login', [], 302);
+            $this->redirect('/cy2018/Login', [], 302);
         else
             $data['isGeetest'] = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);
         if ($templateName == 'Dashboard') {
@@ -644,6 +644,9 @@ class Index extends Controller
         $result = Db::table('epay_settle')->where('id', $settleID)->field('status,clearType,addType,money,uid')->limit(1)->select();
         if (empty($result))
             return false;
+        if ($result[0]['status'])
+            return false;
+        //if settle is ok
         $updateUserResult = Db::table('epay_user')->where('id', $result[0]['uid'])->limit(1)->dec('balance', $result[0]['money'] * 10)->update();
         if (!$updateUserResult)
             return false;

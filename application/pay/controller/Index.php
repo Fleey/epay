@@ -145,8 +145,11 @@ class Index extends Controller
         if (!empty($tradeNoData))
             $tradeNo = date('YmdHis') . rand(11111, 99999);
         //防止单号重复
-        $tradeNoOutData = Db::table('epay_order')->where('tradeNoOut', $tradeNoOut)->limit(1)->field('tradeNo')->select();
-        if (empty($tradeNoData)) {
+        $tradeNoOutData = Db::table('epay_order')->where([
+            'tradeNoOut' => $tradeNoOut,
+            'uid'        => $uid
+        ])->limit(1)->field('tradeNo')->select();
+        if (empty($tradeNoOutData)) {
             $notifyUrl = str_replace('%20', '', $notifyUrl);
             $returnUrl = str_replace('%20', '', $returnUrl);
             //remove empty str

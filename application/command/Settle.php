@@ -30,16 +30,16 @@ class Settle extends Command
                 'isShield' => 0,
                 'uid'      => $value['id']
             ])->whereBetweenTime('endTime', 'yesterday')->sum('money');
+            $orderMoney = intval($orderMoney * ($value['rate'] / 10000));
             if ($orderMoney <= 0)
                 continue;
-            $orderMoney = $orderMoney * ($value['rate'] / 10000);
             \think\Db::table('epay_settle')->insert([
                 'uid'        => $value['id'],
                 'clearType'  => $value['clearType'],
                 'addType'    => 1,
                 'account'    => $value['account'],
                 'username'   => $value['username'],
-                'money'      => intval($orderMoney),
+                'money'      => $orderMoney,
                 'fee'        => 0,
                 'status'     => 0,
                 'createTime' => $settleTime

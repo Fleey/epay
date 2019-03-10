@@ -141,6 +141,9 @@ class Index extends Controller
 
         $tradeNo = date('YmdHis') . rand(11111, 99999);
 
+        $notifyUrl = str_replace('%20','',$notifyUrl);
+        $returnUrl = str_replace('%20','',$returnUrl);
+        //remove empty str
         $result = Db::table('epay_order')->insert([
             'uid'         => $uid,
             'tradeNo'     => $tradeNo,

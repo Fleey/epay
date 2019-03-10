@@ -42,6 +42,13 @@ class Test extends Command
             //not auto settle
         }
         echo 'ok';
+//        $i = 0;
+//        $orderList = Db::table('pay_order')->where('pid', 1169)->where('status', 1)->field('trade_no')->whereTime('endtime', '>=', '2019-3-10 00:00:00')->whereTime('endtime', '<=', '2019-3-10 23:59:59')->cursor();
+//        foreach ($orderList as $value){
+//            dump($this->curl( $this->buildCallBackUrlA($value['trade_no'],'notify')));
+//            echo $i++.PHP_EOL;
+//        }
+//        echo 'ok';
     }
 
     private function buildCallBackUrlA(string $tradeNo, string $type)

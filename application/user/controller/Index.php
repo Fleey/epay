@@ -110,7 +110,7 @@ class Index extends Controller
         if ($type != 'settle' && $type != 'connectInfo')
             return json(['status' => 0, 'msg' => '保存信息类型错误']);
         if ($type == 'settle') {
-            return json(['status'=>0,'msg'=>'修改结算信息请联系管理员']);
+            return json(['status' => 0, 'msg' => '修改结算信息请联系管理员']);
             $settleType = input('post.settleType/d');
             $account    = input('post.account/s');
             $username   = input('post.username/s');
@@ -207,7 +207,7 @@ class Index extends Controller
         if (empty($uid))
             return json(['status' => 0, 'msg' => '需要登陆后才能继续操作']);
         $tradeNo = input('post.tradeNo/s');
-        if (empty($tradeNo))
+        if (empty($tradeNo) || strlen($tradeNo) != 22)
             return json(['status' => 0, 'msg' => '请求参数有误']);
         $result = Db::table('epay_order')->where([
             'tradeNo' => $tradeNo,

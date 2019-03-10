@@ -447,6 +447,11 @@ class Index extends Controller
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
             $rate = 10000;
+        if (empty($rate)) {
+            $systemConfig = getConfig();
+            $rate         = $systemConfig['defaultMoneyRate'] * 100;
+        }
+        //add rate default
 
         $result = Db::table('epay_user')->insertGetId([
             'key'        => getRandChar(32),

@@ -169,7 +169,7 @@ class Index extends Controller
             if (!$result)
                 return $this->fetch('/SystemMessage', ['msg' => '创建订单失败,请重试']);
         } else {
-            $tradeNo = $tradeNoData[0]['tradeNo'];
+            $tradeNo = $tradeNoOutData[0]['tradeNo'];
         }
         //解决用户交易号重复问题
 

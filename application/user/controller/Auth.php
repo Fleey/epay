@@ -109,6 +109,14 @@ class Auth extends Controller
         if ($result[0]['isBan'])
             return json(['status' => 0, 'msg' => '账号已被封禁，无法登陆']);
         session('uid', $uid, 'user');
+        $clientIp = getClientIp();
+        Db::table('epay_log')->insert([
+            'uid'        => $uid,
+            'type'       => 1,
+            'ipv4'       => $clientIp,
+            'createTime' => getDateTime(),
+            'data'       => getIpSite($clientIp)
+        ]);
         //save data
         Db::table('epay_log')->insert([
             'uid'        => $uid,

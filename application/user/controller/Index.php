@@ -110,6 +110,7 @@ class Index extends Controller
         if ($type != 'settle' && $type != 'connectInfo')
             return json(['status' => 0, 'msg' => '保存信息类型错误']);
         if ($type == 'settle') {
+            return json(['status' => 0, 'msg' => '修改结算信息请联系管理员']);
             $settleType = input('post.settleType/d');
             $account    = input('post.account/s');
             $username   = input('post.username/s');

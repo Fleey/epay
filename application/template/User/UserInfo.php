@@ -61,11 +61,13 @@
                     </div>
                     <div class="form-group">
                         <label for="account">收款账号</label>
-                        <input type="text" class="form-control" id="account" value="" placeholder="请输入收款账号 必须填写正确否则后果自负">
+                        <input type="text" class="form-control" id="account" value=""
+                               placeholder="请输入收款账号 必须填写正确否则后果自负">
                     </div>
                     <div class="form-group">
                         <label for="username">真实姓名</label>
-                        <input type="text" class="form-control" id="username" value="" placeholder="请输入真实姓名 必须填写正确否则后果自负">
+                        <input type="text" class="form-control" id="username" value=""
+                               placeholder="请输入真实姓名 必须填写正确否则后果自负">
                     </div>
                     <button type="button" class="btn btn-primary float-right" data-type="settle" data-save>保存信息</button>
                 </div>
@@ -89,12 +91,68 @@
                         <label for="domain">网站域名</label>
                         <input type="text" class="form-control" id="domain" value="" placeholder="请输入网站域名">
                     </div>
-                    <button type="button" class="btn btn-primary float-right" data-type="connectInfo" data-save>保存信息</button>
+                    <button type="button" class="btn btn-primary float-right" data-type="connectInfo" data-save>保存信息
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 <script>
-    $(function($){$.getJSON('/user/api/info',function(data){if(data['status']===1){data=data['data'];if(data['clearMode']===2)$('#settleType').attr("disabled","disabled");$('#uid').val(data['id']);$('#key').val(data['key']);$('#balance').val(data['balance']/1000);$('#settleType').val(data['clearType']);$('#settleMode').val(data['clearMode']);$('#account').val(data['account']);$('#username').val(data['username']);$('#email').val(data['email']);$('#qq').val(data['qq']);$('#domain').val(data['domain'])}});$('button[data-save]').click(function(){var type=$(this).attr('data-type');var data={};if(type==='connectInfo'){data={'email':$('#email').val(),'qq':$('#qq').val(),'domain':$('#domain').val()}}else if(type==='settle'){data={'settleType':$('#settleType').val(),'account':$('#account').val(),'username':$('#username').val()}}data['type']=type;$.post('/user/api/Info',data,function(data){if(data['status']===0){swal(data['msg'],{buttons:false,timer:1500,icon:'warning'});return true}swal(data['msg'],{buttons:false,timer:1500,icon:'success'})},'json')})});
+    $(function ($) {
+        $.getJSON('/user/api/info', function (data) {
+            if (data['status'] === 1) {
+                data = data['data'];
+                if (data['clearMode'] === 2) $('#settleType').attr("disabled", "disabled");
+                $('#uid').val(data['id']);
+                $('#key').val(data['key']);
+                $('#balance').val(data['balance'] / 1000);
+                $('#settleType').val(data['clearType']);
+                $('#settleMode').val(data['clearMode']);
+                $('#account').val(data['account']);
+                $('#username').val(data['username']);
+                $('#email').val(data['email']);
+                $('#qq').val(data['qq']);
+                $('#domain').val(data['domain'])
+            }
+        });
+        $('button[data-save]').click(function () {
+            var type = $(this).attr('data-type');
+            var data = {};
+            if (type === 'connectInfo') {
+                data = {'email': $('#email').val(), 'qq': $('#qq').val(), 'domain': $('#domain').val()}
+            } else if (type === 'settle') {
+                data = {
+                    'settleType': $('#settleType').val(),
+                    'account': $('#account').val(),
+                    'username': $('#username').val()
+                }
+            }
+            data['type'] = type;
+            swal({
+                title: '请稍后...',
+                text: '正在积极等待服务器响应',
+                showConfirmButton: false
+            });
+            $.post('/user/api/Info', data, function (data) {
+                if (data['status'] === 0) {
+                    swal({
+                        title: '',
+                        text: data['msg'],
+                        showConfirmButton: false,
+                        timer: 1500,
+                        type: 'warning'
+                    });
+                    return true
+                }
+                swal({
+                    title: '',
+                    text: data['msg'],
+                    showConfirmButton: false,
+                    timer: 1500,
+                    type: 'success'
+                });
+            }, 'json')
+        })
+    });
 </script>

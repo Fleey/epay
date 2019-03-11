@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title><?php echo $webName . ' - 聚合支付系统'; ?></title>
+    <link rel="stylesheet" href="/static/css/resource/sweetalert.min.css">
     <link rel="stylesheet" href="/static/css/resource/style.css">
     <link rel="stylesheet" href="/static/css/resource/prism.css">
     <link rel="stylesheet" href="/static/css/user/style.css">
@@ -67,7 +68,7 @@
 <script src="/static/js/resource/app.min.js"></script>
 <script src="/static/js/resource/app.init.js"></script>
 
-<script href="/static/js/resource/sweetalert.min.js"></script>
+<script src="/static/js/resource/sweetalert.min.js"></script>
 <script src="/static/js/resource/perfect-scrollbar.jquery.min.js"></script>
 <script src="/static/js/resource/sparkline.js"></script>
 <script src="/static/js/resource/waves.js"></script>

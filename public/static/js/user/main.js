@@ -11,10 +11,12 @@ $(function ($) {
     });
     $('.exit').click(function () {
         $.getJSON('/auth/user/exit', function (data) {
-            swal(data['msg'], {
-                buttons: false,
+            swal({
+                title: '',
+                text: data['msg'],
+                showConfirmButton: false,
                 timer: 1500,
-                icon: 'success'
+                type: 'success'
             });
             setTimeout(function () {
                 window.location.href = baseUrl + 'user/Login';

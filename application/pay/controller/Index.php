@@ -141,21 +141,37 @@ class Index extends Controller
 
         $tradeNo = date('YmdHis') . rand(11111, 99999);
 
-        $result = Db::table('epay_order')->insert([
-            'uid'         => $uid,
-            'tradeNo'     => $tradeNo,
-            'tradeNoOut'  => $tradeNoOut,
-            'notify_url'  => $notifyUrl,
-            'return_url'  => $returnUrl,
-            'money'       => $money,
-            'type'        => $converPayType,
-            'productName' => $productName,
-            'ipv4'        => $clientIpv4,
-            'status'      => 0,
-            'createTime'  => getDateTime()
-        ]);
-        if (!$result)
-            return $this->fetch('/SystemMessage', ['msg' => '创建订单失败,请重试']);
+        $tradeNoData = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('id')->select();
+        if (!empty($tradeNoData))
+            $tradeNo = date('YmdHis') . rand(11111, 99999);
+        //防止单号重复
+        $tradeNoOutData = Db::table('epay_order')->where([
+            'tradeNoOut' => $tradeNoOut,
+            'uid'        => $uid
+        ])->limit(1)->field('tradeNo')->select();
+        if (empty($tradeNoOutData)) {
+            $notifyUrl = str_replace('%20', '', $notifyUrl);
+            $returnUrl = str_replace('%20', '', $returnUrl);
+            //remove empty str
+            $result = Db::table('epay_order')->insert([
+                'uid'         => $uid,
+                'tradeNo'     => $tradeNo,
+                'tradeNoOut'  => $tradeNoOut,
+                'notify_url'  => $notifyUrl,
+                'return_url'  => $returnUrl,
+                'money'       => $money,
+                'type'        => $converPayType,
+                'productName' => $productName,
+                'ipv4'        => $clientIpv4,
+                'status'      => 0,
+                'createTime'  => getDateTime()
+            ]);
+            if (!$result)
+                return $this->fetch('/SystemMessage', ['msg' => '创建订单失败,请重试']);
+        } else {
+            $tradeNo = $tradeNoOutData[0]['tradeNo'];
+        }
+        //解决用户交易号重复问题
 
         if ($converPayType == 3) {
             return redirect(url('/Pay/Alipay/Submit?tradeNo=' . $tradeNo, '', false, true));

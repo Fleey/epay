@@ -25,7 +25,7 @@ class Index extends Controller
         ];
         $username = session('username', '', 'admin');
         if (empty($username) && $templateName != 'Login')
-            $this->redirect('/admin/Login', [], 302);
+            $this->redirect('/cy2018/Login', [], 302);
         else
             $data['isGeetest'] = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);
         if ($templateName == 'Dashboard') {
@@ -160,9 +160,9 @@ class Index extends Controller
             $settleList = Db::table('epay_settle')->where([
                 'createTime' => $createTime,
                 'addType'    => 1
-            ])->field('id,uid')->cursor();
+            ])->field('id')->cursor();
             foreach ($settleList as $value) {
-                $this->confirmSettle($value['id'], $value['uid']);
+                $this->confirmSettle($value['id']);
             }
             return json(['status' => 1, 'msg' => '批量更新结算状态成功']);
         } else if ($type == 'downloadSettle') {
@@ -382,7 +382,7 @@ class Index extends Controller
         if ($result[0]['money'] <= 0)
             return json(['status' => 0, 'msg' => '订单结算金额有误']);
 
-        $result = $this->confirmSettle($id, $result[0]['uid']);
+        $result = $this->confirmSettle($id);
         return json(['status' => $result ? 1 : 0, 'msg' => $result ? '操作成功' : '操作失败']);
     }
 
@@ -447,6 +447,11 @@ class Index extends Controller
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
             $rate = 10000;
+        if (empty($rate)) {
+            $systemConfig = getConfig();
+            $rate         = $systemConfig['defaultMoneyRate'] * 100;
+        }
+        //add rate default
 
         $result = Db::table('epay_user')->insertGetId([
             'key'        => getRandChar(32),
@@ -639,17 +644,17 @@ class Index extends Controller
         return json($SearchTable->getData());
     }
 
-    private function confirmSettle($settleID, $uid)
+    private function confirmSettle($settleID)
     {
         $result = Db::table('epay_settle')->where('id', $settleID)->field('status,clearType,addType,money,uid')->limit(1)->select();
         if (empty($result))
             return false;
-        $userInfo = Db::table('epay_user')->where('id', $uid)->field('balance,clearMode')->limit(1)->select();
-        if ($userInfo[0]['clearMode'] == 1) {
-            $updateUserResult = Db::table('epay_user')->where('id', $result[0]['uid'])->limit(1)->dec('balance', $result[0]['money'] * 10)->update();
-            if (!$updateUserResult)
-                return false;
-        }
+        if ($result[0]['status'])
+            return false;
+        //if settle is ok
+        $updateUserResult = Db::table('epay_user')->where('id', $result[0]['uid'])->limit(1)->dec('balance', $result[0]['money'] * 10)->update();
+        if (!$updateUserResult)
+            return false;
         $result = Db::table('epay_settle')->where('id', $settleID)->update([
             'status'     => 1,
             'updateTime' => getDateTime()

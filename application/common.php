@@ -515,17 +515,18 @@ function processOrder($tradeNo, $notify = true)
 
     $addMoneyRate = $orderInfo[0]['money'] * ($rate / 100);
     //累计金额方便统计
-    $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance',$addMoneyRate * 10)->update();
-    if ($userInfo[0]['clearType'] == 4) {
-        settleUserDepositMoney($orderInfo[0]['uid']);
-        //支付宝自动转账
-    }
+    $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate * 10)->update();
     //处理用户余额部分
     if (!$result) {
         trace('更新用户余额错误 uid =>' . $orderInfo[0]['uid'] . ' tradeNo =>' . $tradeNo . ' 订单金额 =>' . ($orderInfo[0]['money'] / 100), 'error');
-        return;
+//        return;
     }
     //处理更新余额失败部分
+    if ($result && $userInfo[0]['clearType'] == 4) {
+        settleUserDepositMoney($orderInfo[0]['uid']);
+        //支付宝自动转账
+    }
+    //必须金额更新成功后才能触发自动结算
     if ($notify) {
         $notifyUrl = buildCallBackUrl($tradeNo, 'notify');
         if (curl($notifyUrl) === false)
@@ -622,7 +623,19 @@ function getServerConfig(string $key)
     return $result;
 }
 
-function getClientIp(){
+function getIpSite(String $ip)
+{
+    $content = curl("http://api.map.baidu.com/location/ip?ak=2TGbi6zzFm5rjYKqPPomh9GBwcgLW5sS&ip={$ip}&coor=bd09ll");
+    if ($content === false)
+        return '未知登陆地区';
+    $json = json_decode($content, true);
+    if (empty($json['content']['address']))
+        return '未知登陆地区';
+    return $json['content']['address'];
+}
+
+function getClientIp()
+{
     $ip = $_SERVER['REMOTE_ADDR'];
     if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && preg_match_all('#\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}#s', $_SERVER['HTTP_X_FORWARDED_FOR'], $matches)) {
         foreach ($matches[0] AS $xip) {

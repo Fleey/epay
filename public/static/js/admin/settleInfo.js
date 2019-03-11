@@ -36,6 +36,11 @@ $(function () {
             var clickType = $(this).attr('data-type');
             var settleTime = $(this).parent().parent().parent().find(':nth-child(3)').text();
             if (clickType === 'confirmSettle') {
+                swal({
+                    title: '请稍后...',
+                    text: '正在积极等待服务器响应',
+                    showConfirmButton: false
+                });
                 $.getJSON('/cy2018/api/SettleOperate', {
                     type: 'confirmSettle',
                     createTime: settleTime

@@ -356,7 +356,7 @@ class Index extends Controller
         if ($isArray) {
             foreach ($value as $key => $value1) {
                 if (empty($value1))
-                    $value1[$key] = '';
+                    $value[$key] = '';
                 else
                     if (strpos($key, 'is') === 0)
                         $value[$key] = $value1 === 'true';

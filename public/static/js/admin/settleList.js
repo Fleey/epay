@@ -29,6 +29,10 @@ $(function () {
                         return '支付宝转账（手动）';
                     } else if (data === 4) {
                         return '支付宝转账（自动）'
+                    } else if (data === 5) {
+                        return '微信转账（二维码）';
+                    } else if (data === 6) {
+                        return '支付宝转账（二维码）';
                     } else {
                         return '未知';
                     }
@@ -41,7 +45,7 @@ $(function () {
                 'render': function (data) {
                     return data === 1 ? '<span style="color: green;">已完成</span>' : '<span style="color: red;">未完成</span>';
                 }
-            },{}
+            }, {}
         ],
         'columnDefs': [
             {
@@ -147,45 +151,45 @@ $(function () {
                             dataList.push(value['money'] / 100);
                         });
                         var option = {
-                                title: {
-                                    text: '该用户近七天结算金额统计',
-                                },
-                                tooltip: {
-                                    trigger: 'axis',
-                                    axisPointer: {
-                                        type: 'cross',
-                                        crossStyle: {
-                                            color: '#999'
-                                        }
+                            title: {
+                                text: '该用户近七天结算金额统计',
+                            },
+                            tooltip: {
+                                trigger: 'axis',
+                                axisPointer: {
+                                    type: 'cross',
+                                    crossStyle: {
+                                        color: '#999'
                                     }
-                                },
-                                toolbox: {
-                                    feature: {
-                                        dataView: {show: true, readOnly: false},
-                                        magicType: {show: true, type: ['bar', 'bar']},
-                                        restore: {show: true},
-                                        saveAsImage: {show: true}
-                                    }
-                                },
-                                xAxis: [
-                                    {
-                                        type: 'category',
-                                        boundaryGap: false,
-                                        data: dateList,
-                                    }
-                                ],
-                                yAxis: {
-                                    type: 'value'
-                                },
-                                series: [
-                                    {
-                                        name: '一周内结算金额统计',
-                                        data: dataList,
-                                        type: 'line',
-                                        areaStyle: {}
-                                    }
-                                ]
-                            };
+                                }
+                            },
+                            toolbox: {
+                                feature: {
+                                    dataView: {show: true, readOnly: false},
+                                    magicType: {show: true, type: ['bar', 'bar']},
+                                    restore: {show: true},
+                                    saveAsImage: {show: true}
+                                }
+                            },
+                            xAxis: [
+                                {
+                                    type: 'category',
+                                    boundaryGap: false,
+                                    data: dateList,
+                                }
+                            ],
+                            yAxis: {
+                                type: 'value'
+                            },
+                            series: [
+                                {
+                                    name: '一周内结算金额统计',
+                                    data: dataList,
+                                    type: 'line',
+                                    areaStyle: {}
+                                }
+                            ]
+                        };
                         $('#userSettleInfo').show();
                         var chartMap = echarts.init(document.getElementById('chartMap'));
                         $(window).resize(function () {
@@ -306,6 +310,10 @@ $(function () {
                             value = '支付宝转账（手动）';
                         else if (value === 4)
                             value = '支付宝转账（自动）';
+                        else if (value === 5)
+                            value = '微信转账（二维码）';
+                        else if (value === 6)
+                            value = '支付宝转账（二维码）';
                     } else if (key === 'status') {
                         value = value ? '已操作' : '未操作';
                     } else if (key === 'addType') {
@@ -321,7 +329,15 @@ $(function () {
                     setDataNameInfo(key, value);
                 });
                 //基础信息置入
-                if (data['status'] == 0) {
+                if (data['clearType'] === 5 || data['clearType'] === 6) {
+                    if (data['settleQrFileID'] !== '') {
+                        $('img[data-name="settleQrCode"]').attr('src', '/static/uploads/' + getFilePath(data['settleQrFileID']));
+                        $('#settleQr').show()
+                    }
+                }else{
+                    $('#settleQr').hide();
+                }
+                if (data['status'] === 0) {
                     $('button[data-type="confirmPay"]').show().attr('data-settle-id', id);
                     $('button[data-type="deleteRecord"]').show().attr('data-settle-id', id);
                 } else {

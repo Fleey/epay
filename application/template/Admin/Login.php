@@ -60,7 +60,7 @@
 <script src="/static/js/resource/sweetalert2.min.js"></script>
 <?php
 if (!$isGeetest)
-    echo '<script src="/static/js/AuthCode.js"></script><script src="/static/js/admin/loginV1.js"></script>';
+    echo '<script src="/static/js/ToolsFunction.js"></script><script src="/static/js/AuthCode.js"></script><script src="/static/js/admin/loginV1.js"></script>';
 else
     echo '<script src="/static/js/user/gt.js"></script><script src="/static/js/admin/loginV2.js"></script>'
 ?>

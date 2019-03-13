@@ -2,6 +2,17 @@
     #orderInfo .item > span[data-name] {
         display: block;
     }
+
+    .QrCodeImgPreview {
+        width: 128px;
+        height: 128px;
+        text-align: center;
+        display: block;
+        margin: 0 auto;
+        border: dashed 2px;
+        line-height: 7.5rem;
+        cursor: pointer;
+    }
 </style>
 <div class="page-content container-fluid">
     <div class="row">
@@ -86,13 +97,21 @@
                         <small class="form-text text-muted">自动转账规则 保留保证金 达到结算金额则进行结算
                         </small>
                     </div>
-                    <div class="form-group">
-                        <label for="account1">结算账号</label>
-                        <input type="text" class="form-control" data-name="account" value="" placeholder="结算账号">
+                    <div class="clearModeQr" style="display: none;">
+                        <input type="file" id="QrCodeImg" style="display: none;" accept=".png,.jpg,.gif">
+                        <span class="QrCodeImgPreview">点击上传二维码</span>
+                        <img class="QrCodeImgPreview" style="display: none;">
                     </div>
-                    <div class="form-group">
-                        <label for="username1">结算名称</label>
-                        <input type="text" class="form-control" data-name="username" value="" placeholder="请输入结算用户名">
+                    <div class="clearModeAccount" style="display: none;">
+                        <div class="form-group">
+                            <label for="account1">结算账号</label>
+                            <input type="text" class="form-control" data-name="account" value="" placeholder="结算账号">
+                        </div>
+                        <div class="form-group">
+                            <label for="username1">结算名称</label>
+                            <input type="text" class="form-control" data-name="username" value=""
+                                   placeholder="请输入结算用户名">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="rate">结算费率</label>

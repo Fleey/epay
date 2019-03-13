@@ -235,6 +235,8 @@ class Index extends Controller
         $result = Db::table('epay_settle')->where('id', $id)->limit(1)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '结算记录不存在']);
+        if ($result[0]['clearType'] == 5 || $result[0]['clearType'] == 6)
+            $result[0]['settleQrFileID'] = getPayUserAttr($result[0]['uid'], 'qrFileID');
         return json(['status' => 1, 'data' => $result[0]]);
     }
 
@@ -267,6 +269,10 @@ class Index extends Controller
         $data['isSettleApply'] = getPayUserAttr($uid, 'isSettleApply');
         if ($data['isSettleApply'] == '')
             $data['isSettleApply'] = 0;
+
+        if ($data['clearType'] == 5 || $data['clearType'] == 6)
+            $data['qrFileID'] = getPayUserAttr($uid, 'qrFileID');
+        //获取二维码
         return json(['status' => 1, 'data' => $data]);
     }
 
@@ -345,12 +351,15 @@ class Index extends Controller
         $keyName = input('post.keyName/s');
         $isArray = input('post.isArray/b', false);
         $value   = input('post.data/' . ($isArray ? 'a' : 's'));
-        if (empty($keyName) || empty($value))
+        if (empty($keyName))
             return json(['status' => 0, 'msg' => '请求数据有误']);
         if ($isArray) {
             foreach ($value as $key => $value1) {
-                if (strpos($key, 'is') === 0)
-                    $value[$key] = $value1 === 'true';
+                if (empty($value1))
+                    $value1[$key] = '';
+                else
+                    if (strpos($key, 'is') === 0)
+                        $value[$key] = $value1 === 'true';
             }
         } else {
             if ($keyName == 'defaultMaxPayMoney' || $keyName == 'defaultMoneyRate')
@@ -502,11 +511,17 @@ class Index extends Controller
         $rate           = input('post.rate/s', 0);
         $username       = input('post.username/s', '');
         $account        = input('post.account/s', '');
-        $isSettleApply  = input('post.isSettleApply/s', '');
 
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
             $rate = 10000;
+
+        if ($clearType == 5 || $clearType == 6) {
+            $qrFileID = input('post.qrFileID/d');
+            if (empty($qrFileID))
+                return json(['status' => 0, 'msg' => '支付二维码不能为空']);
+            setPayUserAttr($uid, 'qrFileID', $qrFileID);
+        }
 
         Db::table('epay_user')->where('id', $uid)->limit(1)->update([
             'balance'   => decimalsToInt($balance, 3),
@@ -524,7 +539,6 @@ class Index extends Controller
         setPayUserAttr($uid, 'settleMoney', decimalsToInt($settleMoney, 2));
         setPayUserAttr($uid, 'payMoneyMax', decimalsToInt($payMoneyMax, 2));
         setPayUserAttr($uid, 'payDayMoneyMax', decimalsToInt($payDayMoneyMax, 2));
-        setPayUserAttr($uid, 'isSettleApply', $isSettleApply);
         return json(['status' => 1, 'msg' => '保存用户信息成功']);
     }
 
@@ -614,6 +628,37 @@ class Index extends Controller
         return json(['status' => 1, 'url' => $callbackUrl]);
     }
 
+
+    public function postBatchCallback()
+    {
+        $uid       = input('post.uid/d');
+        $payType   = input('post.payType/s');
+        $startTime = input('post.startTime/s');
+        $endTime   = input('post.endTime/s');
+        if (empty($uid))
+            return json(['status' => 0, 'msg' => '商户ID不能为空']);
+        if (empty($startTime) || empty($endTime))
+            return json(['status' => 0, 'msg' => '开始或结束时间不能为空']);
+        if ($payType != 'all' && $payType != '1' && $payType != '2' && $payType != '3')
+            return json(['status' => 0, 'msg' => '支付类型有误']);
+
+        $callbackList = [];
+        $filterData   = [
+            ['uid', '=', $uid],
+            ['endTime', '>=', $startTime],
+            ['endTime', '<=', $endTime],
+            ['status', '=', 1]
+        ];
+        if ($payType != 'all')
+            $filterData['type'] = $payType;
+        $data = Db::table('epay_order')->where($filterData)->field('tradeNo')->cursor();
+        foreach ($data as $value) {
+            $callbackList[] = buildCallBackUrl($value['tradeNo'], 'notify');
+        }
+        if (empty($callbackList))
+            return json(['status' => 0, 'msg' => '暂无查询到更多的订单']);
+        return json(['status' => 1, 'msg' => '获取到共计 ' . count($callbackList) . ' 个订单', 'data' => $callbackList]);
+    }
 
     /**
      * @return array

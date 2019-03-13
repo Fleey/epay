@@ -40,7 +40,7 @@ class Auth extends Controller
         header('HTTP/1.1 200 OK');
         AuthCode::$imageH = 80;
         AuthCode::$length = 4;
-        AuthCode::$imageL = 390;
+        AuthCode::$imageL = 360;
 
         AuthCode::$useNoise = true;  //是否启用噪点
         AuthCode::$useCurve = true;   //是否启用干扰曲线
@@ -77,7 +77,8 @@ class Auth extends Controller
         $config    = getConfig();
         $isGeetest = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);
         if (!$isGeetest) {
-            return json(['status' => 0, 'msg' => '极验证接口尚未开启']);
+            if (!session('CheckUserLoginAuthCode'))
+                return json(['status' => 0, 'msg' => '还没有通过人机验证']);
         } else {
             $data  = [
                 'client_type' => $this->request->isMobile() ? 'h5' : 'web',
@@ -118,13 +119,6 @@ class Auth extends Controller
             'data'       => getIpSite($clientIp)
         ]);
         //save data
-        Db::table('epay_log')->insert([
-            'uid'        => $uid,
-            'type'       => 1,
-            'ipv4'       => getClientIp(),
-            'createTime' => getDateTime(),
-            'data'       => 'login user system'
-        ]);
         return json(['status' => 1, 'msg' => '登陆成功']);
     }
 

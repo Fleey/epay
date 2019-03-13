@@ -1,5 +1,20 @@
 <style>
-    #orderInfo .item > span[data-name]{display: block;}#orderInfo .item > span.title{font-weight: 600;}#orderInfo{margin-top: 6rem;}#orderInfo p.header{font-weight: 600;font-size: 16px;}
+    #orderInfo .item > span[data-name] {
+        display: block;
+    }
+
+    #orderInfo .item > span.title {
+        font-weight: 600;
+    }
+
+    #orderInfo {
+        margin-top: 6rem;
+    }
+
+    #orderInfo p.header {
+        font-weight: 600;
+        font-size: 16px;
+    }
 </style>
 <div class="page-content container-fluid">
     <div class="row">
@@ -7,10 +22,17 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">订单列表</h5>
-                    <button class="btn w96 btn-outline-primary btn-sm float-right" data-toggle="modal"
-                            data-target="#searchFilter">
-                        高级搜索
-                    </button>
+                    <div class="buttons float-right" style="margin-top: -36px;">
+                        <button class="btn w96 btn-outline-primary btn-sm" style="margin-right: 10px;"
+                                data-toggle="modal"
+                                data-target="#batchCallbackContent">
+                            订单批量回调
+                        </button>
+                        <button class="btn w96 btn-outline-primary btn-sm" data-toggle="modal"
+                                data-target="#searchFilter">
+                            高级搜索
+                        </button>
+                    </div>
                     <div class="table-responsive">
                         <table id="orderList" class="table no-wrap user-table mb-0 table-hover">
                             <thead>
@@ -99,6 +121,56 @@
                 <button type="button" class="btn btn-danger" data-order-id="" data-type="setShield">屏蔽订单</button>
                 <button type="button" class="btn btn-primary" data-order-id="" data-type="reloadNotify">重新回调</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="batchCallbackContent" role="dialog" aria-labelledby="batchCallbackContent">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">批量回调（注意只能回调已成功订单）</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="box-body">
+                        <div class="form-group row">
+                            <label for="uid" class="col-md-3 control-label">商户ID</label>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" id="uid" placeholder="商家ID">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="payTypeCallback" class="col-md-3 control-label">支付类型</label>
+                            <div class="col-md-8">
+                                <select class="form-control" id="payTypeCallback" style="width: 100%;">
+                                    <option value="all">所有</option>
+                                    <option value="1">微信支付</option>
+                                    <option value="2">财付通支付</option>
+                                    <option value="3">支付宝支付</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="payTypeCallback" class="col-md-3 control-label">开始时间</label>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" id="startCallbackTime" placeholder="开始回调时间 2019-2-29 00:00:00">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="payTypeCallback" class="col-md-3 control-label">结束时间</label>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" id="endCallbackTime" placeholder="结束回调时间 2019-2-30 23:59:59">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary w96" id="batchCallback">批量回调</button>
             </div>
         </div>
     </div>

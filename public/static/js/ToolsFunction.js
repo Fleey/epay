@@ -175,7 +175,6 @@
     };
 
 })(jQuery);
-document.write("<style>.data-img{cursor:pointer} .pic_looper{z-index:9999;width:100%; height:100%; position: fixed; left: 0; top:0; opacity: 0.5; background: #000; display: none; } .pic_show{z-index:9999;width:100%; max-width: 1020px; height:520px; position:absolute; left:0; top:0; right:0; bottom:0; margin:auto; text-align: center; display: none; } .pic_box{width:90%; height:450px; margin:40px auto; text-align: center; overflow: hidden; } .pic_box img{height:100%; } .pic_close{width:100%; height:16px; float: right; } .pic_close span{display: block; width:16px; height:16px; float: right; margin:2px 5px; text-align: center; line-height: 16px; cursor: pointer; color:#fff; font-size: 22px; } </style><div class='pic_looper'></div> <div class='pic_show'> <p class='pic_close'><span class='gb' title='关闭'>x</span></p> <div class='pic_box'><img src=''/></div> </div>");
 
 function bindClickImg() {
     $('.data-img').click(function () {
@@ -188,108 +187,6 @@ function bindClickImg() {
         $('.pic_looper').fadeOut(300);
         $('.pic_show').fadeOut(300);
     });
-}
-function getObjectURL(file) {
-    var url = null;
-    if (window.createObjectURL !== undefined) { // basic
-        url = window.createObjectURL(file);
-    } else if (window.URL !== undefined) {
-        // mozilla(firefox)
-        url = window.URL.createObjectURL(file);
-    } else if (window.webkitURL !== undefined) {
-        // webkit or chrome
-        url = window.webkitURL.createObjectURL(file);
-    }
-    return url;
-}
-
-//上传文件转连接 本地
-function readFileHash(file, callBack, args) {
-    if (args === undefined)
-        args = [];
-    args['fileInfo'] = file;
-    var fileReader = new FileReader();
-    fileReader.readAsArrayBuffer(file);
-    fileReader.onload = function () {
-        var wordArray = CryptoJS.lib.WordArray.create(fileReader.result);
-        var hash = CryptoJS.SHA256(wordArray).toString();
-        callBack(hash, args); // Compute hash
-    };
-
-    fileReader.onerror = function () {
-        swal('程序异常', '读取文件异常，请重试', 'error');
-    };
-}
-
-//读取文件SHA256
-function getServerFileID(hash) {
-    if (hash === undefined || hash.length === 0)
-        return false;
-    var fileID = 0;
-    $.ajax({
-        url: baseUrl + 'Admin/File/FileID',
-        type: 'get',
-        dataType: 'json',
-        async: false,
-        data: {
-            hash: hash
-        },
-        success: function (data) {
-            if (data['status'])
-                fileID = data['fileID'];
-        }
-    });
-    return fileID;
-}
-
-//获取文件路径 意在减少重复上传文件数量
-function uploadFileCloud(file, folder) {
-    var fileID, data = new FormData();
-    data.append('folderName', folder);
-    data.append('file', file);
-    swal({
-        title: '正在上传文件',
-        text: '请耐心等候，服务器正在拼命干活...',
-        showConfirmButton: false
-    });
-    $.ajax({
-        url: baseUrl + 'admin/file/UploadFile',
-        type: 'post',
-        data: data,
-        contentType: false,
-        processData: false,
-        dataType: 'json',
-        async: false,
-        success: function (data) {
-            if (data['status'] === 0) {
-                swal('上传失败', data['msg'], 'error');
-                return true;
-            }
-            swal.close();
-            fileID = data['fileID'];
-        },
-        error: function () {
-            fileID = 0;
-            swal('遇到错误', '请与技术人员联系解决问题', 'error');
-        }
-    });
-    return fileID;
-}
-
-//利用文件ID获取文件路径
-function getFilePath(fileID) {
-    var path = '';
-    $.ajax({
-        url: baseUrl + 'admin/file/filePath/' + fileID + '.json',
-        type: 'get',
-        dataType: 'json',
-        async: false,
-        success: function (data) {
-            if (data['status'])
-                path = data['path'];
-        }
-    });
-    return path;
 }
 
 function toDecimal2(x) {

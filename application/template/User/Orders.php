@@ -73,11 +73,6 @@
             if (searchContent) {
                 searchData["content"] = searchContent
             }
-            swal({
-                title: '请稍后...',
-                text: '正在积极等待服务器响应',
-                showConfirmButton: false
-            });
             $.post("/user/api/SearchOrder", searchData, function (data) {
                 $("#tips").hide();
                 $("#orderList>tbody").html("");

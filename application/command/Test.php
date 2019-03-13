@@ -25,6 +25,7 @@ class Test extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
+
         $userData       = \think\Db::table('epay_user')->field('id,rate,clearType')->where('clearMode', 0)->cursor();
         foreach ($userData as $value) {
             $uid            = $value['id'];

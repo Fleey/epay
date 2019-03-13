@@ -104,6 +104,7 @@ class Index extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '金额(money)格式有误']);
 
         $maxPayMoney = getPayUserAttr($uid, 'maxPayMoney');
+
         if (!empty($maxPayMoney)) {
             $maxPayMoney = decimalsToInt($maxPayMoney, 2);
             if (!empty($maxPayMoney)) {
@@ -112,19 +113,12 @@ class Index extends Controller
             }
         } else {
             if ($money > $this->systemConfig['defaultMaxPayMoney'])
-                return $this->fetch('/SystemMessage', ['msg' => '[10001]超出商户单个订单最大支付金额']);
+                return $this->fetch('/SystemMessage', ['msg' => '[10002]超出商户单个订单最大支付金额']);
         }
         //check user max pay money
 
         if (!preg_match('/^[a-zA-Z0-9.\_\-|]{1,64}+$/', $tradeNoOut))
             return $this->fetch('/SystemMessage', ['msg' => '订单号(out_trade_no)格式不正确 最小订单号位一位 最大为64位']);
-
-        $goodsFilterKeyList = explode(',', $this->systemConfig['goodsFilter']['keyWord']);
-        foreach ($goodsFilterKeyList as $value) {
-            if (!(strpos($productName, $value) === FALSE))
-                return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['goodsFilter']['tips']]);
-        }
-        //check goods filter key
 
         $converPayType = $this->converPayName($type);
 
@@ -148,7 +142,7 @@ class Index extends Controller
         $tradeNoOutData = Db::table('epay_order')->where([
             'tradeNoOut' => $tradeNoOut,
             'uid'        => $uid
-        ])->limit(1)->field('tradeNo')->select();
+        ])->limit(1)->field('tradeNo,type')->select();
         if (empty($tradeNoOutData)) {
             $notifyUrl = str_replace('%20', '', $notifyUrl);
             $returnUrl = str_replace('%20', '', $returnUrl);
@@ -170,6 +164,9 @@ class Index extends Controller
                 return $this->fetch('/SystemMessage', ['msg' => '创建订单失败,请重试']);
         } else {
             $tradeNo = $tradeNoOutData[0]['tradeNo'];
+            if ($tradeNoData[0]['type'] != $this->converPayName($type))
+                Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update(['type' => $this->converPayName($type)]);
+            //改变支付类型
         }
         //解决用户交易号重复问题
 

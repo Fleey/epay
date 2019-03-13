@@ -46,6 +46,8 @@ Route::group('auth', function () {
     Route::controller('admin', 'admin/Auth');
 });
 Route::group('cy2018', function () {
+    Route::controller('file', 'admin/File');
+    Route::get('file/filePath/<fileID>.json', 'admin/File/getFilePath', ['cache' => 3600], ['fileID' => '\d+']);
     Route::controller('api', 'admin/Index');
     Route::rule('[:templateName]', 'admin/Index/loadTemplate');
 });

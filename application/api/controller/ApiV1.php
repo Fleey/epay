@@ -4,19 +4,23 @@ namespace app\api\controller;
 
 use app\pay\model\QQPayModel;
 use app\pay\model\WxPayModel;
+use think\App;
 use think\Controller;
 use think\Db;
 
 class ApiV1 extends Controller
 {
     private $systemConfig;
+    private $wxNotifyUrl;
+    private $qqNotifyUrl;
 
     /**
      * @return mixed
      */
     public function loadTemplate()
     {
-        $this->systemConfig = getConfig();
+        $this->initParam();
+
         return $this->fetch('/ApiDocTemplateV1', [
             'webName' => $this->systemConfig['webName'],
             'webQQ'   => $this->systemConfig['webQQ']
@@ -170,68 +174,98 @@ class ApiV1 extends Controller
         if ($money > 1000 || $money <= 0)
             return json(['code' => 0, 'msg' => '支付金额有误']);
 
+        $this->initParam();
+        //init param
+
         $maxPayMoney = getPayUserAttr($uid, 'maxPayMoney');
         if (!empty($maxPayMoney)) {
             $maxPayMoney = decimalsToInt($maxPayMoney, 2);
             if (!empty($maxPayMoney)) {
                 if ($money > $maxPayMoney)
-                    return json(['code' => 0, 'msg' => '超出商户单个订单最大支付金额']);
+                    return json(['code' => 0, 'msg' => '[10001]超出商户单个订单最大支付金额']);
             }
         } else {
             if ($money > $this->systemConfig['defaultMaxPayMoney'])
-                return json(['code' => 0, 'msg' => '超出商户单个订单最大支付金额']);
+                return json(['code' => 0, 'msg' => '[10002]超出商户单个订单最大支付金额']);
         }
+
+        if ($money <= 0)
+            return json(['code' => 0, 'msg' => '金额(money)格式有误']);
+
         //check user max pay money
         if (!preg_match('/^[a-zA-Z0-9.\_\-|]{1,64}+$/', $tradeNoOut))
             return json(['code' => 0, 'msg' => '订单号(out_trade_no)格式不正确 最小订单号位一位 最大为64位']);
         //check trade out
 
-        $goodsFilterKeyList = explode(',', $this->systemConfig['goodsFilter']['keyWord']);
-        foreach ($goodsFilterKeyList as $value) {
-            if (!(strpos($productName, $value) === FALSE))
-                return json(['code' => 0, 'msg' => $this->systemConfig['goodsFilter']['tips']]);
+        {
+            $badWordList = str_replace('，', ',', $this->systemConfig['goodsFilter']['keyWord']);
+            $badWordList = str_replace('、', ',', $badWordList);
+            $badWordList = explode(',', $badWordList);
+            if (!empty($badWordList)) {
+                $blackReg = '/' . implode('|', $badWordList) . '/i';
+                if (preg_match($blackReg, $productName, $matches))
+                    return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['goodsFilter']['tips']]);
+            }
         }
-        //check goods filter key
-        $tradeNo = date('YmdHis') . rand(11111, 99999);
+        //检测违禁词
 
-        $createTime = getDateTime();
-        $result     = Db::table('epay_order')->insert([
-            'uid'         => $uid,
-            'tradeNo'     => $tradeNo,
-            'tradeNoOut'  => $tradeNoOut,
-            'notify_url'  => $notifyUrl,
-            'return_url'  => '',
-            'money'       => $money,
-            'type'        => $this->converPayName($type),
-            'productName' => $productName,
-            'ipv4'        => $this->request->ip(),
-            'status'      => 0,
-            'createTime'  => $createTime
-        ]);
-        if (!$result)
-            return json(['code' => 0, 'msg' => '创建订单失败,请重试']);
+        $tradeNo  = date('YmdHis') . rand(11111, 99999);
+        $clientIp = getClientIp();
+
+        $tradeNoData = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('id')->select();
+        if (!empty($tradeNoData))
+            $tradeNo = date('YmdHis') . rand(11111, 99999);
+        //防止单号重复
+        $tradeNoOutData = Db::table('epay_order')->where([
+            'tradeNoOut' => $tradeNoOut,
+            'uid'        => $uid
+        ])->limit(1)->field('tradeNo,type')->select();
+
+        if (empty($tradeNoOutData)) {
+            $result = Db::table('epay_order')->insert([
+                'uid'         => $uid,
+                'tradeNo'     => $tradeNo,
+                'tradeNoOut'  => $tradeNoOut,
+                'notify_url'  => $notifyUrl,
+                'return_url'  => '',
+                'money'       => $money,
+                'type'        => $this->converPayName($type),
+                'productName' => $productName,
+                'ipv4'        => $clientIp,
+                'status'      => 0,
+                'createTime'  => getDateTime()
+            ]);
+            if (!$result)
+                return json(['code' => 0, 'msg' => '创建订单失败,请重试']);
+        } else {
+            $tradeNo = $tradeNoOutData[0]['tradeNo'];
+            if ($tradeNoOutData[0]['type'] != $this->converPayName($type))
+                Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update(['type' => $this->converPayName($type)]);
+            //改变支付类型
+        }
+        //解决用户交易号重复问题
 
         if ($type == 'wxpay') {
             $wxPayModel    = new WxPayModel($this->systemConfig['wxpay']);
             $requestResult = $wxPayModel->sendPayRequest([
-                'money'   => $money,
+                'money'   => ($money / 100),
                 'tradeNo' => $tradeNo
-            ], 'NATIVE');
-            if ($requestResult['return_code'] != 'SUCCESS' && $requestResult['result_code'] != 'SUCCESS')
+            ], 'NATIVE', $this->wxNotifyUrl);
+            if ($requestResult['return_code'] != 'SUCCESS' || $requestResult['result_code'] != 'SUCCESS')
                 return json(['code' => 0, 'msg' => '微信支付下单失败！[' . $requestResult['err_code'] . ']' . $requestResult['err_code_desc']]);
         } else {
             $qqPayModel    = new QQPayModel($this->systemConfig['qqpay']);
             $param         = [
                 'out_trade_no'     => $tradeNo,
-                'body'             => $result[0]['productName'],
+                'body'             => 'QQ支付业务',
                 'fee_type'         => 'CNY',
-                'notify_url'       => url('/Pay/QQPay/Notify', '', false, true),
-                'spbill_create_ip' => request()->ip(),
-                'total_fee'        => $result[0]['money'],
+                'notify_url'       => $this->qqNotifyUrl,
+                'spbill_create_ip' => $clientIp,
+                'total_fee'        => ($money / 100),
                 'trade_type'       => 'NATIVE'
             ];
             $requestResult = $qqPayModel->sendPayRequest($param);
-            if ($requestResult['return_code'] != 'SUCCESS' && $requestResult['result_code'] != 'SUCCESS')
+            if ($requestResult['return_code'] != 'SUCCESS' || $requestResult['result_code'] != 'SUCCESS')
                 return json(['code' => 0, 'msg' => 'QQ钱包支付下单失败！[' . $requestResult['err_code'] . ']' . $requestResult['err_code_desc']]);
         }
         return json([
@@ -241,6 +275,18 @@ class ApiV1 extends Controller
             'out_trade_no' => $tradeNoOut,
             'code_url'     => $requestResult['code_url']
         ]);
+    }
+
+    private function initParam()
+    {
+        $this->systemConfig = getConfig();
+        if (empty($this->systemConfig['notifyDomain'])) {
+            $this->wxNotifyUrl = url('/Pay/WxPay/Notify', '', false, true);
+            $this->qqNotifyUrl = url('/Pay/QQPay/Notify', '', false, true);
+        } else {
+            $this->wxNotifyUrl = $this->systemConfig['notifyDomain'] . '/Pay/WxPay/Notify';
+            $this->qqNotifyUrl = $this->systemConfig['notifyDomain'] . '/Pay/QQPay/Notify';
+        }
     }
 
     /**

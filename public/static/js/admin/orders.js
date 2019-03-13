@@ -253,9 +253,9 @@ $(function () {
                             status: $('#changeOrderStatus').val(),
                             tradeNo: tradeNo
                         }, function (data) {
-                            if(data['status']===1)
+                            if (data['status'] === 1)
                                 swal({
-                                    title:'',
+                                    title: '',
                                     text: data['msg'],
                                     showConfirmButton: false,
                                     timer: 1500,
@@ -263,7 +263,7 @@ $(function () {
                                 });
                             else
                                 swal({
-                                    title:'',
+                                    title: '',
                                     text: data['msg'],
                                     showConfirmButton: false,
                                     timer: 1500,
@@ -271,10 +271,98 @@ $(function () {
                                 });
                         }, 'json');
                         swal.close()
-                    }else{
+                    } else {
                         swal.close()
                     }
                 });
         }
     });
+
+    $('#batchCallback').click(function () {
+        var uid = $('#uid').val();
+        var payType = $('#payTypeCallback').val();
+        var startTime = $('#startCallbackTime').val();
+        var endTime = $('#endCallbackTime').val();
+        if (!strDateTime(startTime)) {
+            swal({
+                title: '',
+                text: '开始时间不能为空',
+                showConfirmButton: false,
+                timer: 1500,
+                type: 'error'
+            });
+            return true;
+        }
+        if (!strDateTime(endTime)) {
+            swal({
+                title: '',
+                text: '结束时间不能为空',
+                showConfirmButton: false,
+                timer: 1500,
+                type: 'error'
+            });
+            return true;
+        }
+        if (uid.length === 0) {
+            swal({
+                title: '',
+                text: '用户uid不能为空',
+                showConfirmButton: false,
+                timer: 1500,
+                type: 'error'
+            });
+            return true;
+        }
+        swal({
+            title: '请稍后...',
+            text: '正在积极等待服务器响应',
+            showConfirmButton: false
+        });
+        $.post('/cy2018/api/BatchCallback', {
+            uid: uid,
+            payType: payType,
+            startTime: startTime,
+            endTime: endTime
+        }, function (data) {
+            if (data['status'] === 0) {
+                swal({
+                    title: '',
+                    text: data['msg'],
+                    showConfirmButton: false,
+                    timer: 1500,
+                    type: 'error'
+                });
+                return true;
+            }
+            var callbackList = data['data'];
+            var windows = window.open('_blank');
+            var nowSite = 0;
+            var handler = setInterval(function () {
+                swal({
+                    title: '请稍后...',
+                    text: '正在为您努力回调订单中（' + nowSite + ' / ' + callbackList.length + '）。。。',
+                    showConfirmButton: false
+                });
+                if (nowSite > callbackList.length) {
+                    windows.close();
+                    swal({
+                        title: '',
+                        text: '已经为您回调完成所有订单',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        type: 'success'
+                    });
+                    clearInterval(handler)
+                }
+                windows.location = callbackList[nowSite++];
+            }, 2000);
+
+        }, 'json');
+    });
 });
+
+function strDateTime(str) {
+    var reg = /^(\d+)-(\d{1,2})-(\d{1,2}) (\d{1,2}):(\d{1,2}):(\d{1,2})$/;
+    var r = str.match(reg);
+    return r != null;
+}

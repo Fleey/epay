@@ -110,7 +110,7 @@ class Index extends Controller
         if ($type != 'settle' && $type != 'connectInfo')
             return json(['status' => 0, 'msg' => '保存信息类型错误']);
         if ($type == 'settle') {
-            return json(['status' => 0, 'msg' => '修改结算信息请联系管理员']);
+            return json(['status'=>0,'msg'=>'修改结算信息,请联系管理员修改']);
             $settleType = input('post.settleType/d');
             $account    = input('post.account/s');
             $username   = input('post.username/s');
@@ -128,12 +128,12 @@ class Index extends Controller
             }
             if (empty($account))
                 return json(['status' => 0, 'msg' => '收款账号不能为空']);
-            if (strlen($account) > 32)
-                return json(['status' => 0, 'msg' => '收款账号长度不能超过32个字符']);
+            if (strlen($account) > 100)
+                return json(['status' => 0, 'msg' => '收款账号长度不能超过100个字符']);
             if (empty($username))
                 return json(['status' => 0, 'msg' => '真实姓名不能为空']);
-            if (strlen($username) > 10)
-                return json(['status' => 0, 'msg' => '用户名称不能超过10个字符串']);
+            if (strlen($username) > 100)
+                return json(['status' => 0, 'msg' => '用户名称不能超过100个字符串']);
             $result = Db::table('epay_user')->limit(1)->where('id', $uid)->update([
                 'clearType' => $settleType,
                 'username'  => $username,

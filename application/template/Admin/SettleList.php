@@ -1,5 +1,5 @@
 <style>
-    #orderInfo .item > span[data-name] {
+    #orderInfo .item > span[data-name], #orderInfo .item > img[data-name] {
         display: block;
     }
 
@@ -22,26 +22,27 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">结算列表</h5>
-                    <button class="btn w96 btn-outline-primary btn-sm float-right" data-toggle="modal" data-target="#searchFilter">
+                    <button class="btn w96 btn-outline-primary btn-sm float-right" data-toggle="modal"
+                            data-target="#searchFilter">
                         高级搜索
                     </button>
                     <div class="table-responsive">
-                    <table id="orderList2" class="table no-wrap user-table mb-0 table-hover">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>商户号</th>
-                            <th>结算方式</th>
-                            <th>结算账号</th>
-                            <th>结算名称</th>
-                            <th>金额（单位元）</th>
-                            <th>状态</th>
-                            <th>申请时间</th>
-                            <th>操作</th>
-                        </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                        <table id="orderList2" class="table no-wrap user-table mb-0 table-hover">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>商户号</th>
+                                <th>结算方式</th>
+                                <th>结算账号</th>
+                                <th>结算名称</th>
+                                <th>金额（单位元）</th>
+                                <th>状态</th>
+                                <th>申请时间</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -106,6 +107,12 @@
                     <div class="col-md-3 item">
                         <span class="title">操作时间</span>
                         <span data-name="updateTime"></span>
+                    </div>
+                </div>
+                <div class="row" id="settleQr" style="display: block;">
+                    <div class="col-md-4 item">
+                        <span class="title">转账二维码</span>
+                        <img data-name="settleQrCode" src="#" alt="" width="128" height="128">
                     </div>
                 </div>
             </div>

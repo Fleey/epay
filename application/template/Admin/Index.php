@@ -80,6 +80,8 @@
 <script src="/static/js/resource/custom.min.js"></script>
 <script src="/static/js/resource/PrismJS.js"></script>
 <script src="/static/js/resource/sweetalert.min.js"></script>
+<script src="/static/js/resource/crypto-js.min.js"></script>
+<script src="/static/js/resource/sha256.min.js"></script>
 <script>var baseUrl = '/';</script>
 <script src="/static/js/ToolsFunction.js"></script>
 <script src="/static/js/admin/main.js"></script>

@@ -148,13 +148,40 @@ $(function () {
         } else {
             $('#deposit').hide();
             $('#settleMoney').hide();
-            $('select[data-name="clearType"]').html('<option value="1">银行转账（手动）</option><option value="2">微信转账（手动）</option><option value="3">支付宝转账（手动）</option>');
+            $('select[data-name="clearType"]').html('' +
+                '<option value="1">银行转账（手动）</option>' +
+                '<option value="2">微信转账（手动）</option>' +
+                '<option value="3">支付宝转账（手动）</option>' +
+                '<option value="5">微信转账（二维码）</option>' +
+                '<option value="6">支付宝转账（二维码）</option>'
+            );
+        }
+    });
+    $('select[data-name="clearType"]').change(function () {
+        var selectValue = parseInt($(this).val());
+        if (selectValue === 5 || selectValue === 6) {
+            $('.clearModeQr').show();
+            $('.clearModeAccount').hide();
+            $('span.QrCodeImgPreview').show();
+            $('img.QrCodeImgPreview').hide();
+        } else {
+            $('.clearModeAccount').show();
+            $('.clearModeQr').hide();
+            $('img.QrCodeImgPreview').removeAttr('src').removeAttr('data-file-id').hide();
         }
     });
     $('button[data-type="save"]').click(function () {
         if (isRequest)
             return;
         var requestData = {};
+        var requestStatus = $('#userInfo').attr('data-status');
+        var clearMode = parseInt($('select[data-name="clearType"]').val());
+        if (clearMode === 5 || clearMode === 6) {
+            if (!$('img.QrCodeImgPreview').is('[data-file-id]')) {
+                swal('请求失败', '结算二维码不能为空', 'error');
+                return true;
+            }
+        }
         $('#userInfo [data-name]').each(function (key, value) {
             var inputDom = $(value);
             var keyName = inputDom.attr('data-name');
@@ -162,13 +189,16 @@ $(function () {
                 keyName = 'uid';
             requestData[keyName] = inputDom.val();
         });
+        if (clearMode === 5 || clearMode === 6) {
+            requestData['qrFileID'] = $('img.QrCodeImgPreview').attr('data-file-id')
+        }
         swal({
             title: '请稍后...',
             text: '正在积极等待服务器响应',
             showConfirmButton: false
         });
         isRequest = true;
-        var requestUrl = $('#userInfo').attr('data-status') == 'add' ? '/cy2018/api/AddUser' : '/cy2018/api/UserInfo';
+        var requestUrl = requestStatus === 'add' ? '/cy2018/api/AddUser' : '/cy2018/api/UserInfo';
         $.post(requestUrl, requestData, function (data) {
             isRequest = false;
             if (data['status'] !== 1) {
@@ -235,7 +265,35 @@ $(function () {
         $('button[data-type="save"]').text('新增用户');
         $('input[data-name]').val('');
         $('#userInfo').modal('show').attr('data-status', 'add');
-        $('select[data-name="clearMode"]').change();
+        $('select[data-name="clearMode"]').val(0).change();
+        $('select[data-name="clearType"]').val(1).change();
+    });
+    $('.QrCodeImgPreview').click(function () {
+        $('#QrCodeImg').click();
+    });
+    $('#QrCodeImg').bind('change', function () {
+        var fileInfo = $(this)[0].files;
+        if (fileInfo === undefined)
+            return false;
+
+        var isSuccess = true;
+        $.each(fileInfo, function (key, value) {
+            if (!isSuccess)
+                return true;
+
+            if (value['type'] !== 'image/jpeg' && value['type'] !== 'image/png' && value['type'] !== 'image/gif') {
+                swal('该图片类型错误', '只能上传PNG或JPG或GIF类型', 'error');
+                isSuccess = false;
+                return true
+            }
+            if (value['size'] > (2 * 1024 * 1024)) {
+                swal('文件大小错误', '上传文件不能超过2MB', 'error');
+                isSuccess = false;
+                return true;
+            }
+            readFileHash(value, readHashEvent);
+            //为减少图片缓存做准备
+        });
     });
     $('#orderList1>tbody').on('click', 'td>div.btn-group [data-type]', function () {
         var clickDom = $(this);
@@ -276,14 +334,39 @@ $(function () {
                     setDataNameInfo(key, value);
                 });
                 //基础信息置入
+                var fileID = data['qrFileID'];
+                $('select[data-name="clearType"]').val(data['clearType']).change();
                 $('input[data-name="id"]').parent().show();
                 $('input[data-name="key"]').parent().show();
                 $('input[data-name="balance"]').parent().show();
                 $('button[data-type="delete"]').show();
                 $('button[data-type="reloadKey"]').show();
                 $('button[data-type="save"]').text('保存');
+                $('span.QrCodeImgPreview').hide();
+                $('img.QrCodeImgPreview').attr({
+                    'data-file-id': fileID === 0 ? 0 : fileID,
+                    'src': '/static/uploads/' + getFilePath(fileID)
+                }).css({
+                    'border': 'none'
+                }).show();
                 $('#userInfo').modal('show').attr('data-status', 'save');
             });
         }
     });
 });
+
+function readHashEvent(hash, args) {
+    var fileID = getServerFileID(hash);
+    //第一步 判断服务器是否有存档
+    if (fileID === 0) {
+        fileID = uploadFileCloud(args['fileInfo'], 'productImg');
+        //第二步 上传文件
+    }
+    $('span.QrCodeImgPreview').hide();
+    $('img.QrCodeImgPreview').attr({
+        'data-file-id': fileID === 0 ? 0 : fileID,
+        'src': '/static/uploads/' + getFilePath(fileID)
+    }).css({
+        'border': 'none'
+    }).show();
+}

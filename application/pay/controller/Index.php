@@ -164,7 +164,7 @@ class Index extends Controller
                 return $this->fetch('/SystemMessage', ['msg' => '创建订单失败,请重试']);
         } else {
             $tradeNo = $tradeNoOutData[0]['tradeNo'];
-            if ($tradeNoData[0]['type'] != $this->converPayName($type))
+            if ($tradeNoOutData[0]['type'] != $this->converPayName($type))
                 Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update(['type' => $this->converPayName($type)]);
             //改变支付类型
         }

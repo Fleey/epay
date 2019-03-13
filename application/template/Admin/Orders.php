@@ -139,7 +139,7 @@
                         <div class="form-group row">
                             <label for="uid" class="col-md-3 control-label">商户ID</label>
                             <div class="col-md-8">
-                                <input type="text" class="form-control" id="uid" placeholder="商家ID">
+                                <input type="text" class="form-control" id="uid1" placeholder="商家ID">
                             </div>
                         </div>
                         <div class="form-group row">

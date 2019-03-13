@@ -279,7 +279,7 @@ $(function () {
     });
 
     $('#batchCallback').click(function () {
-        var uid = $('#uid').val();
+        var uid = $('#uid1').val();
         var payType = $('#payTypeCallback').val();
         var startTime = $('#startCallbackTime').val();
         var endTime = $('#endCallbackTime').val();

@@ -177,6 +177,11 @@ class ApiV1 extends Controller
         $this->initParam();
         //init param
 
+        $resultIsPayType = $this->isOpenPayType($type);
+        if ($resultIsPayType !== true)
+            return $resultIsPayType;
+        //check pay type is open
+
         $maxPayMoney = getPayUserAttr($uid, 'maxPayMoney');
         if (!empty($maxPayMoney)) {
             $maxPayMoney = decimalsToInt($maxPayMoney, 2);
@@ -204,7 +209,7 @@ class ApiV1 extends Controller
             if (!empty($badWordList)) {
                 $blackReg = '/' . implode('|', $badWordList) . '/i';
                 if (preg_match($blackReg, $productName, $matches))
-                    return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['goodsFilter']['tips']]);
+                    return json(['code' => 0, 'msg' => $this->systemConfig['goodsFilter']['tips']]);
             }
         }
         //检测违禁词
@@ -212,17 +217,20 @@ class ApiV1 extends Controller
         $tradeNo  = date('YmdHis') . rand(11111, 99999);
         $clientIp = getClientIp();
 
-        $tradeNoData = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('id')->select();
+        $tradeNoData = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('id,status')->select();
         if (!empty($tradeNoData))
             $tradeNo = date('YmdHis') . rand(11111, 99999);
         //防止单号重复
+        if ($tradeNoData[0]['status'])
+            return json(['code' => 0, 'msg' => '交易已经完成无法再次支付！']);
+
         $tradeNoOutData = Db::table('epay_order')->where([
             'tradeNoOut' => $tradeNoOut,
             'uid'        => $uid
         ])->limit(1)->field('tradeNo,type')->select();
 
         if (empty($tradeNoOutData)) {
-            $result = Db::table('epay_order')->insert([
+            $result = Db::table('epay_order')->insertGetId([
                 'uid'         => $uid,
                 'tradeNo'     => $tradeNo,
                 'tradeNoOut'  => $tradeNoOut,
@@ -251,6 +259,10 @@ class ApiV1 extends Controller
                 'money'   => ($money / 100),
                 'tradeNo' => $tradeNo
             ], 'NATIVE', $this->wxNotifyUrl);
+            if (!empty($requestResult['return_msg'])) {
+                $requestResult['err_code_desc'] = $requestResult['return_msg'];
+                $requestResult['err_code']      = 10001;
+            }
             if ($requestResult['return_code'] != 'SUCCESS' || $requestResult['result_code'] != 'SUCCESS')
                 return json(['code' => 0, 'msg' => '微信支付下单失败！[' . $requestResult['err_code'] . ']' . $requestResult['err_code_desc']]);
         } else {
@@ -265,6 +277,10 @@ class ApiV1 extends Controller
                 'trade_type'       => 'NATIVE'
             ];
             $requestResult = $qqPayModel->sendPayRequest($param);
+            if (!empty($requestResult['return_msg'])) {
+                $requestResult['err_code_desc'] = $requestResult['return_msg'];
+                $requestResult['err_code']      = 10001;
+            }
             if ($requestResult['return_code'] != 'SUCCESS' || $requestResult['result_code'] != 'SUCCESS')
                 return json(['code' => 0, 'msg' => 'QQ钱包支付下单失败！[' . $requestResult['err_code'] . ']' . $requestResult['err_code_desc']]);
         }
@@ -287,6 +303,21 @@ class ApiV1 extends Controller
             $this->wxNotifyUrl = $this->systemConfig['notifyDomain'] . '/Pay/WxPay/Notify';
             $this->qqNotifyUrl = $this->systemConfig['notifyDomain'] . '/Pay/QQPay/Notify';
         }
+    }
+
+    private function isOpenPayType($payType)
+    {
+        $converPayType = $this->converPayName($payType);
+
+        if ($converPayType == 3 && !$this->systemConfig['alipay']['isOpen']) {
+            return json(['code' => 0, 'msg' => $this->systemConfig['alipay']['tips']]);
+        } else if ($converPayType == 2 && !$this->systemConfig['qqpay']['isOpen']) {
+            return json(['code' => 0, 'msg' => $this->systemConfig['qqpay']['tips']]);
+        } else if ($converPayType == 1 && !$this->systemConfig['wxpay']['isOpen']) {
+            return json(['code' => 0, 'msg' => $this->systemConfig['wxpay']['tips']]);
+        }
+        //check is open pay
+        return true;
     }
 
     /**

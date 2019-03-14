@@ -183,6 +183,8 @@
                                     <option value="2">微信转账（手动）</option>
                                     <option value="3">支付宝转账（手动）</option>
                                     <option value="4">支付宝转账（自动）</option>
+                                    <option value="5">微信转账（二维码）</option>
+                                    <option value="6">支付宝转账（二维码）</option>
                                 </select>
                             </div>
                         </div>

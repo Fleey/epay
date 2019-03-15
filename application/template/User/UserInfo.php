@@ -57,8 +57,8 @@
                             <option value="3">支付宝（手动）</option>
                             <option value="2">微信（手动）</option>
                             <option value="4" disabled>支付即时转账（自动）</option>
-                            <option value="5">微信（二维码）</option>
-                            <option value="6">支付宝（二维码）</option>
+                            <option value="5" disabled>微信（二维码）</option>
+                            <option value="6" disabled>支付宝（二维码）</option>
                         </select>
                     </div>
                     <div class="form-group">

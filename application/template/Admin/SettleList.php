@@ -112,7 +112,7 @@
                 <div class="row" id="settleQr" style="display: block;">
                     <div class="col-md-4 item">
                         <span class="title">转账二维码</span>
-                        <img data-name="settleQrCode" src="#" alt="" width="128" height="128">
+                        <img style="cursor: pointer;" class="gp" data-name="settleQrCode" src="#" alt="" width="128" height="128">
                     </div>
                 </div>
             </div>

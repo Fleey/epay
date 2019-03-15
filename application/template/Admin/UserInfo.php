@@ -107,11 +107,11 @@
                             <label for="account1">结算账号</label>
                             <input type="text" class="form-control" data-name="account" value="" placeholder="结算账号">
                         </div>
-                        <div class="form-group">
-                            <label for="username1">结算名称</label>
-                            <input type="text" class="form-control" data-name="username" value=""
-                                   placeholder="请输入结算用户名">
-                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="username1">结算名称</label>
+                        <input type="text" class="form-control" data-name="username" value=""
+                               placeholder="请输入结算用户名">
                     </div>
                     <div class="form-group">
                         <label for="rate">结算费率</label>

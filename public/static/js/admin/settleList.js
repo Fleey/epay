@@ -334,7 +334,7 @@ $(function () {
                         $('img[data-name="settleQrCode"]').attr('src', '/static/uploads/' + getFilePath(data['settleQrFileID']));
                         $('#settleQr').show()
                     }
-                }else{
+                } else {
                     $('#settleQr').hide();
                 }
                 if (data['status'] === 0) {
@@ -345,6 +345,7 @@ $(function () {
                     $('button[data-type="deleteRecord"]').hide();
                 }
                 $('#orderInfo').modal('show');
+                bindClickImg();
             });
         }
     });

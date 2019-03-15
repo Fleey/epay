@@ -458,7 +458,7 @@ class Index extends Controller
             $rate = 10000;
         if (empty($rate)) {
             $systemConfig = getConfig();
-            $rate         = $systemConfig['defaultMoneyRate'] * 100;
+            $rate         = $systemConfig['defaultMoneyRate'];
         }
         //add rate default
 

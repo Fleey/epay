@@ -29,6 +29,7 @@
                                 <th scope="col" class="border-0 text-uppercase font-medium">结算账号</th>
                                 <th scope="col" class="border-0 text-uppercase font-medium">结算金额</th>
                                 <th scope="col" class="border-0 text-uppercase font-medium">结算时间</th>
+                                <th scope="col" class="border-0 text-uppercase font-medium">结算备注</th>
                                 <th scope="col" class="border-0 text-uppercase font-medium">状态</th>
                             </tr>
                             </thead>
@@ -69,18 +70,21 @@
                         }
                         $('#pagination').remove();
                         $.each(data['data'], function (key, value) {
+                            if(value['remark'] === null)
+                                value['remark'] = '暂无转账备注';
                             var trDom = $(document.createElement('tr'));
                             var tdDom1 = $(document.createElement('td')).text(value['id']);
                             var tdDom2 = $(document.createElement('td')).text(value['account']);
                             var tdDom3 = $(document.createElement('td')).text(value['money'] / 100);
-                            var tdDom4;
+                            var tdDom4 = $(document.createElement('td')).text(value['remark']);
+                            var tdDom5;
                             if (value['status']) {
-                                tdDom4 = $(document.createElement('td')).text('已结算').addClass('text-success')
+                                tdDom5 = $(document.createElement('td')).text('已结算').addClass('text-success')
                             } else {
-                                tdDom4 = $(document.createElement('td')).text('待结算').addClass('text-danger')
+                                tdDom5 = $(document.createElement('td')).text('待结算').addClass('text-danger')
                             }
-                            var tdDom5 = $(document.createElement('td')).text(value['createTime']);
-                            trDom.append(tdDom1).append(tdDom2).append(tdDom3).append(tdDom5).append(tdDom4);
+                            var tdDom6 = $(document.createElement('td')).text(value['createTime']);
+                            trDom.append(tdDom1).append(tdDom2).append(tdDom3).append(tdDom6).append(tdDom4).append(tdDom5);
                             $('.settle-list>tbody').append(trDom)
                         });
                         $('.settle-list').after('<nav id="pagination" aria-label="Page navigation" class="pagination"></nav>');

@@ -240,6 +240,7 @@ $(function () {
     });
     $('button[data-type="confirmPay"]').click(function () {
         var id = $(this).attr('data-settle-id');
+        var remark = $('input[data-name="settleRemark"]').val();
         swal({
                 title: '操作提示',
                 text: '确定要结算该数据吗？',
@@ -256,7 +257,7 @@ $(function () {
                     text: '正在积极等待服务器响应',
                     showConfirmButton: false
                 });
-                $.post('/cy2018/api/confirmSettle', {id: id}, function (data) {
+                $.post('/cy2018/api/confirmSettle', {id: id, remark: remark}, function (data) {
                     if (data['status'] !== 1) {
                         swal('请求失败', data['msg'], 'error');
                         return true;
@@ -340,9 +341,13 @@ $(function () {
                 if (data['status'] === 0) {
                     $('button[data-type="confirmPay"]').show().attr('data-settle-id', id);
                     $('button[data-type="deleteRecord"]').show().attr('data-settle-id', id);
+                    $('input[data-name="settleRemark"]').removeAttr("disabled");
+                    $('#settleRemark button').show();
                 } else {
                     $('button[data-type="confirmPay"]').hide();
                     $('button[data-type="deleteRecord"]').hide();
+                    $('input[data-name="settleRemark"]').attr("disabled", "disabled");
+                    $('#settleRemark button').hide();
                 }
                 $('#orderInfo').modal('show');
                 bindClickImg();

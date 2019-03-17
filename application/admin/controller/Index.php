@@ -378,7 +378,8 @@ class Index extends Controller
         $username = session('username', '', 'admin');
         if (empty($username))
             return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
-        $id = input('post.id/d');
+        $id     = input('post.id/d');
+        $remark = input('post.remark/s', '暂无转账备注');
         if (empty($id))
             return json(['status' => 0, 'msg' => '参数不能为空']);
         $result = Db::table('epay_settle')->where('id', $id)->field('status,clearType,addType,money,uid')->limit(1)->select();
@@ -391,7 +392,7 @@ class Index extends Controller
         if ($result[0]['money'] <= 0)
             return json(['status' => 0, 'msg' => '订单结算金额有误']);
 
-        $result = $this->confirmSettle($id);
+        $result = $this->confirmSettle($id, $remark);
         return json(['status' => $result ? 1 : 0, 'msg' => $result ? '操作成功' : '操作失败']);
     }
 
@@ -689,7 +690,7 @@ class Index extends Controller
         return json($SearchTable->getData());
     }
 
-    private function confirmSettle($settleID)
+    private function confirmSettle($settleID, $remark = '暂无转账备注')
     {
         $result = Db::table('epay_settle')->where('id', $settleID)->field('status,clearType,addType,money,uid')->limit(1)->select();
         if (empty($result))
@@ -701,6 +702,7 @@ class Index extends Controller
         if (!$updateUserResult)
             return false;
         $result = Db::table('epay_settle')->where('id', $settleID)->update([
+            'remark'     => $remark,
             'status'     => 1,
             'updateTime' => getDateTime()
         ]);

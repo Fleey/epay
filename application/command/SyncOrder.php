@@ -6,6 +6,7 @@ use think\console\Command;
 use think\console\Input;
 use think\console\Output;
 use think\Db;
+use think\Exception;
 
 class SyncOrder extends Command
 {
@@ -45,12 +46,21 @@ class SyncOrder extends Command
 
         $callbackList = Db::table('epay_callback')->where('status', 1)->field('id,url')->cursor();
         foreach ($callbackList as $value) {
-            $result = @file_get_contents($value['url'], false, stream_context_create([
-                'http' => [
-                    'method'  => 'GET',
-                    'timeout' => 5
-                ]
-            ]));
+            try {
+                $result = @file_get_contents($value['url'], false, stream_context_create([
+                    'http' => [
+                        'method'  => 'GET',
+                        'timeout' => 5
+                    ],
+                    'ssl'  => [
+                        'verify_peer'      => false,
+                        'verify_peer_name' => false
+                    ]
+
+                ]));
+            } catch (Exception $e) {
+                $result = false;
+            }
             if ($result === false)
                 Db::table('epay_callback')->where('id', $value['id'])->limit(1)->update([
                     'status'     => 2,

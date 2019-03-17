@@ -112,7 +112,29 @@
                 <div class="row" id="settleQr" style="display: block;">
                     <div class="col-md-4 item">
                         <span class="title">转账二维码</span>
-                        <img style="cursor: pointer;" class="data-img" data-name="settleQrCode" src="#" alt="" width="128" height="128">
+                        <img style="cursor: pointer;" class="data-img" data-name="settleQrCode" src="#" alt=""
+                             width="128" height="128">
+                    </div>
+                </div>
+                <div class="row" id="settleRemark">
+                    <div class="col-md-12 item">
+                        <span class="title">转账备注</span>
+                        <div class="row">
+                            <div class="col-md-10">
+                                <input type="text" class="form-control" data-name="settleRemark" placeholder="请填写转账转账备注 可为空">
+                            </div>
+                            <div class="col-md-2">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        快速备注
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="javascript:$('input[data-name=\'settleRemark\']').val('结算转账')">结算转账</a>
+                                        <a class="dropdown-item" href="javascript:$('input[data-name=\'settleRemark\']').val('无')">无</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

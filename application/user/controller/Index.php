@@ -86,7 +86,7 @@ class Index extends Controller
         $page = input('get.page/d', 1);
         if ($page <= 0)
             $page = 1;
-        $result   = Db::table('epay_settle')->field('id,account,money,status,createTime')->order('id desc')->where('uid', $uid)->page($page, 15)->select();
+        $result   = Db::table('epay_settle')->field('id,account,money,status,createTime,remark')->order('id desc')->where('uid', $uid)->page($page, 15)->select();
         $totalRow = Db::table('epay_settle')->where('uid', $uid)->count('id');
         return json(['status' => 1, 'data' => $result, 'totalPage' => ceil($totalRow / 15)]);
     }

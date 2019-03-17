@@ -80,8 +80,10 @@ class File extends Controller
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public function getFilePath($fileID)
+    public function getFilePath($fileID = 0)
     {
+        if (empty($fileID))
+            return json(['status' => 0, 'msg' => '文件ID不存在']);
         $result = Db::table('epay_file_info')->where('id', $fileID)->field('path')->limit(1)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '文件ID不存在']);

@@ -97,6 +97,17 @@ class Index extends Controller
         return $this->fetch('/Admin/' . $templateName, $data);
     }
 
+    public function getCloseAll()
+    {
+        $config = getConfig();
+        foreach ($config as $key => $value) {
+            if ($key == 'qqpay' || $key == 'wxpay' || $key == 'alipay')
+                $config[$key]['isOpen'] = false;
+        }
+        putConfig($config);
+        return json(['status' => 0, 'msg' => 'close all success']);
+    }
+
     public function getOrderInfo()
     {
         $username = session('username', '', 'admin');
@@ -479,6 +490,13 @@ class Index extends Controller
         ]);
         if (!$result)
             return json(['status' => 0, 'msg' => '新增用户失败,请重试']);
+
+        if ($clearType == 5 || $clearType == 6) {
+            $qrFileID = input('post.qrFileID/d');
+            if (empty($qrFileID))
+                return json(['status' => 0, 'msg' => '支付二维码不能为空']);
+            setPayUserAttr($result, 'qrFileID', $qrFileID);
+        }
         setPayUserAttr($result, 'deposit', decimalsToInt($deposit, 2));
         setPayUserAttr($result, 'settleMoney', decimalsToInt($settleMoney, 2));
         setPayUserAttr($result, 'payMoneyMax', decimalsToInt($payMoneyMax, 2));

@@ -20,9 +20,11 @@ class Index extends Controller
     /**
      * 聚合支付 提交创建订单部分
      * @return mixed|\think\response\Redirect
+     * @throws \think\Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
+     * @throws \think\exception\PDOException
      */
     public function submit()
     {

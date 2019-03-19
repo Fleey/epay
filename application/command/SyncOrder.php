@@ -21,17 +21,17 @@ class SyncOrder extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
-        $userData       = Db::table('epay_user')->field('id,rate,clearType')->cursor();
+        $userData       = Db::table('epay_user')->field('id,rate,clearMode')->cursor();
         $totalRateMoney = 0;
         foreach ($userData as $value) {
-            $uid            = $value['id'];
-            $rate           = $value['rate'] / 100;
-            $totalMoney     = Db::table('epay_order')->where([
+            $uid        = $value['id'];
+            $rate       = $value['rate'] / 100;
+            $totalMoney = Db::table('epay_order')->where([
                 'uid'      => $uid,
                 'status'   => 1,
                 'isShield' => 0
             ])->whereTime('endTime', 'today')->sum('money');
-            if ($value['clearType'] != 4) {
+            if ($value['clearMode'] == 0) {
                 Db::table('epay_user')->where('id', $uid)->limit(1)->update([
                     'balance' => $totalMoney * ($rate / 100) * 10
                 ]);

@@ -101,7 +101,7 @@ class Index extends Controller
     {
         $config = getConfig();
         foreach ($config as $key => $value) {
-            if ($key == 'qqpay' || $key == 'wxpay' || $key == 'alipay')
+            if ($key == 'wxpay')
                 $config[$key]['isOpen'] = false;
         }
         putConfig($config);
@@ -591,9 +591,11 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '订单号码无效']);
         if ($status != 0 && $status != 1)
             return json(['status' => 0, 'msg' => '请求状态有误']);
-        $orderInfo = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('money,uid')->select();
+        $orderInfo = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('money,uid,status')->select();
         if (empty($orderInfo))
             return json(['status' => 0, 'msg' => '订单不存在无法更改屏蔽状态']);
+        if (!$orderInfo[0]['status'])
+            return json(['status' => 0, 'msg' => '订单尚未支付,无法进行更改屏蔽状态']);
         $userInfo = Db::table('epay_user')->where('id', $orderInfo[0]['uid'])->field('rate')->limit(1)->select();
 
         $rate         = $userInfo[0]['rate'] / 100;

@@ -21,7 +21,7 @@ class SyncOrder extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
-        $userData       = Db::table('epay_user')->field('id,rate')->cursor();
+        $userData       = Db::table('epay_user')->field('id,rate,clearType')->cursor();
         $totalRateMoney = 0;
         foreach ($userData as $value) {
             $uid            = $value['id'];
@@ -31,6 +31,11 @@ class SyncOrder extends Command
                 'status'   => 1,
                 'isShield' => 0
             ])->whereTime('endTime', 'today')->sum('money');
+            if ($value['clearType'] != 4) {
+                Db::table('epay_user')->where('id', $uid)->limit(1)->update([
+                    'balance' => $totalMoney * ($rate / 100) * 10
+                ]);
+            }
             $totalRateMoney += $totalMoney * ($rate / 100);
         }
         $totalMoney = Db::table('epay_order')->where([
@@ -128,10 +133,10 @@ class SyncOrder extends Command
         //设置允许302转跳
         curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 
-        curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-        curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156'); //代理服务器地址
-        curl_setopt($ch, CURLOPT_PROXYPORT, 16819); //代理服务器端口
-        curl_setopt($ch, CURLOPT_PROXYUSERPWD, '825190973:su4vf614');
+//        curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+//        curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156'); //代理服务器地址
+//        curl_setopt($ch, CURLOPT_PROXYPORT, 16819); //代理服务器端口
+//        curl_setopt($ch, CURLOPT_PROXYUSERPWD, '825190973:su4vf614');
         //set proxy
         curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
         //gzip

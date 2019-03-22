@@ -133,10 +133,10 @@ class SyncOrder extends Command
         //设置允许302转跳
         curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 
-//        curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-//        curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156'); //代理服务器地址
-//        curl_setopt($ch, CURLOPT_PROXYPORT, 16819); //代理服务器端口
-//        curl_setopt($ch, CURLOPT_PROXYUSERPWD, '825190973:su4vf614');
+        curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+        curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156'); //代理服务器地址
+        curl_setopt($ch, CURLOPT_PROXYPORT, 16819); //代理服务器端口
+        curl_setopt($ch, CURLOPT_PROXYUSERPWD, '825190973:su4vf614');
         //set proxy
         curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
         //gzip

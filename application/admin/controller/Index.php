@@ -280,6 +280,12 @@ class Index extends Controller
         $data['isSettleApply'] = getPayUserAttr($uid, 'isSettleApply');
         if ($data['isSettleApply'] == '')
             $data['isSettleApply'] = 0;
+        $data['productNameShowMode'] = intval(getPayUserAttr($uid, 'productNameShowMode'));
+        if ($data['productNameShowMode'] == 1)
+            $data['productName'] = getPayUserAttr($uid, 'productName');
+        else
+            $data['productName'] = '';
+
 
         if ($data['clearType'] == 5 || $data['clearType'] == 6)
             $data['qrFileID'] = getPayUserAttr($uid, 'qrFileID');
@@ -450,20 +456,21 @@ class Index extends Controller
         if (empty($username))
             return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
 
-        $balance        = input('post.balance/s', 0);
-        $clearType      = input('post.clearType/s', 1);
-        $clearMode      = input('post.clearMode/d', 0);
-        $deposit        = input('post.deposit/s', 0);
-        $settleMoney    = input('post.settleMoney/s', 0);
-        $domain         = input('post.domain/s', '');
-        $email          = input('post.email/s', '');
-        $isBan          = input('post.isBan/d', 0);
-        $payDayMoneyMax = input('post.payDayMoneyMax/s', 0);
-        $payMoneyMax    = input('post.payMoneyMax/s', 0);
-        $qq             = input('post.qq/s', 0);
-        $rate           = input('post.rate/s', 0);
-        $username       = input('post.username/s', '');
-        $account        = input('post.account/s', '');
+        $balance             = input('post.balance/s', 0);
+        $clearType           = input('post.clearType/s', 1);
+        $clearMode           = input('post.clearMode/d', 0);
+        $deposit             = input('post.deposit/s', 0);
+        $settleMoney         = input('post.settleMoney/s', 0);
+        $domain              = input('post.domain/s', '');
+        $email               = input('post.email/s', '');
+        $isBan               = input('post.isBan/d', 0);
+        $payDayMoneyMax      = input('post.payDayMoneyMax/s', 0);
+        $payMoneyMax         = input('post.payMoneyMax/s', 0);
+        $qq                  = input('post.qq/s', 0);
+        $rate                = input('post.rate/s', 0);
+        $username            = input('post.username/s', '');
+        $account             = input('post.account/s', '');
+        $productNameShowMode = input('post.productNameShowMode/d', 0);
 
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
@@ -497,6 +504,12 @@ class Index extends Controller
                 return json(['status' => 0, 'msg' => '支付二维码不能为空']);
             setPayUserAttr($result, 'qrFileID', $qrFileID);
         }
+        if ($productNameShowMode == 1) {
+            $productName = input('post.productName/s');
+            if (empty($productName))
+                $productName = '这是默认商品名，请联系管理员处理';
+            setPayUserAttr($result, 'productName', $productName);
+        }
         setPayUserAttr($result, 'deposit', decimalsToInt($deposit, 2));
         setPayUserAttr($result, 'settleMoney', decimalsToInt($settleMoney, 2));
         setPayUserAttr($result, 'payMoneyMax', decimalsToInt($payMoneyMax, 2));
@@ -516,20 +529,21 @@ class Index extends Controller
         $result = Db::table('epay_user')->where('id', $uid)->field('id')->limit(1)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '用户不存在']);
-        $balance        = input('post.balance/s', 0);
-        $clearType      = input('post.clearType/s', 1);
-        $clearMode      = input('post.clearMode/d', 0);
-        $deposit        = input('post.deposit/s', 0);
-        $settleMoney    = input('post.settleMoney/s', 0);
-        $domain         = input('post.domain/s', '');
-        $email          = input('post.email/s', '');
-        $isBan          = input('post.isBan/d', 0);
-        $payDayMoneyMax = input('post.payDayMoneyMax/s', 0);
-        $payMoneyMax    = input('post.payMoneyMax/s', 0);
-        $qq             = input('post.qq/s', 0);
-        $rate           = input('post.rate/s', 0);
-        $username       = input('post.username/s', '');
-        $account        = input('post.account/s', '');
+        $balance             = input('post.balance/s', 0);
+        $clearType           = input('post.clearType/s', 1);
+        $clearMode           = input('post.clearMode/d', 0);
+        $deposit             = input('post.deposit/s', 0);
+        $settleMoney         = input('post.settleMoney/s', 0);
+        $domain              = input('post.domain/s', '');
+        $email               = input('post.email/s', '');
+        $isBan               = input('post.isBan/d', 0);
+        $payDayMoneyMax      = input('post.payDayMoneyMax/s', 0);
+        $payMoneyMax         = input('post.payMoneyMax/s', 0);
+        $qq                  = input('post.qq/s', 0);
+        $rate                = input('post.rate/s', 0);
+        $username            = input('post.username/s', '');
+        $account             = input('post.account/s', '');
+        $productNameShowMode = input('post.productNameShowMode/d', 0);
 
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
@@ -540,6 +554,12 @@ class Index extends Controller
             if (empty($qrFileID))
                 return json(['status' => 0, 'msg' => '支付二维码不能为空']);
             setPayUserAttr($uid, 'qrFileID', $qrFileID);
+        }
+        if ($productNameShowMode == 1) {
+            $productName = input('post.productName/s');
+            if (empty($productName))
+                $productName = '这是默认商品名，请联系管理员处理';
+            setPayUserAttr($uid, 'productName', $productName);
         }
 
         Db::table('epay_user')->where('id', $uid)->limit(1)->update([
@@ -554,6 +574,7 @@ class Index extends Controller
             'username'  => $username,
             'account'   => $account
         ]);
+        setPayUserAttr($uid, 'productNameShowMode', $productNameShowMode);
         setPayUserAttr($uid, 'deposit', decimalsToInt($deposit, 2));
         setPayUserAttr($uid, 'settleMoney', decimalsToInt($settleMoney, 2));
         setPayUserAttr($uid, 'payMoneyMax', decimalsToInt($payMoneyMax, 2));

@@ -217,7 +217,7 @@ class ApiV1 extends Controller
         $tradeNo  = date('YmdHis') . rand(11111, 99999);
         $clientIp = getClientIp();
 
-        $tradeNoData = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('id,status')->select();
+        $tradeNoData = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('id,status,productName')->select();
         if (!empty($tradeNoData))
             $tradeNo = date('YmdHis') . rand(11111, 99999);
         //防止单号重复
@@ -246,18 +246,19 @@ class ApiV1 extends Controller
             if (!$result)
                 return json(['code' => 0, 'msg' => '创建订单失败,请重试']);
         } else {
-            $tradeNo = $tradeNoOutData[0]['tradeNo'];
+            $tradeNo     = $tradeNoOutData[0]['tradeNo'];
+            $productName = $tradeNoData[0]['productName'];
             if ($tradeNoOutData[0]['type'] != $this->converPayName($type))
                 Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update(['type' => $this->converPayName($type)]);
             //改变支付类型
         }
         //解决用户交易号重复问题
-
         if ($type == 'wxpay') {
             $wxPayModel    = new WxPayModel($this->systemConfig['wxpay']);
             $requestResult = $wxPayModel->sendPayRequest([
-                'money'   => ($money / 100),
-                'tradeNo' => $tradeNo
+                'money'       => ($money / 100),
+                'tradeNo'     => $tradeNo,
+                'productName' => $productName
             ], 'NATIVE', $this->wxNotifyUrl);
             if (!empty($requestResult['return_msg'])) {
                 $requestResult['err_code_desc'] = $requestResult['return_msg'];
@@ -269,7 +270,7 @@ class ApiV1 extends Controller
             $qqPayModel    = new QQPayModel($this->systemConfig['qqpay']);
             $param         = [
                 'out_trade_no'     => $tradeNo,
-                'body'             => 'QQ支付业务',
+                'body'             => $productName,
                 'fee_type'         => 'CNY',
                 'notify_url'       => $this->qqNotifyUrl,
                 'spbill_create_ip' => $clientIp,

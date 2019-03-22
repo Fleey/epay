@@ -96,12 +96,11 @@ class WxPayModel
      */
     public function sendPayRequest(array $tradeData, string $type, string $notifyUrl)
     {
-        $productName = '充值不到账联系客服QQ：21101787';
         $requestUrl  = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
         $requestData = [
             'appid'            => $this->wxConfig['appid'],
             'mch_id'           => $this->wxConfig['mchid'],
-            'body'             => $productName,
+            'body'             => $tradeData['productName'],
             'out_trade_no'     => $tradeData['tradeNo'],
             'total_fee'        => $tradeData['money'],
             'spbill_create_ip' => getClientIp(),

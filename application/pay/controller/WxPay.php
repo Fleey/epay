@@ -17,7 +17,7 @@ class WxPay extends Controller
         parent::__construct($app);
         $this->systemConfig = getConfig();
         if (empty($this->systemConfig['notifyDomain'])) {
-            $this->notifyUrl =  url('/Pay/WxPay/Notify', '', false, true);
+            $this->notifyUrl = url('/Pay/WxPay/Notify', '', false, true);
         } else {
             $this->notifyUrl = $this->systemConfig['notifyDomain'] . '/Pay/WxPay/Notify';
         }
@@ -37,7 +37,7 @@ class WxPay extends Controller
             $siteName = '易支付';
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
-        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('money,productName,status,type,createTime')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,productName,status,type,createTime')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
         if ($result[0]['type'] != 1)
@@ -45,25 +45,35 @@ class WxPay extends Controller
         if ($result[0]['status'])
             return $this->fetch('/SystemMessage', ['msg' => '交易已经完成无法再次支付！']);
 
-        $tradeData            = $result[0];
-        $tradeData['tradeNo'] = $tradeNo;
+        $productNameShowMode = intval(getPayUserAttr($result[0]['uid'], 'productNameShowMode'));
+        $productName         = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];
+        if ($productNameShowMode == 1) {
+            $tempData    = getPayUserAttr($result[0]['uid'], 'productName');
+            $productName = empty($tempData) ? '商户尚未设置默认商品名称' : $tempData;
+        } else if ($productNameShowMode == 2) {
+            $productName = $result[0]['productName'];
+        }
+
+        $tradeData                = $result[0];
+        $tradeData['tradeNo']     = $tradeNo;
+        $tradeData['productName'] = $productName;
         //build trade data
         $isWxBrowser = strpos($this->request->header('user-agent'), 'MicroMessenger') !== false;
         //is wx browser
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay']);
         if ($isWxBrowser) {
-            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'JSAPI',$this->notifyUrl);
+            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'JSAPI', $this->notifyUrl);
             //手机微信内置浏览器支付
         } else if ($this->request->isMobile()) {
-            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'MWEB',$this->notifyUrl);
+            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'MWEB', $this->notifyUrl);
             //手机端微信支付
         } else {
-            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE',$this->notifyUrl);
+            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE', $this->notifyUrl);
             //PC端微信支付
         }
         if ($requestResult['return_code'] != 'SUCCESS')
             return $this->fetch('/SystemMessage', ['msg' => '微信支付下单失败！<br>[' . $requestResult['return_code'] . '] ' . $requestResult['return_msg']]);
-        if($requestResult['result_code']!='SUCCESS')
+        if ($requestResult['result_code'] != 'SUCCESS')
             return $this->fetch('/SystemMessage', ['msg' => '微信支付下单失败！<br>[' . $requestResult['err_code'] . '] ' . $requestResult['err_code_des']]);
         if ($requestResult['return_code'] == 'SUCCESS') {
             if ($isWxBrowser) {
@@ -72,9 +82,9 @@ class WxPay extends Controller
                     'redirectUrl' => input('get.d/d', 0) ? 'data.backurl' : url('/Pay/WxPay/WapResult', '', false, true),
                     'tradeNo'     => $tradeNo
                 ]);
-            }else if ($this->request->isMobile()) {
+            } else if ($this->request->isMobile()) {
                 $returnUrl = url('/Pay/WxPay/WapReturn?tradeNo=' . $tradeNo, '', false, true);
-                return '<script>window.location.replace(\''.$requestResult['mweb_url'] . '&redirect_url=' . urlencode($returnUrl).'\');</script>';
+                return '<script>window.location.replace(\'' . $requestResult['mweb_url'] . '&redirect_url=' . urlencode($returnUrl) . '\');</script>';
             } else {
                 return $this->fetch('/WxPayPcTemplate', [
                     'siteName'    => $siteName,

@@ -39,7 +39,7 @@ class QQPay extends Controller
             $siteName = '易支付';
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
-        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('money,productName,status,type,createTime')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,productName,status,type,createTime')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
         if ($result[0]['type'] != 2)
@@ -47,9 +47,18 @@ class QQPay extends Controller
         if ($result[0]['status'])
             return $this->fetch('/SystemMessage', ['msg' => '交易已经完成无法再次支付！']);
 
+        $productNameShowMode = intval(getPayUserAttr($result[0]['uid'], 'productNameShowMode'));
+        $productName         = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];
+        if ($productNameShowMode == 1) {
+            $tempData    = getPayUserAttr($result[0]['uid'], 'productName');
+            $productName = empty($tempData) ? '商户尚未设置默认商品名称' : $tempData;
+        } else if ($productNameShowMode == 2) {
+            $productName = $result[0]['productName'];
+        }
+
         $param         = [
             'out_trade_no'     => $tradeNo,
-            'body'             => $result[0]['productName'],
+            'body'             => $productName,
             'fee_type'         => 'CNY',
             'notify_url'       => $this->notifyUrl,
             'spbill_create_ip' => getClientIp(),

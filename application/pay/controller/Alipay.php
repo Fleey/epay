@@ -22,9 +22,9 @@ class Alipay extends Controller
         if (empty($this->systemConfig['notifyDomain'])) {
             $this->notifyUrl = url('/Pay/Alipay/Notify', '', false, true);
             $this->returnUrl = url('/Pay/Alipay/Return', '', false, true);
-        }else{
-            $this->notifyUrl = $this->systemConfig['notifyDomain'].'/Pay/Alipay/Notify';
-            $this->returnUrl = $this->systemConfig['notifyDomain'].'/Pay/Alipay/Return';
+        } else {
+            $this->notifyUrl = $this->systemConfig['notifyDomain'] . '/Pay/Alipay/Notify';
+            $this->returnUrl = $this->systemConfig['notifyDomain'] . '/Pay/Alipay/Return';
         }
     }
 
@@ -36,22 +36,32 @@ class Alipay extends Controller
         $tradeNo = input('get.tradeNo');
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
-        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('money,productName,status,type')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,productName,status,type')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
         if ($result[0]['type'] != 3)
             return $this->fetch('/SystemMessage', ['msg' => '支付方式有误！']);
         if ($result[0]['status'])
             return $this->fetch('/SystemMessage', ['msg' => '交易已经完成无法再次支付！']);
+
+        $productNameShowMode = intval(getPayUserAttr($result[0]['uid'], 'productNameShowMode'));
+        $productName         = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];
+        if ($productNameShowMode == 1) {
+            $tempData    = getPayUserAttr($result[0]['uid'], 'productName');
+            $productName = empty($tempData) ? '商户尚未设置默认商品名称' : $tempData;
+        } else if ($productNameShowMode == 2) {
+            $productName = $result[0]['productName'];
+        }
+
         $isMobile = $this->request->isMobile();
         $param    = [
             'service'        => $isMobile ? 'alipay.wap.create.direct.pay.by.user' : 'create_direct_pay_by_user',
             'partner'        => $this->alipayConfig['partner'],
             'seller_id'      => $this->alipayConfig['partner'],
             'payment_type'   => 1,
-            'notify_url'     =>  $this->notifyUrl,
-            'return_url'     =>  $this->returnUrl,
-            'subject'        => $result[0]['productName'],
+            'notify_url'     => $this->notifyUrl,
+            'return_url'     => $this->returnUrl,
+            'subject'        => $productName,
             'out_trade_no'   => $tradeNo,
             'total_fee'      => $result[0]['money'] / 100,
             '_input_charset' => 'UTF-8'

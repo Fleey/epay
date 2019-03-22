@@ -157,6 +157,14 @@ $(function () {
             );
         }
     });
+    $('select[data-name="productNameShowMode"]').change(function () {
+        var selectValue = $(this).val();
+        if (selectValue === '1') {
+            $('input[data-name="productName"]').parent().show();
+        } else {
+            $('input[data-name="productName"]').parent().hide();
+        }
+    });
     $('select[data-name="clearType"]').change(function () {
         var selectValue = parseInt($(this).val());
         if (selectValue === 5 || selectValue === 6) {
@@ -267,6 +275,7 @@ $(function () {
         $('#userInfo').modal('show').attr('data-status', 'add');
         $('select[data-name="clearMode"]').val(0).change();
         $('select[data-name="clearType"]').val(1).change();
+        $('input[data-name="productName"]').parent().show();
     });
     $('.QrCodeImgPreview').click(function () {
         $('#QrCodeImg').click();
@@ -312,6 +321,7 @@ $(function () {
                     swal('获取信息失败', '请稍后再试', 'error');
                     return;
                 }
+                $('input[data-name="productName"]').parent().hide();
                 swal.close();
                 $('#deposit').hide();
                 $('#settleMoney').hide();
@@ -330,6 +340,9 @@ $(function () {
                         value = value / 1000;
                     } else if (key === 'deposit' || key === 'payDayMoneyMax' || key === 'payMoneyMax' || key === 'settleMoney') {
                         value = value / 100;
+                    } else if (key === 'productNameShowMode') {
+                        if (value == 1)
+                            $('input[data-name="productName"]').parent().show();
                     }
                     setDataNameInfo(key, value);
                 });

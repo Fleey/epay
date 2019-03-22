@@ -140,10 +140,22 @@
                         <input type="text" class="form-control" data-name="qq" value="" placeholder="QQ账号">
                     </div>
                     <div class="form-group">
+                        <label for="productNameShowMode">商品名显示模式</label>
+                        <select class="form-control" data-name="productNameShowMode">
+                            <option value="0">默认系统商品名称</option>
+                            <option value="1">商户自行指定商品名称</option>
+                            <option value="2">按接口请求商品名字</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="display: none;">
+                        <label for="productName">商户自行指定商品名称</label>
+                        <input type="text" class="form-control" data-name="productName" value="" placeholder="商户自行指定商品名称">
+                    </div>
+                    <div class="form-group">
                         <label for="isBan">是否封禁</label>
                         <select class="form-control" data-name="isBan">
-                            <option value="1">封禁</option>
                             <option value="0">正常</option>
+                            <option value="1">封禁</option>
                         </select>
                     </div>
 

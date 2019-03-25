@@ -105,14 +105,22 @@ class Index extends Controller
         if ($money <= 0)
             return $this->fetch('/SystemMessage', ['msg' => '金额(money)格式有误']);
 
-        $maxPayMoney = getPayUserAttr($uid, 'maxPayMoney');
+        $maxPayMoney    = getPayUserAttr($uid, 'payMoneyMax');
+        $maxPayMoneyDay = getPayUserAttr($uid, 'payDayMoneyMax');
+        if (!empty($maxPayMoney)) {
+            $maxPayMoneyDay = intval($maxPayMoneyDay);
+            $todayMoney     = Db::table('epay_order')->where([
+                'uid'    => $uid,
+                'status' => 1
+            ])->whereTime('endTime', 'today')->sum('money');
+            if ($maxPayMoneyDay < $todayMoney)
+                return $this->fetch('/SystemMessage', ['msg' => '[10003]超出商户单日订单总金额上限']);
+        }
 
         if (!empty($maxPayMoney)) {
-            $maxPayMoney = decimalsToInt($maxPayMoney, 2);
-            if (!empty($maxPayMoney)) {
-                if ($money > $maxPayMoney)
-                    return $this->fetch('/SystemMessage', ['msg' => '[10001]超出商户单个订单最大支付金额']);
-            }
+            $maxPayMoney = intval($maxPayMoney);
+            if ($money > $maxPayMoney)
+                return $this->fetch('/SystemMessage', ['msg' => '[10001]超出商户单个订单最大支付金额']);
         } else {
             if ($money > $this->systemConfig['defaultMaxPayMoney'])
                 return $this->fetch('/SystemMessage', ['msg' => '[10002]超出商户单个订单最大支付金额']);

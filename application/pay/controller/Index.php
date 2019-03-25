@@ -107,7 +107,7 @@ class Index extends Controller
 
         $maxPayMoney    = getPayUserAttr($uid, 'payMoneyMax');
         $maxPayMoneyDay = getPayUserAttr($uid, 'payDayMoneyMax');
-        if (!empty($maxPayMoney)) {
+        if (!empty($maxPayMoneyDay)) {
             $maxPayMoneyDay = intval($maxPayMoneyDay);
             $todayMoney     = Db::table('epay_order')->where([
                 'uid'    => $uid,

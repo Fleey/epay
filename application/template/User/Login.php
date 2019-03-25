@@ -3,6 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="renderer" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>登陆账号 - <?php echo $webName; ?></title>
     <link rel="stylesheet" href="/static/css/resource/style.css">
     <link rel="stylesheet" href="/static/css/user/login.css">

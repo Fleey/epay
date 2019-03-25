@@ -3,7 +3,9 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="Content-Language" content="zh-cn">
-    <meta name="renderer" content="webkit">
+    <meta name="renderer" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
     <title>QQ钱包安全支付 - <?php echo $siteName ?></title>
     <link href="/static/css/qq/mqq_pay.css?v=1" rel="stylesheet" media="screen">
 </head>

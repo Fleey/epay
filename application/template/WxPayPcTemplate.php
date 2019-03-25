@@ -3,7 +3,8 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="Content-Language" content="zh-cn">
-    <meta name="renderer" content="webkit">
+    <meta name="renderer" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>微信安全支付 - <?php echo $siteName ?></title>
     <link href="/static/css/wx/wechat_pay.css" rel="stylesheet" media="screen">
 </head>

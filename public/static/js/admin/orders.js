@@ -270,7 +270,6 @@ $(function () {
                                     type: 'error'
                                 });
                         }, 'json');
-                        swal.close()
                     } else {
                         swal.close()
                     }

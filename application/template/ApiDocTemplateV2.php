@@ -8,6 +8,8 @@
     <meta charset="utf-8"/>
     <title>开发文档V2 | <?php echo $webName; ?></title>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <meta name="renderer" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="keywords" content="<?php echo $webName; ?>">
     <meta name="description" content="<?php echo $webName; ?>"/>
     <meta content="Fleey" name="author"/>

@@ -60,7 +60,7 @@ $(function () {
     };
     $('#orderList').DataTable(dataTableConfig);
 
-    $('button[data-type="reloadNotify"]').click(function () {
+    $('button[data-type="reloadNotify"]').off("click").on('click',function () {
         var tradeNo = $('span[data-name="tradeNo"]').text();
         $.ajax({
             url: '/cy2018/api/Notified',
@@ -83,7 +83,7 @@ $(function () {
         });
     });
 
-    $('button[data-type="setShield"]').click(function () {
+    $('button[data-type="setShield"]').off("click").on('click',function () {
         var tradeNo = $('span[data-name="tradeNo"]').text();
         var status = $('span[data-name="isShield"]').text() === '未屏蔽' ? 1 : 0;
         var buttonDom = $(this);
@@ -110,7 +110,7 @@ $(function () {
         }, 'json');
     });
 
-    $('#cancelSearchFilter').bind('click', function () {
+    $('#cancelSearchFilter').off("click").on('click',function () {
         var dataTable = $('#orderList').dataTable();
         dataTable.fnDestroy();
         dataTableConfig['ajax'] = {
@@ -132,7 +132,7 @@ $(function () {
         $('#searchFilter').modal('hide');
         $('#cancelSearchFilter').hide();
     });
-    $('#searchContent').click(function () {
+    $('#searchContent').off("click").on('click',function () {
         var uid = $('#uid').val();
         var tradeNo = $('#tradeNo').val();
         var tradeNoOut = $('#tradeNoOut').val();
@@ -277,7 +277,7 @@ $(function () {
         }
     });
 
-    $('#batchCallback').click(function () {
+    $('#batchCallback').off("click").on('click',function () {
         var uid = $('#uid1').val();
         var payType = $('#payTypeCallback').val();
         var startTime = $('#startCallbackTime').val();

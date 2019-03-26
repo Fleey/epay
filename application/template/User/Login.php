@@ -87,7 +87,7 @@ else
 <script>
     $('[data-toggle="tooltip"]').tooltip();
     $(".preloader").fadeOut();
-    $('#to-recover').on("click", function () {
+    $('#to-recover').off("click").on('click', function () {
         $("#loginform").slideUp();
         $("#recoverform").fadeIn();
     });

@@ -92,7 +92,7 @@
             $.getJSON("/cy2018/api/Config", {keyName: d}, function (a) {
                 1 === a["status"] && (("defaultMaxPayMoney" === d || "defaultMoneyRate" === d) && (a["data"] = a["data"] / 100), c.val(a["data"]))
             })
-        }), $("#setAdmin").click(function () {
+        }), $("#setAdmin").off("click").on('click',function () {
             var a = $("#username").val(), b = $("#password").val();
             return 0 === a.length ? (swal({
                 title: "",

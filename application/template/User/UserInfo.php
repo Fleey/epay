@@ -118,7 +118,7 @@
                 $('#domain').val(data['domain'])
             }
         });
-        $('button[data-save]').click(function () {
+        $('button[data-save]').off("click").on('click',function () {
             var type = $(this).attr('data-type');
             var data = {};
             if (type === 'connectInfo') {

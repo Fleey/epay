@@ -186,7 +186,7 @@
             }
         }
 
-        $("#search").click(function () {
+        $("#search").off("click").on('click',function () {
             var content = $("#content").val();
             var type = $("#type").val();
             if (content.length !== 0) {

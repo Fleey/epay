@@ -5,11 +5,11 @@ $(function ($) {
     } else {
         route(hashPath, true);
     }
-    $('a[data-href]').bind('click', function () {
+    $('a[data-href]').off("click").on('click', function () {
         var url = $(this).attr('data-href');
         route(url, false);
     });
-    $('.exit').click(function () {
+    $('.exit').off("click").on('click',function () {
         $.getJSON('/auth/admin/exit', function (data) {
             swal(data['msg'], {
                 buttons: false,

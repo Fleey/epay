@@ -250,7 +250,7 @@
             chartMap.setOption(option);
             chartMap1.setOption(option1);
         });
-        $('button[data-update-program]').click(function () {
+        $('button[data-update-program]').off("click").on('click',function () {
             swal({
                 title: '请稍后...',
                 text: '切勿关闭浏览器,正在为您更新程序',

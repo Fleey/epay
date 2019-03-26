@@ -32,7 +32,7 @@ $(function () {
                 '</div>' +
                 '</td></tr>');
         });
-        $('#orderList>tbody button[data-type]').click(function () {
+        $('#orderList>tbody button[data-type]').off("click").on('click',function () {
             var clickType = $(this).attr('data-type');
             var settleTime = $(this).parent().parent().parent().find(':nth-child(3)').text();
             if (clickType === 'confirmSettle') {

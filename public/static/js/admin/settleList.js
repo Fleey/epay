@@ -203,7 +203,7 @@ $(function () {
             });
         }
     });
-    $('button[data-type="deleteRecord"]').click(function () {
+    $('button[data-type="deleteRecord"]').off("click").on('click',function () {
         var id = $(this).attr('data-settle-id');
         swal({
                 title: '操作提示',
@@ -238,7 +238,7 @@ $(function () {
                 }, 'json');
             });
     });
-    $('button[data-type="confirmPay"]').click(function () {
+    $('button[data-type="confirmPay"]').off("click").on('click',function () {
         var id = $(this).attr('data-settle-id');
         var remark = $('input[data-name="settleRemark"]').val();
         swal({

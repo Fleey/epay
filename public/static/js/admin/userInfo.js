@@ -48,7 +48,7 @@ $(function () {
     };
     $('#orderList1').DataTable(dataTableConfig);
 
-    $('button[data-type="reloadNotify"]').click(function () {
+    $('button[data-type="reloadNotify"]').off("click").on('click', function () {
         var tradeNo = $('span[data-name="tradeNo"]').text();
         $.ajax({
             url: '/cy2018/api/Notified',
@@ -72,7 +72,7 @@ $(function () {
     });
 
 
-    $('#cancelSearchFilter').bind('click', function () {
+    $('#cancelSearchFilter').off("click").on('click', function () {
         var dataTable = $('#orderList1').dataTable();
         dataTable.fnDestroy();
         dataTableConfig['ajax'] = {
@@ -94,7 +94,7 @@ $(function () {
         $('#searchFilter').modal('hide');
         $('#cancelSearchFilter').hide();
     });
-    $('#searchContent').click(function () {
+    $('#searchContent').off("click").on('click', function () {
         var uid = $('#uid').val();
         var key = $('#key').val();
         var account = $('#account').val();
@@ -178,7 +178,7 @@ $(function () {
             $('img.QrCodeImgPreview').removeAttr('src').removeAttr('data-file-id').hide();
         }
     });
-    $('button[data-type="save"]').click(function () {
+    $('button[data-type="save"]').off("click").on('click', function () {
         if (isRequest)
             return;
         var requestData = {};
@@ -218,7 +218,7 @@ $(function () {
             $('#userInfo').modal('hide');
         });
     });
-    $('button[data-type="delete"]').click(function () {
+    $('button[data-type="delete"]').off("click").on('click', function () {
         var uid = $('input[data-name="id"]').val();
         swal({
                 title: '操作提示',
@@ -247,7 +247,7 @@ $(function () {
                 }, 'json');
             });
     });
-    $('button[data-type="reloadKey"]').click(function () {
+    $('button[data-type="reloadKey"]').off("click").on('click', function () {
         var uid = $('input[data-name="id"]').val();
         swal({
             title: '请稍后...',
@@ -264,7 +264,7 @@ $(function () {
             swal('请求成功', '新的密匙为：' + data['key'], 'success');
         }, 'json');
     });
-    $('#addUser').click(function () {
+    $('#addUser').off("click").on('click', function () {
         $('input[data-name="id"]').parent().hide();
         $('input[data-name="key"]').parent().hide();
         $('input[data-name="balance"]').parent().hide();
@@ -277,7 +277,7 @@ $(function () {
         $('select[data-name="clearType"]').val(1).change();
         $('input[data-name="productName"]').parent().show();
     });
-    $('.QrCodeImgPreview').click(function () {
+    $('.QrCodeImgPreview').off("click").on('click', function () {
         $('#QrCodeImg').click();
     });
     $('#QrCodeImg').bind('change', function () {

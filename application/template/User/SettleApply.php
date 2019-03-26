@@ -51,10 +51,10 @@
                 $('#username').val(data['username'])
             }
         });
-        $('#settleAll').click(function () {
+        $('#settleAll').off("click").on('click',(function () {
             $('#settleMoney').val($('#balance').text())
         });
-        $('#settleApply').click(function () {
+        $('#settleApply').off("click").on('click', function () {
             var settleMoney = $('#settleMoney').val();
             swal({
                 title: '请稍后...',

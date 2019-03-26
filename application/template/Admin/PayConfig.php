@@ -153,7 +153,7 @@
                 }
             });
         });
-        $('div[data-config-name] button[data-save]').click(function () {
+        $('div[data-config-name] button[data-save]').off("click").on('click',function () {
             var buttonDom = $(this);
             var configName = buttonDom.parent().attr('data-config-name');
             var configData = {};

@@ -2,11 +2,12 @@
 
 namespace app\api\controller;
 
+use app\pay\model\PayModel;
 use app\pay\model\QQPayModel;
 use app\pay\model\WxPayModel;
-use think\App;
 use think\Controller;
 use think\Db;
+use think\Exception;
 
 class ApiV1 extends Controller
 {
@@ -113,7 +114,7 @@ class ApiV1 extends Controller
                 'endtime'      => $selectResult[0]['endTime'],
                 'status'       => $selectResult[0]['status'],
                 'money'        => (string)($selectResult[0]['money'] / 100),
-                'type'         => $this->converPayName($selectResult[0]['type'], true)
+                'type'         => PayModel::converPayName($selectResult[0]['type'], true)
             ]);
         } else if ($act == 'orders') {
             $limit = input('get.limit/d', 20);
@@ -160,7 +161,7 @@ class ApiV1 extends Controller
         $userInfo = Db::table('epay_user')->where('id', $uid)->field('key,isBan')->limit(1)->select();
         if (empty($userInfo))
             return json(['code' => 0, 'msg' => '签名校验失败，请返回重试！']);
-        if (!$this->checkSign(input('get.'), $userInfo[0]['key'], $sign))
+        if (!PayModel::checkSign(input('get.'), $userInfo[0]['key'], $sign))
             return json(['code' => 0, 'msg' => '签名校验失败，请返回重试！']);
         //check sign
         if ($userInfo[0]['isBan'])
@@ -171,7 +172,7 @@ class ApiV1 extends Controller
             return json(['code' => 0, 'msg' => '支付方式有误']);
         //check pay type
         $money = decimalsToInt($money, 2);
-        if ($money > 1000 || $money <= 0)
+        if ($money <= 0)
             return json(['code' => 0, 'msg' => '支付金额有误']);
 
         $this->initParam();
@@ -182,48 +183,27 @@ class ApiV1 extends Controller
             return $resultIsPayType;
         //check pay type is open
 
-        $maxPayMoney    = getPayUserAttr($uid, 'payMoneyMax');
-        $maxPayMoneyDay = getPayUserAttr($uid, 'payDayMoneyMax');
-        if (!empty($maxPayMoneyDay)) {
-            $maxPayMoneyDay = intval($maxPayMoneyDay);
-            $todayMoney     = Db::table('epay_order')->where([
-                'uid'    => $uid,
-                'status' => 1
-            ])->whereTime('endTime', 'today')->sum('money');
-            if ($maxPayMoneyDay < $todayMoney)
-                return json(['code' => 0, 'msg' => '[10003]超出商户单日订单总金额上限']);
+        try {
+            PayModel::checkUserMaxPayMoney($money, $uid, $this->systemConfig);
+        } catch (Exception $exception) {
+            return json(['code' => 0, 'msg' => $exception->getMessage()]);
         }
-        if (!empty($maxPayMoney)) {
-            $maxPayMoney = intval($maxPayMoney);
-            if ($money > $maxPayMoney)
-                return json(['code' => 0, 'msg' => '[10001]超出商户单个订单最大支付金额']);
-        } else {
-            if ($money > $this->systemConfig['defaultMaxPayMoney'])
-                return json(['code' => 0, 'msg' => '[10002]超出商户单个订单最大支付金额']);
-        }
-
-        if ($money <= 0)
-            return json(['code' => 0, 'msg' => '金额(money)格式有误']);
-
         //check user max pay money
+
         if (!preg_match('/^[a-zA-Z0-9.\_\-|]{1,64}+$/', $tradeNoOut))
             return json(['code' => 0, 'msg' => '订单号(out_trade_no)格式不正确 最小订单号位一位 最大为64位']);
         //check trade out
 
-        {
-            $badWordList = str_replace('，', ',', $this->systemConfig['goodsFilter']['keyWord']);
-            $badWordList = str_replace('、', ',', $badWordList);
-            $badWordList = explode(',', $badWordList);
-            if (!empty($badWordList)) {
-                $blackReg = '/' . implode('|', $badWordList) . '/i';
-                if (preg_match($blackReg, $productName, $matches))
-                    return json(['code' => 0, 'msg' => $this->systemConfig['goodsFilter']['tips']]);
-            }
+        try {
+            PayModel::checkBadWord($this->systemConfig, $productName);
+        } catch (Exception $exception) {
+            return json(['code' => 0, 'msg' => $exception->getMessage()]);
         }
         //检测违禁词
 
-        $tradeNo  = date('YmdHis') . rand(11111, 99999);
-        $clientIp = getClientIp();
+        $tradeNo       = date('YmdHis') . rand(11111, 99999);
+        $converPayType = PayModel::converPayName($type);
+        $clientIp      = getClientIp();
 
         $tradeNoData = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('id,status,productName')->select();
         if (!empty($tradeNoData))
@@ -238,6 +218,15 @@ class ApiV1 extends Controller
         ])->limit(1)->field('tradeNo,type')->select();
 
         if (empty($tradeNoOutData)) {
+            $orderDiscountMoney = PayModel::getOrderDiscountMoney($uid, $money);
+            //减免订单金额
+            $discountMoneyAfter = $money - $orderDiscountMoney;
+            if ($discountMoneyAfter >= 0)
+                $money = $discountMoneyAfter;
+            //如果减免后金额小于或等于0则不进行减免操作
+
+            $orderCreateTime = getDateTime();
+
             $result = Db::table('epay_order')->insertGetId([
                 'uid'         => $uid,
                 'tradeNo'     => $tradeNo,
@@ -245,7 +234,7 @@ class ApiV1 extends Controller
                 'notify_url'  => $notifyUrl,
                 'return_url'  => '',
                 'money'       => $money,
-                'type'        => $this->converPayName($type),
+                'type'        => $converPayType,
                 'productName' => $productName,
                 'ipv4'        => $clientIp,
                 'status'      => 0,
@@ -253,11 +242,21 @@ class ApiV1 extends Controller
             ]);
             if (!$result)
                 return json(['code' => 0, 'msg' => '创建订单失败,请重试']);
+
+            if ($orderDiscountMoney != 0)
+                Db::table('epay_order_attr')->insert([
+                    'uid'        => $uid,
+                    'tradeNo'    => $tradeNo,
+                    'attrKey'    => 'discountMoney',
+                    'attrValue'  => $orderDiscountMoney,
+                    'createTime' => $orderCreateTime
+                ]);
+            //创建订单减免记录 如果减免金额为 0 则不创建
         } else {
             $tradeNo     = $tradeNoOutData[0]['tradeNo'];
             $productName = $tradeNoData[0]['productName'];
-            if ($tradeNoOutData[0]['type'] != $this->converPayName($type))
-                Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update(['type' => $this->converPayName($type)]);
+            if ($tradeNoOutData[0]['type'] != $converPayType)
+                Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update(['type' => $converPayType]);
             //改变支付类型
         }
         //解决用户交易号重复问题
@@ -302,6 +301,9 @@ class ApiV1 extends Controller
         ]);
     }
 
+    /**
+     *
+     */
     private function initParam()
     {
         $this->systemConfig = getConfig();
@@ -314,9 +316,13 @@ class ApiV1 extends Controller
         }
     }
 
+    /**
+     * @param $payType
+     * @return bool|\think\response\Json
+     */
     private function isOpenPayType($payType)
     {
-        $converPayType = $this->converPayName($payType);
+        $converPayType = PayModel::converPayName($payType);
 
         if ($converPayType == 3 && !$this->systemConfig['alipay']['isOpen']) {
             return json(['code' => 0, 'msg' => $this->systemConfig['alipay']['tips']]);
@@ -329,60 +335,4 @@ class ApiV1 extends Controller
         return true;
     }
 
-    /**
-     * 转换支付名称 主要为了兼容老接口 和 优化数据库
-     * @param $payName
-     * @param bool $isReversal
-     * @return int|String
-     */
-    private function converPayName($payName, $isReversal = false)
-    {
-        if ($isReversal) {
-            switch ($payName) {
-                case 1:
-                    $payName = 'wxpay';
-                    break;
-                case 3:
-                    $payName = 'alipay';
-                    break;
-                case 2:
-                    $payName = 'tenpay';
-                    break;
-                default:
-                    $payName = 'null';
-                    break;
-            }
-        } else {
-            switch ($payName) {
-                case 'wxpay':
-                    $payName = 1;
-                    break;
-                case 'alipay':
-                    $payName = 3;
-                    break;
-                case 'qqpay':
-                    $payName = 2;
-                    break;
-                case 'tenpay':
-                    $payName = 2;
-                    break;
-                default:
-                    $payName = 0;
-                    break;
-            }
-        }
-        return $payName;
-    }
-
-    /**
-     * 效验签名
-     * @param array $data
-     * @param $key
-     * @param $sign
-     * @return bool
-     */
-    private function checkSign(array $data, string $key, string $sign)
-    {
-        return verifyMD5(createLinkString(argSort(paraFilter($data))), $key, $sign);
-    }
 }

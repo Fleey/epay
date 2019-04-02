@@ -11,7 +11,11 @@ class Index extends Controller
 {
     public function index()
     {
-        return $this->fetch('/IndexTemplate');
+        $config = getConfig();
+        return $this->fetch('/IndexTemplate', [
+            'webName' => $config['webName'],
+            'webQQ'   => $config['webQQ']
+        ]);
     }
 
     public function loadTemplate($templateName = 'Login')
@@ -120,6 +124,13 @@ class Index extends Controller
         if (empty($orderInfo))
             return json(['status' => 0, 'msg' => '平台订单ID不存在']);
         $orderInfo[0]['tradeNo'] = (string)$orderInfo[0]['tradeNo'];
+
+        $discountMoney                 = Db::table('epay_order_attr')->where([
+            'tradeNo' => $tradeNo,
+            'attrKey' => 'discountMoney'
+        ])->field('attrValue')->limit(1)->select();
+        $orderInfo[0]['discountMoney'] = empty($discountMoney) ? 0 : $discountMoney[0]['attrValue'];
+        $orderInfo[0]['discountMoney'] /= 100;
         return json(['status' => 1, 'data' => $orderInfo[0]]);
     }
 
@@ -233,6 +244,7 @@ class Index extends Controller
             }
             return json(['status' => 1, 'data' => $data]);
         }
+        return json(['status' => 0, 'data' => '你搞啥呢小老弟']);
     }
 
     public function getSettleInfo()
@@ -286,6 +298,9 @@ class Index extends Controller
         else
             $data['productName'] = '';
 
+        $data['orderDiscounts'] = getPayUserAttr($uid, 'orderDiscounts');
+        if ($data['orderDiscounts'] != '')
+            $data['orderDiscounts'] = unserialize($data['orderDiscounts']);
 
         if ($data['clearType'] == 5 || $data['clearType'] == 6)
             $data['qrFileID'] = getPayUserAttr($uid, 'qrFileID');
@@ -471,6 +486,7 @@ class Index extends Controller
         $username            = input('post.username/s', '');
         $account             = input('post.account/s', '');
         $productNameShowMode = input('post.productNameShowMode/d', 0);
+        $orderDiscounts      = input('post.orderDiscounts/s', '');
 
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
@@ -510,10 +526,20 @@ class Index extends Controller
                 $productName = '这是默认商品名，请联系管理员处理';
             setPayUserAttr($result, 'productName', $productName);
         }
+        setPayUserAttr($result, 'productNameShowMode', $productNameShowMode);
         setPayUserAttr($result, 'deposit', decimalsToInt($deposit, 2));
         setPayUserAttr($result, 'settleMoney', decimalsToInt($settleMoney, 2));
         setPayUserAttr($result, 'payMoneyMax', decimalsToInt($payMoneyMax, 2));
         setPayUserAttr($result, 'payDayMoneyMax', decimalsToInt($payDayMoneyMax, 2));
+
+        if (!empty($orderDiscounts)) {
+            $data = json_decode($orderDiscounts, true);
+            if (empty($data))
+                return json(['status' => 1, 'msg' => '新增用户成功,但是订单减免功能异常']);
+            //try
+            setPayUserAttr($result, 'orderDiscounts', serialize($data));
+        }
+
         return json(['status' => 1, 'msg' => '新增用户成功']);
     }
 
@@ -544,6 +570,8 @@ class Index extends Controller
         $username            = input('post.username/s', '');
         $account             = input('post.account/s', '');
         $productNameShowMode = input('post.productNameShowMode/d', 0);
+        $orderDiscounts      = input('post.orderDiscounts/s', '');
+
 
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
@@ -579,6 +607,11 @@ class Index extends Controller
         setPayUserAttr($uid, 'settleMoney', decimalsToInt($settleMoney, 2));
         setPayUserAttr($uid, 'payMoneyMax', decimalsToInt($payMoneyMax, 2));
         setPayUserAttr($uid, 'payDayMoneyMax', decimalsToInt($payDayMoneyMax, 2));
+        if (!empty($orderDiscounts)) {
+            $data = json_decode($orderDiscounts, true);
+            if (!empty($data))
+                setPayUserAttr($uid, 'orderDiscounts', serialize($data));
+        }
         return json(['status' => 1, 'msg' => '保存用户信息成功']);
     }
 

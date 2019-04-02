@@ -8,7 +8,7 @@
     <meta charset="utf-8"/>
     <title>开发文档V1 | <?php echo $webName; ?></title>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-    <meta name="renderer" content="webkit" />
+    <meta name="renderer" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="keywords" content="<?php echo $webName; ?>">
     <meta name="description" content="<?php echo $webName; ?>"/>
@@ -879,6 +879,7 @@
                         </table>
                         <h2 id="api6">[API]二维码下单接口</h2>
                         <p>此接口可用于服务器后端发起支付请求，会返回支付二维码链接</p>
+                        <p style="color: red;">注意！！！如果需更换支付状态，需要重新发起新的商户订单号。</p>
                         <p>
                             URL地址：<?php echo url('/qrcode.php?pid={商户ID}&type={支付方式}&out_trade_no={商户订单号}& notify_url={服务器异步通知地址}&name={商品名称}&money={金额}&sign={签名字符串}&sign_type=MD5', '', false, true); ?></p>
                         <p>请求参数说明：</p>
@@ -1015,6 +1016,7 @@
                         <hr/>
 
                         <h2 id="pay0">发起支付请求</h2>
+                        <p style="color: red;">注意！！！如果需更换支付状态，需要重新发起新的商户订单号。</p>
                         <p>URL地址：<?php echo url('/submit.php', '', false, true); ?></p>
                         <p>
                             POST数据：pid={商户ID}&type={支付方式}&out_trade_no={商户订单号}&notify_url={服务器异步通知地址}&return_url={页面跳转通知地址}&name={商品名称}&money={金额}&sitename={网站名称}&sign={签名字符串}&sign_type=MD5</p>

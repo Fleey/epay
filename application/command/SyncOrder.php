@@ -6,7 +6,6 @@ use think\console\Command;
 use think\console\Input;
 use think\console\Output;
 use think\Db;
-use think\Exception;
 
 class SyncOrder extends Command
 {
@@ -49,49 +48,30 @@ class SyncOrder extends Command
 
         $output->info(' start call back order');
 
-        $callbackList = Db::table('epay_callback')->where('status', 1)->field('id,url')->cursor();
-        foreach ($callbackList as $value) {
-            try {
-                $result = @file_get_contents($value['url'], false, stream_context_create([
-                    'http' => [
-                        'method'  => 'GET',
-                        'timeout' => 5
-                    ],
-                    'ssl'  => [
-                        'verify_peer'      => false,
-                        'verify_peer_name' => false
-                    ]
-
-                ]));
-            } catch (Exception $e) {
-                $result = false;
+        $callBackCount = 1;
+        //从0开始 1 则为两次 2 则为三次
+        for ($i = $callBackCount; $i >= 0; $i--) {
+            $isProxy = false;
+            if ($i == 1)
+                $isProxy = true;
+            $callbackList = Db::table('epay_callback')->where('status', $i)->field('id,url')->cursor();
+            foreach ($callbackList as $value) {
+                $result = $this->curl($value['url'], [], 'get', '', '', true, $isProxy);
+                if (!$result['isSuccess'])
+                    Db::table('epay_callback')->where('id', $value['id'])->limit(1)->update([
+                        'errorMessage' => $result['errorMsg'],
+                        'status'       => ($i + 1),
+                        'updateTime'   => getDateTime()
+                    ]);
+                else
+                    Db::table('epay_callback')->where('id', $value['id'])->limit(1)->delete();
             }
-            if ($result === false)
-                Db::table('epay_callback')->where('id', $value['id'])->limit(1)->update([
-                    'status'     => 2,
-                    'updateTime' => getDateTime()
-                ]);
-            else
-                Db::table('epay_callback')->where('id', $value['id'])->limit(1)->delete();
+            //采用不代理方式进行更新
         }
-        //采用file_get_contents方式进行更新
-        $callbackList = Db::table('epay_callback')->where('status', 0)->field('id,url')->cursor();
-        foreach ($callbackList as $value) {
-            $result = $this->curl($value['url']);
-            if (!$result['isSuccess'])
-                Db::table('epay_callback')->where('id', $value['id'])->limit(1)->update([
-                    'errorMessage' => $result['errorMsg'],
-                    'status'       => 1,
-                    'updateTime'   => getDateTime()
-                ]);
-            else
-                Db::table('epay_callback')->where('id', $value['id'])->limit(1)->delete();
-        }
-        //采用不代理方式进行更新
         $output->info('end call back order');
     }
 
-    protected function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlEncode = true)
+    protected function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlEncode = true, $isProxy = false)
     {
         if (empty($url))
             return '';
@@ -133,10 +113,14 @@ class SyncOrder extends Command
         //设置允许302转跳
         curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 
-        curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-        curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156'); //代理服务器地址
-        curl_setopt($ch, CURLOPT_PROXYPORT, 16819); //代理服务器端口
-        curl_setopt($ch, CURLOPT_PROXYUSERPWD, '825190973:su4vf614');
+        if ($isProxy) {
+            curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+            curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156');
+            //代理服务器地址
+            curl_setopt($ch, CURLOPT_PROXYPORT, 16819);
+            //代理服务器端口
+            curl_setopt($ch, CURLOPT_PROXYUSERPWD, '825190973:su4vf614');
+        }
         //set proxy
         curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
         //gzip

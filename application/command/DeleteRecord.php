@@ -20,8 +20,12 @@ class DeleteRecord extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
-        Db::table('epay_order')->whereTime('createTime', '<=', '- 15 day')->delete();
-        Db::table('epay_settle')->whereTime('createTime', '<=', '- 15 day')->delete();
+        $deleteTime = '- 15 day';
+        //delete 15 day before data
+        Db::table('epay_order')->whereTime('createTime', '<=', $deleteTime)->delete();
+        Db::table('epay_order_attr')->whereTime('createTime', '<=', $deleteTime)->delete();
+        Db::table('epay_settle')->whereTime('createTime', '<=', $deleteTime)->delete();
+        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
         $output->info('settle success');
     }
 }

@@ -2,9 +2,11 @@
 
 namespace app\pay\controller;
 
+use app\pay\model\PayModel;
 use think\App;
 use think\Controller;
 use think\Db;
+use think\Exception;
 
 class Index extends Controller
 {
@@ -45,17 +47,16 @@ class Index extends Controller
         }
         //效验数据
 
-        $param = createLinkString(argSort(paraFilter($this->getData)));
-        //排序并创建联系参数
         $uid = intval($this->getData['pid']);
         //get uid
         if (empty($uid))
             return $this->fetch('/SystemMessage', ['msg' => 'PID不存在！']);
-
+        if (empty($this->getData['sign']))
+            return $this->fetch('/SystemMessage', ['msg' => '签名(sign)不能为空']);
         $userData = Db::table('epay_user')->limit(1)->field('key,isBan')->where('id', $uid)->select();
         if (empty($userData))
             return $this->fetch('/SystemMessage', ['msg' => '签名校验失败，请返回重试！']);
-        if (!verifyMD5($param, $userData[0]['key'], $this->getData['sign']))
+        if (!PayModel::checkSign($this->getData, $userData[0]['key'], $this->getData['sign']))
             return $this->fetch('/SystemMessage', ['msg' => '签名校验失败，请返回重试！']);
         if ($userData[0]['isBan'])
             return $this->fetch('/SystemMessage', ['msg' => '商户已封禁，无法支付！']);
@@ -90,47 +91,27 @@ class Index extends Controller
         if (mb_strlen($productName) > 64)
             return $this->fetch('/SystemMessage', ['msg' => '商品名称(name)长度不能超过64个字符']);
 
-        {
-            $badWordList = str_replace('，', ',', $this->systemConfig['goodsFilter']['keyWord']);
-            $badWordList = str_replace('、', ',', $badWordList);
-            $badWordList = explode(',', $badWordList);
-            if (!empty($badWordList)) {
-                $blackReg = '/' . implode('|', $badWordList) . '/i';
-                if (preg_match($blackReg, $productName, $matches))
-                    return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['goodsFilter']['tips']]);
-            }
+        try {
+            PayModel::checkBadWord($this->systemConfig, $productName);
+        } catch (Exception $exception) {
+            return $this->fetch('/SystemMessage', ['msg' => $exception->getMessage()]);
         }
         //检测违禁词
 
         if ($money <= 0)
             return $this->fetch('/SystemMessage', ['msg' => '金额(money)格式有误']);
 
-        $maxPayMoney    = getPayUserAttr($uid, 'payMoneyMax');
-        $maxPayMoneyDay = getPayUserAttr($uid, 'payDayMoneyMax');
-        if (!empty($maxPayMoneyDay)) {
-            $maxPayMoneyDay = intval($maxPayMoneyDay);
-            $todayMoney     = Db::table('epay_order')->where([
-                'uid'    => $uid,
-                'status' => 1
-            ])->whereTime('endTime', 'today')->sum('money');
-            if ($maxPayMoneyDay < $todayMoney)
-                return $this->fetch('/SystemMessage', ['msg' => '[10003]超出商户单日订单总金额上限']);
-        }
-
-        if (!empty($maxPayMoney)) {
-            $maxPayMoney = intval($maxPayMoney);
-            if ($money > $maxPayMoney)
-                return $this->fetch('/SystemMessage', ['msg' => '[10001]超出商户单个订单最大支付金额']);
-        } else {
-            if ($money > $this->systemConfig['defaultMaxPayMoney'])
-                return $this->fetch('/SystemMessage', ['msg' => '[10002]超出商户单个订单最大支付金额']);
+        try {
+            PayModel::checkUserMaxPayMoney($money, $uid, $this->systemConfig);
+        } catch (Exception $exception) {
+            return $this->fetch('/SystemMessage', ['msg' => $exception->getMessage()]);
         }
         //check user max pay money
 
         if (!preg_match('/^[a-zA-Z0-9.\_\-|]{1,64}+$/', $tradeNoOut))
             return $this->fetch('/SystemMessage', ['msg' => '订单号(out_trade_no)格式不正确 最小订单号位一位 最大为64位']);
 
-        $converPayType = $this->converPayName($type);
+        $converPayType = PayModel::converPayName($type);
 
         if ($converPayType == 3 && !$this->systemConfig['alipay']['isOpen']) {
             return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['alipay']['tips']]);
@@ -153,11 +134,20 @@ class Index extends Controller
             'tradeNoOut' => $tradeNoOut,
             'uid'        => $uid
         ])->limit(1)->field('tradeNo,type')->select();
+
         if (empty($tradeNoOutData)) {
             $notifyUrl = str_replace('%20', '', $notifyUrl);
             $returnUrl = str_replace('%20', '', $returnUrl);
             //remove empty str
-            $result = Db::table('epay_order')->insert([
+            $orderDiscountMoney = PayModel::getOrderDiscountMoney($uid, $money);
+            //减免订单金额
+            $discountMoneyAfter = $money - $orderDiscountMoney;
+            if ($discountMoneyAfter >= 0)
+                $money = $discountMoneyAfter;
+            //如果减免后金额小于或等于0则不进行减免操作
+
+            $orderCreateTime = getDateTime();
+            $result          = Db::table('epay_order')->insert([
                 'uid'         => $uid,
                 'tradeNo'     => $tradeNo,
                 'tradeNoOut'  => $tradeNoOut,
@@ -168,15 +158,27 @@ class Index extends Controller
                 'productName' => $productName,
                 'ipv4'        => $clientIpv4,
                 'status'      => 0,
-                'createTime'  => getDateTime()
+                'createTime'  => $orderCreateTime
             ]);
             if (!$result)
                 return $this->fetch('/SystemMessage', ['msg' => '创建订单失败,请重试']);
+
+            if ($orderDiscountMoney != 0)
+                Db::table('epay_order_attr')->insert([
+                    'uid'        => $uid,
+                    'tradeNo'    => $tradeNo,
+                    'attrKey'    => 'discountMoney',
+                    'attrValue'  => $orderDiscountMoney,
+                    'createTime' => $orderCreateTime
+                ]);
+            //创建订单减免记录 如果减免金额为 0 则不创建
         } else {
             $tradeNo = $tradeNoOutData[0]['tradeNo'];
-            if ($tradeNoOutData[0]['type'] != $this->converPayName($type))
-                Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update(['type' => $this->converPayName($type)]);
-            //改变支付类型
+            if ($tradeNoOutData[0]['type'] != $converPayType)
+                Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
+                    'type' => $converPayType
+                ]);
+            //改变支付类型，注意这里可能存在问题，如果这个改变订单支付类型并且金额更新大于原先输入的金额数量
         }
         //解决用户交易号重复问题
 
@@ -217,32 +219,5 @@ class Index extends Controller
         if ($result[0]['status'])
             $returnData['url'] = buildCallBackUrl($tradeNo, 'return');
         return json($returnData);
-    }
-
-    /**
-     * 转换支付名称 主要为了兼容老接口 和 优化数据库
-     * @param $payName
-     * @return int
-     */
-    private function converPayName($payName)
-    {
-        switch ($payName) {
-            case 'wxpay':
-                $payName = 1;
-                break;
-            case 'alipay':
-                $payName = 3;
-                break;
-            case 'qqpay':
-                $payName = 2;
-                break;
-            case 'tenpay':
-                $payName = 2;
-                break;
-            default:
-                $payName = 0;
-                break;
-        }
-        return $payName;
     }
 }

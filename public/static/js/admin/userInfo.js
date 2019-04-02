@@ -182,6 +182,27 @@ $(function () {
         if (isRequest)
             return;
         var requestData = {};
+        var discountsData = {};
+        discountsData['isOpen'] = parseInt($('select[data-name="isOrderDiscountsOpen"]').val());
+        discountsData['type'] = parseInt($('select[data-name="orderDiscountsType"]').val());
+        discountsData['minMoney'] = $('input[data-name="orderDiscountsMinMoney"]').val();
+        if (discountsData['minMoney'].length === 0)
+            discountsData['minMoney'] = 0;
+        else
+            discountsData['minMoney'] = parseFloat(discountsData['minMoney']);
+        var tempData = [];
+        $('.orderDiscountsMoneyList input[data-name="discountsMoney"]').each(function (key, value) {
+            var inputValue = $(value).val();
+            if (inputValue.length !== 0) {
+                tempData.push(parseFloat(inputValue))
+            }
+        });
+        discountsData['moneyList'] = tempData;
+        if (discountsData['moneyList'].length === 0 && discountsData['isOpen'] === 1) {
+            swal('请求失败', '减免金额不能为空', 'error');
+            return true;
+        }
+        requestData['orderDiscounts'] = JSON.stringify(discountsData);
         var requestStatus = $('#userInfo').attr('data-status');
         var clearMode = parseInt($('select[data-name="clearType"]').val());
         if (clearMode === 5 || clearMode === 6) {
@@ -275,7 +296,7 @@ $(function () {
         $('#userInfo').modal('show').attr('data-status', 'add');
         $('select[data-name="clearMode"]').val(0).change();
         $('select[data-name="clearType"]').val(1).change();
-        $('input[data-name="productName"]').parent().show();
+        $('select[data-name="productNameShowMode"]').val('0').change();
     });
     $('.QrCodeImgPreview').off("click").on('click', function () {
         $('#QrCodeImg').click();
@@ -341,8 +362,24 @@ $(function () {
                     } else if (key === 'deposit' || key === 'payDayMoneyMax' || key === 'payMoneyMax' || key === 'settleMoney') {
                         value = value / 100;
                     } else if (key === 'productNameShowMode') {
-                        if (value == 1)
+                        if (value === 1)
                             $('input[data-name="productName"]').parent().show();
+                    } else if (key === 'orderDiscounts') {
+                        if (value === '') {
+                            setDataNameInfo('isOrderDiscountsOpen', 0);
+                            setDataNameInfo('orderDiscountsType', 0);
+                            setDataNameInfo('orderDiscountsMinMoney', '');
+                            $('.orderDiscountsMoneyList').html('');
+                            addDiscountsMoneyList('');
+                        } else {
+                            setDataNameInfo('isOrderDiscountsOpen', value['isOpen']);
+                            setDataNameInfo('orderDiscountsType', value['type']);
+                            setDataNameInfo('orderDiscountsMinMoney', value['minMoney']);
+                            $('.orderDiscountsMoneyList').html('');
+                            $.each(value['moneyList'], function (key1, value1) {
+                                addDiscountsMoneyList(value1);
+                            });
+                        }
                     }
                     setDataNameInfo(key, value);
                 });
@@ -356,16 +393,63 @@ $(function () {
                 $('button[data-type="reloadKey"]').show();
                 $('button[data-type="save"]').text('保存');
                 $('span.QrCodeImgPreview').hide();
-                $('img.QrCodeImgPreview').attr({
-                    'data-file-id': fileID === 0 ? 0 : fileID,
-                    'src': '/static/uploads/' + getFilePath(fileID)
-                }).css({
-                    'border': 'none'
-                }).show();
+                if (fileID !== undefined) {
+                    $('img.QrCodeImgPreview').attr({
+                        'data-file-id': fileID === 0 ? 0 : fileID,
+                        'src': '/static/uploads/' + getFilePath(fileID)
+                    }).css({
+                        'border': 'none'
+                    }).show();
+                }
                 $('#userInfo').modal('show').attr('data-status', 'save');
+
             });
         }
     });
+
+    function addDiscountsMoneyList(value) {
+        $('.orderDiscountsMoneyList').append('<div class="row item">\n' +
+            '                                        <div class="col-md-8">\n' +
+            '                                            <div class="form-group">\n' +
+            '                                                <input type="text" class="form-control" value="' + value + '" data-name="discountsMoney" placeholder="不能为零或不能为负数">\n' +
+            '                                            </div>\n' +
+            '                                        </div>\n' +
+            '                                        <div class="col-md-4">\n' +
+            '                                            <div class="button-groups">\n' +
+            '                                                <button class="btn btn-info" type="button" data-type="appendItem" style="margin-right: 10px;">插入\n' +
+            '                                                </button>\n' +
+            '                                                <button class="btn btn-danger" type="button" data-type="deleteItem">删除\n' +
+            '                                                </button>\n' +
+            '                                            </div>\n' +
+            '                                        </div>\n' +
+            '                                    </div>');
+        $('.orderDiscountsMoneyList button[data-type="appendItem"]').off('click').on('click', function () {
+            var isOpen = $('select[data-name="isOrderDiscountsOpen"]').val();
+            if (isOpen === '0')
+                return;
+            var orderDiscountsType = $('select[data-name="orderDiscountsType"]').val();
+            if (orderDiscountsType === '1')
+                addDiscountsMoneyList('')
+        });
+        $('.orderDiscountsMoneyList button[data-type="deleteItem"]').off('click').on('click', function () {
+            if ($('.orderDiscountsMoneyList>.item.row').length === 1)
+                return false;
+            $(this).parent().parent().parent().remove();
+        });
+    }
+
+    $('select[data-name="orderDiscountsType"]').change(function () {
+        var type = $(this).val();
+        if (type === '0') {
+            $('.orderDiscountsMoneyList>.item.row').each(function (key, value) {
+                if (key !== 0)
+                    $(value).remove();
+            });
+        }
+    });
+
+    $('.orderDiscountsMoneyList').html('');
+    addDiscountsMoneyList('');
 });
 
 function readHashEvent(hash, args) {

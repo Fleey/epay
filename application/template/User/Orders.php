@@ -47,6 +47,7 @@
                                 <th scope="col" class="border-0 text-uppercase font-medium">交易号/商户订单号</th>
                                 <th scope="col" class="border-0 text-uppercase font-medium">商品名称</th>
                                 <th scope="col" class="border-0 text-uppercase font-medium">商品金额</th>
+                                <th scope="col" class="border-0 text-uppercase font-medium">商品减免金额</th>
                                 <th scope="col" class="border-0 text-uppercase font-medium">创建时间/完成时间</th>
                                 <th scope="col" class="border-0 text-uppercase font-medium">状态</th>
                                 <th scope="col" class="border-0 text-uppercase font-medium">操作</th>
@@ -90,32 +91,33 @@
                         var span1 = $(document.createElement("span")).text(value["tradeNo"]);
                         var span2 = $(document.createElement("span")).text(value["tradeNoOut"]);
                         var tdDom1 = $(document.createElement("td")).append(span1).append("<br>").append(span2);
-                        var tdDom2 = $(document.createElement("td")).text(value["productName"]).addClass("text-truncate ");
+                        var tdDom2 = $(document.createElement("td")).text(value["productName"]).addClass("text-truncate");
                         var tdDom3 = $(document.createElement("td")).text(value["money"] / 100);
-                        var tdDom4;
+                        var tdDom4 = $(document.createElement("td")).text(value['discountMoney'] / 100);
+                        var tdDom5;
                         switch (value["type"]) {
                             case 1:
-                                tdDom4 = $(document.createElement("td")).text("微信支付");
+                                tdDom5 = $(document.createElement("td")).text("微信支付");
                                 break;
                             case 2:
-                                tdDom4 = $(document.createElement("td")).text("财付通支付");
+                                tdDom5 = $(document.createElement("td")).text("财付通支付");
                                 break;
                             case 3:
-                                tdDom4 = $(document.createElement("td")).text("支付宝支付");
+                                tdDom5 = $(document.createElement("td")).text("支付宝支付");
                                 break;
                             default:
-                                tdDom4 = $(document.createElement("td")).text("未知方式");
+                                tdDom5 = $(document.createElement("td")).text("未知方式");
                                 break
                         }
                         var tempHtml = value["createTime"] + "<br>" + (value["endTime"] ? value["endTime"] : "");
-                        var tdDom5 = $(document.createElement("td")).html(tempHtml);
-                        var tdDom6;
+                        var tdDom6 = $(document.createElement("td")).html(tempHtml);
+                        var tdDom7;
                         if (value["status"]) {
-                            tdDom6 = $(document.createElement("td")).text("已支付").addClass("text-success")
+                            tdDom7 = $(document.createElement("td")).text("已支付").addClass("text-success")
                         } else {
-                            tdDom6 = $(document.createElement("td")).text("未支付").addClass("text-danger")
+                            tdDom7 = $(document.createElement("td")).text("未支付").addClass("text-danger")
                         }
-                        trDom.append(tdDom1).append(tdDom2).append(tdDom3).append(tdDom4).append(tdDom5).append(tdDom6).append('<td><button data-type="Notified" class="btn btn-outline-primary btn-sm">重新通知</button></td>');
+                        trDom.append(tdDom1).append(tdDom2).append(tdDom3).append(tdDom4).append(tdDom5).append(tdDom6).append(tdDom7).append('<td><button data-type="Notified" class="btn btn-outline-primary btn-sm">重新通知</button></td>');
                         $("#orderList>tbody").append(trDom)
                     });
                     $("table button[data-type]").click(function () {
@@ -186,7 +188,7 @@
             }
         }
 
-        $("#search").off("click").on('click',function () {
+        $("#search").off("click").on('click', function () {
             var content = $("#content").val();
             var type = $("#type").val();
             if (content.length !== 0) {

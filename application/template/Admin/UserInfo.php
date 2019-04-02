@@ -149,7 +149,8 @@
                     </div>
                     <div class="form-group" style="display: none;">
                         <label for="productName">商户自行指定商品名称</label>
-                        <input type="text" class="form-control" data-name="productName" value="" placeholder="商户自行指定商品名称">
+                        <input type="text" class="form-control" data-name="productName" value=""
+                               placeholder="商户自行指定商品名称">
                     </div>
                     <div class="form-group">
                         <label for="isBan">是否封禁</label>
@@ -164,8 +165,81 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-type="delete">删除账号</button>
                 <button type="button" class="btn btn-danger" data-type="reloadKey">重置密匙</button>
+                <button type="button" class="btn btn-info" data-toggle="modal" data-target="#setOrderDiscounts">
+                    设置下单减免
+                </button>
                 <button type="button" class="btn btn-primary" data-type="save">保存</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="setOrderDiscounts" role="dialog" aria-labelledby="setOrderDiscounts">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">设置下单减免</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="box-body">
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <label for="uid" class="control-label">是否开启本功能</label>
+                                <select class="form-control" data-name="isOrderDiscountsOpen">
+                                    <option value="0">关闭</option>
+                                    <option value="1">开启</option>
+                                </select>
+                                <small class="form-text text-muted">注意，订单金额减免后为零或者负数则会下单失败</small>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <label for="uid" class="control-label">最低减免金额</label>
+                                <input type="text" class="form-control" data-name="orderDiscountsMinMoney" placeholder="低于或等于这个金额，则不进行减免">
+                                <small class="form-text text-muted">0则不限制 如果减免后金额为负数或0就会触发免单机制</small>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <label for="uid" class=" control-label">减免类型</label>
+                                <select class="form-control" data-name="orderDiscountsType">
+                                    <option value="0">固定减免</option>
+                                    <option value="1">随机减免</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <label for="uid" class=" control-label">减免金额列表</label>
+                                <div class="orderDiscountsMoneyList">
+                                    <div class="row item">
+                                        <div class="col-md-8">
+                                            <div class="form-group">
+                                                <input type="text" class="form-control" data-name="discountsMoney"
+                                                       placeholder="不能为零或不能为负数">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="button-groups">
+                                                <button class="btn btn-info" type="button" data-type="appendItem"
+                                                        style="margin-right: 10px;">插入
+                                                </button>
+                                                <button class="btn btn-danger" type="button" data-type="deleteItem">删除
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary w96" data-dismiss="modal">确定</button>
             </div>
         </div>
     </div>

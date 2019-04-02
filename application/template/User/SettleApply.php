@@ -51,7 +51,7 @@
                 $('#username').val(data['username'])
             }
         });
-        $('#settleAll').off("click").on('click',(function () {
+        $('#settleAll').off("click").on('click',function () {
             $('#settleMoney').val($('#balance').text())
         });
         $('#settleApply').off("click").on('click', function () {

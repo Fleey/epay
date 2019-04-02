@@ -110,7 +110,7 @@ class Index extends Controller
         if ($type != 'settle' && $type != 'connectInfo')
             return json(['status' => 0, 'msg' => '保存信息类型错误']);
         if ($type == 'settle') {
-            return json(['status'=>0,'msg'=>'修改结算信息,请联系管理员修改']);
+            return json(['status' => 0, 'msg' => '修改结算信息,请联系管理员修改']);
             $settleType = input('post.settleType/d');
             $account    = input('post.account/s');
             $username   = input('post.username/s');
@@ -177,24 +177,26 @@ class Index extends Controller
         if ($searchType != 0 && empty($searchContent))
             return json(['status' => 0, 'msg' => '搜索内容不能为空']);
         $searchData = [
-            ['uid', '=', $uid]
+            ['a.uid', '=', $uid]
         ];
         switch ($searchType) {
             case 1:
-                $searchData[] = ['tradeNo', '=', $searchContent];
+                $searchData[] = ['a.tradeNo', '=', $searchContent];
                 break;
             case 2:
-                $searchData[] = ['tradeNoOut', '=', $searchContent];
+                $searchData[] = ['a.tradeNoOut', '=', $searchContent];
                 break;
             case 3:
-                $searchData[] = ['productName', 'like', '%' . $searchContent . '%'];
+                $searchData[] = ['a.productName', 'like', '%' . $searchContent . '%'];
                 break;
             case 4:
-                $searchData[] = ['money', '=', decimalsToInt($searchContent, 2)];
+                $searchData[] = ['a.money', '=', decimalsToInt($searchContent, 2)];
                 break;
         }
-        $totalRow = Db::table('epay_order')->where($searchData)->count('id');
-        $result   = Db::table('epay_order')->where($searchData)->order('id desc')->page($page, 15)->field('tradeNo,tradeNoOut,productName,money,type,createTime,endTime,status')->select();
+        $totalRow = Db::table('epay_order')->alias('a')->where($searchData)->count('id');
+        $result   = Db::table('epay_order')->alias('a')->leftJoin('epay_order_attr b', 'b.attrKey = "discountMoney" and b.tradeNo = a.tradeNo')
+            ->field('a.tradeNo,a.tradeNoOut,a.productName,a.money,a.type,a.createTime,a.endTime,a.status,b.attrValue as `discountMoney`')
+            ->where($searchData)->order('a.id desc')->page($page, 15)->select();
         foreach ($result as $key => $value) {
             $result[$key]['tradeNo'] = (string)$value['tradeNo'];
         }

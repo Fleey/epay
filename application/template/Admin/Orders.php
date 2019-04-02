@@ -84,15 +84,19 @@
                         <span data-name="productName"></span>
                     </div>
                     <div class="col-md-3 item">
-                        <span class="title">金额</span>
+                        <span class="title">金额（已经扣除减免金额）</span>
                         <span data-name="money"></span>
+                    </div>
+                    <div class="col-md-3 item">
+                        <span class="title">减免金额</span>
+                        <span data-name="discountMoney"></span>
                     </div>
                     <div class="col-md-3 item">
                         <span class="title">支付方式</span>
                         <span data-name="type"></span>
                     </div>
                     <div class="col-md-3 item">
-                        <span class="title">	创建时间</span>
+                        <span class="title">创建时间</span>
                         <span data-name="createTime"></span>
                     </div>
                     <div class="col-md-3 item">
@@ -156,13 +160,15 @@
                         <div class="form-group row">
                             <label for="payTypeCallback" class="col-md-3 control-label">开始时间</label>
                             <div class="col-md-8">
-                                <input type="text" class="form-control" id="startCallbackTime" placeholder="开始回调时间 2019-2-29 00:00:00">
+                                <input type="text" class="form-control" id="startCallbackTime"
+                                       placeholder="开始回调时间 2019-2-29 00:00:00">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="payTypeCallback" class="col-md-3 control-label">结束时间</label>
                             <div class="col-md-8">
-                                <input type="text" class="form-control" id="endCallbackTime" placeholder="结束回调时间 2019-2-30 23:59:59">
+                                <input type="text" class="form-control" id="endCallbackTime"
+                                       placeholder="结束回调时间 2019-2-30 23:59:59">
                             </div>
                         </div>
                     </div>

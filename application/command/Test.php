@@ -9,27 +9,21 @@ use think\console\Output;
 
 class Test extends Command
 {
-    /* @var $mysql \think\db\Query */
-    private $mysql;
-
-
     protected function configure()
     {
         // 指令配置
         $this->setName('test')->setDescription('user test');
         // 设置参数
-
     }
 
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
-
-        $userData       = \think\Db::table('epay_user')->field('id,rate,clearType')->where('clearMode', 0)->cursor();
+        $userData = \think\Db::table('epay_user')->field('id,rate,clearType')->where('clearMode', 0)->cursor();
         foreach ($userData as $value) {
-            $uid            = $value['id'];
-            $rate           = $value['rate'] / 100;
-            $totalMoney     = \think\Db::table('epay_order')->where([
+            $uid        = $value['id'];
+            $rate       = $value['rate'] / 100;
+            $totalMoney = \think\Db::table('epay_order')->where([
                 'uid'      => $uid,
                 'status'   => 1,
                 'isShield' => 0

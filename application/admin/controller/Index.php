@@ -112,6 +112,23 @@ class Index extends Controller
         return json(['status' => 0, 'msg' => 'close all success']);
     }
 
+    public function getDeleteRecord()
+    {
+        $time = input('get.time/d', 0);
+        if ($time <= 1) {
+            echo '不能够删除小于或等于一日的数据';
+            exit();
+        }
+        $deleteTime = '- '.$time.' day';
+        //delete 15 day before data
+        Db::table('epay_order')->whereTime('createTime', '<=', $deleteTime)->delete();
+        Db::table('epay_order_attr')->whereTime('createTime', '<=', $deleteTime)->delete();
+        Db::table('epay_settle')->whereTime('createTime', '<=', $deleteTime)->delete();
+        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
+
+        echo '删除记录成功';
+    }
+
     public function getOrderInfo()
     {
         $username = session('username', '', 'admin');

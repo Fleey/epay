@@ -6,6 +6,7 @@ namespace app\command;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
+use think\Db;
 
 class Test extends Command
 {
@@ -19,30 +20,9 @@ class Test extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
-        $userData = \think\Db::table('epay_user')->field('id,rate,clearType')->where('clearMode', 0)->cursor();
-        foreach ($userData as $value) {
-            $uid        = $value['id'];
-            $rate       = $value['rate'] / 100;
-            $totalMoney = \think\Db::table('epay_order')->where([
-                'uid'      => $uid,
-                'status'   => 1,
-                'isShield' => 0
-            ])->whereTime('endTime', 'today')->sum('money');
-            if ($value['clearType'] != 4) {
-                \think\Db::table('epay_user')->where('id', $uid)->limit(1)->update([
-                    'balance' => $totalMoney * ($rate / 100) * 10
-                ]);
-            }
-            //not auto settle
-        }
+//        $orderList = Db::table('epay_order')->where('status', 1)->field('tradeNo')->whereTime('endtime', '>=', '2019-4-2 12:30:00')->whereTime('endtime', '<=', '2019-4-2 13:30:59')->select(false);
+//        exit(dump(buildCallBackUrl('2019032915384048736','notify')));
         echo 'ok';
-//        $i = 0;
-//        $orderList = Db::table('pay_order')->where('pid', 1169)->where('status', 1)->field('trade_no')->whereTime('endtime', '>=', '2019-3-10 00:00:00')->whereTime('endtime', '<=', '2019-3-10 23:59:59')->cursor();
-//        foreach ($orderList as $value){
-//            dump($this->curl( $this->buildCallBackUrlA($value['trade_no'],'notify')));
-//            echo $i++.PHP_EOL;
-//        }
-//        echo 'ok';
     }
 
     private function buildCallBackUrlA(string $tradeNo, string $type)

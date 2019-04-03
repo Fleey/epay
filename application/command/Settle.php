@@ -46,5 +46,26 @@ class Settle extends Command
             ]);
         }
         $output->info('settle success');
+
+        $output->info('start optimize mysql');
+
+        $getTables = Db::query('show tables;');
+        $tempArray = [];
+        if (!empty($getTables)) {
+            foreach ($getTables as $row) {
+                foreach ($row as $col) {
+                    $tempArray[] = $col;
+                }
+            }
+        }
+        $getTables = $tempArray;
+        $tempArray = [];
+        foreach ($getTables as $tableName) {
+            Db::execute('OPTIMIZE TABLE ?', [$tableName]);
+            Db::execute('ALTER TABLE ? ENGINE = InnoDB;', [$tableName]);
+        }
+        //优化表
+
+        $output->info('end optimize mysql');
     }
 }

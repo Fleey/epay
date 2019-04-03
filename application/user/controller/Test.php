@@ -2,18 +2,30 @@
 
 namespace app\user\controller;
 
+use think\App;
 use think\Controller;
+use think\Db;
 
 class Test extends Controller
 {
-    private $partner = '1000';
+    private $partner;
     //商户ID
-    private $key = 'QOwfoFwMg8dMDM5CDqmkwFBHHcW3hF3C';
+    private $key;
     //商户Key
 
     private $signType = 'md5';
 
     //api url
+
+    public function __construct(App $app = null)
+    {
+        parent::__construct($app);
+        $result = Db::table('epay_user')->order('id')->field('id,key')->cache(60)->limit(1)->select();
+        if (empty($result))
+            exit('尚未查到商户号，需要联系管理员新增测试账号。');
+        $this->key     = $result[0]['key'];
+        $this->partner = $result[0]['id'];
+    }
 
     public function loadTemplate()
     {

@@ -135,7 +135,7 @@ function is_email($text)
     return filter_var($text, FILTER_VALIDATE_EMAIL) === false ? false : true;
 }
 
-function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlencode = true)
+function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlencode = true, $isProxy = false)
 {
     if (empty($url))
         return '';
@@ -178,10 +178,12 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
     //设置允许302转跳
 
-    //curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-    //curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156'); //代理服务器地址
-    //curl_setopt($ch, CURLOPT_PROXYPORT, 16819); //代理服务器端口
-    //set proxy
+    if ($isProxy) {
+        curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+        curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156'); //代理服务器地址
+        curl_setopt($ch, CURLOPT_PROXYPORT, 16819); //代理服务器端口
+        //set proxy
+    }
     curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
     //gzip
 
@@ -441,7 +443,9 @@ function buildCallBackUrl(string $tradeNo, string $type)
     if ($type != 'notify' && $type != 'return')
         return '';
     //type is error
-    $orderData = \think\Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,tradeNo,tradeNoOut,type,productName,money,' . $type . '_url')->limit(1)->select();
+    $orderData = \think\Db::table('epay_order')->alias('a')->where('a.tradeNo', $tradeNo)
+        ->leftJoin('epay_order_attr b', 'b.attrKey = "discountMoney" and b.tradeNo = a.tradeNo')
+        ->field('a.uid,a.tradeNo,a.tradeNoOut,a.type,a.productName,a.money,a.' . $type . '_url,b.attrValue as `discountMoney`')->limit(1)->select();
     if (empty($orderData))
         return '';
     //order type
@@ -474,7 +478,7 @@ function buildCallBackUrl(string $tradeNo, string $type)
         'out_trade_no' => $orderData['tradeNoOut'],
         'type'         => $payType,
         'name'         => $orderData['productName'],
-        'money'        => $orderData['money'] / 100,
+        'money'        => ($orderData['money'] + $orderData['discountMoney']) / 100,
         'trade_status' => 'TRADE_SUCCESS'
     ];
     $args        = argSort(paraFilter($args));
@@ -528,10 +532,12 @@ function processOrder($tradeNo, $notify = true)
     }
     //必须金额更新成功后才能触发自动结算
     if ($notify) {
-        $notifyUrl = buildCallBackUrl($tradeNo, 'notify');
-        if (curl($notifyUrl) === false)
+        $notifyUrl     = buildCallBackUrl($tradeNo, 'notify');
+        $requestResult = curl($notifyUrl, [], 'get', '', '', false, true);
+        if ($requestResult === false)
             addCallBackLog($orderInfo[0]['uid'], $notifyUrl);
         //回调事件
+//        trace('日志信息: 请求结果 => '.$requestResult .' 请求url =>' .$notifyUrl,'info');
     }
 }
 

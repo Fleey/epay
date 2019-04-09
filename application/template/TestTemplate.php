@@ -3,7 +3,7 @@
     <title><?php echo $webName; ?> - 在线测试</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="renderer" content="webkit" />
+    <meta name="renderer" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link href="/static/css/resource/bootstrap.min.css" rel="stylesheet"/>
     <link href="https://cdn.staticfile.org/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet">
@@ -44,6 +44,9 @@
                             </div>
                             <div class="btn-group" role="group">
                                 <button type="radio" name="type" value="wxpay" class="btn btn-info">微信</button>
+                            </div>
+                            <div class="btn-group" role="group">
+                                <button type="radio" name="type" value="bankpay" class="btn btn-warning">银联支付</button>
                             </div>
                         </div>
                         <p style="text-align:center"><br>&copy; 技术支持 <a href="/"><?php echo $webName; ?></a>!</p>

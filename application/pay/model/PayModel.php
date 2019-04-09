@@ -114,6 +114,9 @@ class PayModel
                 case 2:
                     $payName = 'tenpay';
                     break;
+                case 4:
+                    $payName = 'bankpay';
+                    break;
                 default:
                     $payName = 'null';
                     break;
@@ -131,6 +134,9 @@ class PayModel
                     break;
                 case 'tenpay':
                     $payName = 2;
+                    break;
+                case 'bankpay':
+                    $payName = 4;
                     break;
                 default:
                     $payName = 0;

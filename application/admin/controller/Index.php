@@ -404,11 +404,8 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '请求数据有误']);
         if ($isArray) {
             foreach ($value as $key => $value1) {
-                if (empty($value1))
-                    $value[$key] = '';
-                else
-                    if (strpos($key, 'is') === 0)
-                        $value[$key] = $value1 === 'true';
+                if (strpos($key, 'is') === 0)
+                    $value[$key] = $value1 === 'true';
             }
         } else {
             if ($keyName == 'defaultMaxPayMoney' || $keyName == 'defaultMoneyRate')

@@ -3,10 +3,10 @@
 namespace app\command;
 
 
+use app\pay\model\CenterPayModel;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
-use think\Db;
 
 class Test extends Command
 {
@@ -20,6 +20,13 @@ class Test extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
+        $test = new CenterPayModel([
+            'gateway' => 'http://center.zmz999.com',
+            'uid'     => 1,
+            'key'     => '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
+        ]);
+//        dump($test->getPayStatus('233'));
+        dump($test->getQrCode('12329', 'bank', '10', 'http://center.zmz999.com/test'));
 //        $orderList = Db::table('epay_order')->where('status', 1)->field('tradeNo')->whereTime('endtime', '>=', '2019-4-2 12:30:00')->whereTime('endtime', '<=', '2019-4-2 13:30:59')->select(false);
 //        exit(dump(buildCallBackUrl('2019032915384048736','notify')));
         echo 'ok';

@@ -119,6 +119,8 @@ class Index extends Controller
             return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['qqpay']['tips']]);
         } else if ($converPayType == 1 && !$this->systemConfig['wxpay']['isOpen']) {
             return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['wxpay']['tips']]);
+        } else if ($converPayType == 4 && !$this->systemConfig['bankpay']['isOpen']) {
+            return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['bankpay']['tips']]);
         }
         //check is open pay
 
@@ -182,6 +184,9 @@ class Index extends Controller
         }
         //解决用户交易号重复问题
 
+        if ($this->systemConfig[$type]['apiType'] == 1)
+            return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo, '', false, true));
+        //中央支付
         if ($converPayType == 3) {
             return redirect(url('/Pay/Alipay/Submit?tradeNo=' . $tradeNo, '', false, true));
             //转跳到支付宝支付
@@ -191,6 +196,9 @@ class Index extends Controller
         } else if ($converPayType == 2) {
             return redirect(url('/Pay/QQPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName, '', false, true));
             //转跳到财付通支付
+        } else if ($converPayType == 4) {
+            return redirect(url('/Pay/BankPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName, '', false, true));
+            //银联支付
         }
         return $this->fetch('/SystemMessage', ['msg' => '支付类型有误请重试！']);
     }

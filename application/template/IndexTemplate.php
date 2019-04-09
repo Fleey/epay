@@ -14,7 +14,7 @@
     <div class="card-body">
         <blockquote class="blockquote mb-0">
             <p>欢迎光临<?php echo htmlentities($webName); ?>聚合支付系统</p>
-            <footer class="blockquote-footer">彩虹DS网站长开户联系QQ：<?php echo htmlentities($webQQ); ?></footer>
+            <footer class="blockquote-footer"><?php echo htmlentities($webQQ); ?></footer>
         </blockquote>
     </div>
 </div>

@@ -19,6 +19,8 @@ Route::group('Pay', function () {
     Route::controller('Alipay', 'pay/Alipay');
     Route::controller('QQPay', 'pay/QQPay');
     Route::controller('WxPay', 'pay/WxPay');
+    Route::controller('BankPay', 'pay/BankPay');
+    Route::controller('CenterPay', 'pay/CenterPay');
     Route::rule('Status', 'pay/Index/OrderStatus');
 });
 Route::rule('install', function () {

@@ -144,15 +144,6 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
         'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
     ];
     $postType = strtolower($postType);
-    if ($requestType != 'get') {
-        if ($postType == 'json') {
-            $headers[]   = 'Content-Type: application/json; charset=utf-8';
-            $requestData = is_array($requestData) ? json_encode($requestData) : $requestData;
-        } else if ($postType == 'xml') {
-            $headers[] = 'Content-Type:text/xml; charset=utf-8';
-        }
-        $headers[] = 'Content-Length: ' . strlen($requestData);
-    }
     if ($requestType == 'get' && is_array($requestData)) {
         $tempBuff = '';
         foreach ($requestData as $key => $value) {
@@ -168,7 +159,6 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
@@ -213,6 +203,16 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
         curl_setopt($ch, CURLOPT_POSTFIELDS, $requestData);
     }
     //只要不是get姿势都塞东西给他post
+    if ($requestType != 'get') {
+        if ($postType == 'json') {
+            $headers[]   = 'Content-Type: application/json; charset=utf-8';
+            $requestData = is_array($requestData) ? json_encode($requestData) : $requestData;
+        } else if ($postType == 'xml') {
+            $headers[] = 'Content-Type:text/xml; charset=utf-8';
+        }
+        $headers[] = 'Content-Length: ' . strlen($requestData);
+    }
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     $result = curl_exec($ch);
 
     curl_close($ch);
@@ -344,16 +344,20 @@ function argSort($para)
 /**
  * 除去数组中的空值和签名参数
  * @param $para array//签名参数组
+ * @param bool $isUrlDecode
  * @return array//去掉空值与签名参数后的新签名参数组
  */
-function paraFilter($para)
+function paraFilter($para, $isUrlDecode = true)
 {
     $para_filter = array();
     foreach ($para as $key => $val) {
         if ($key == 'sign' || $key == 'sign_type' || empty($val))
             continue;
         else
-            $para_filter[$key] = $val;
+            if($isUrlDecode)
+                $para_filter[$key] = urldecode($val);
+            else
+                $para_filter[$key] = $val;
     }
     return $para_filter;
 }

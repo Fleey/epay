@@ -9,8 +9,8 @@
                         <input type="text" class="form-control" data-name="webName" placeholder="请输入网站名称">
                     </div>
                     <div class="form-group">
-                        <label for="partner">客服QQ</label>
-                        <input type="text" class="form-control" data-name="webQQ" placeholder="请输入客服QQ">
+                        <label for="partner">网站描述</label>
+                        <input type="text" class="form-control" data-name="webQQ" placeholder="网站描述">
                     </div>
                     <div class="form-group">
                         <label for="partner">默认结算费率</label>

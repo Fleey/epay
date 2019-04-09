@@ -1,0 +1,125 @@
+<?php
+
+namespace app\pay\controller;
+
+use app\pay\model\CenterPayModel;
+use app\pay\model\PayModel;
+use think\App;
+use think\Controller;
+use think\Db;
+
+class CenterPay extends Controller
+{
+    private $systemConfig;
+    private $notifyUrl;
+
+    public function __construct(App $app = null)
+    {
+        parent::__construct($app);
+        $this->systemConfig = getConfig();
+        if (empty($this->systemConfig['notifyDomain'])) {
+            $this->notifyUrl = url('/Pay/CenterPay/Notify', '', false, true);
+        } else {
+            $this->notifyUrl = $this->systemConfig['notifyDomain'] . '/Pay/CenterPay/Notify';
+        }
+    }
+
+    public function getSubmit()
+    {
+        $tradeNo = input('get.tradeNo');
+//        $siteName = htmlentities(base64_decode(input('get.siteName')));
+//        if (empty($siteName))
+//            $siteName = '易支付';
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('money,status,type')->limit(1)->select();
+        if (empty($result))
+            return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
+        if ($result[0]['status'])
+            return $this->fetch('/SystemMessage', ['msg' => '交易已经完成无法再次支付！']);
+
+        $payName = PayModel::converPayName($result[0]['type'], true);
+        if (empty($this->systemConfig[$payName]))
+            return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 系统异常请联系管理员处理！']);
+        $payConfig = $this->systemConfig[$payName];
+        if (empty($payConfig['apiType']))
+            return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 该订单尚不支持中央支付！']);
+        if (empty($payConfig['isOpen']))
+            return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] ' . $payConfig['tips'] . '！']);
+        if (!$payConfig['isOpen'])
+            return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] ' . $payConfig['tips'] . '！']);
+        if ($payConfig['apiType'] != 1)
+            return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 该订单尚不支持中央支付！']);
+
+        $config            = $payConfig;
+        $config['gateway'] = 'http://center.zmz999.com';
+        $centerPayModel    = new CenterPayModel($config);
+        $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, ($result[0]['money'] / 100), $this->notifyUrl);
+        if ($requestResult['isSuccess'])
+            return redirect($requestResult['url'], [], 302);
+        return $this->fetch('/SystemMessage', ['msg' => $requestResult['msg']]);
+    }
+
+    public function postNotify()
+    {
+        $requestData = input('post.');
+        if (empty($requestData['sign']) || empty($requestData['sign_type']) || empty($requestData['data']) || empty($requestData['status']))
+            return json(['status' => 0, 'msg' => '[10001]sign error']);
+        if (!$requestData['status'])
+            return json(['status' => 0, 'msg' => 'notify error']);
+        if ($requestData['sign_type'] != 'MD5')
+            return json(['status' => 0, 'msg' => 'sign type error']);
+        $returnData = json_decode($requestData['data'], true);
+        if ($requestData == null)
+            return json(['status' => 0, 'msg' => 'return data error']);
+
+        $payType = $this->defaultValue($returnData['payType']);
+
+        $payName = PayModel::converPayName($payType, true);
+        //转换支付类型
+        $totalMoney   = $this->defaultValue($returnData['money']);
+        $tradeNoOut   = $this->defaultValue($returnData['tradeNoOut']);
+        $callBackTime = $this->defaultValue($requestData['time'], 0);
+
+        $config            = $this->systemConfig[$payName];
+        $config['gateway'] = 'http://center.zmz999.com';
+        $centerPayModel    = new CenterPayModel($config);
+
+        if ($centerPayModel->buildSignMD5($requestData) != $requestData['sign'])
+            return json(['status' => 0, 'msg' => '[10002]sign error']);
+        //签名确实错了
+        if ((time() - $callBackTime) > 120)
+            return json(['status' => 0, 'msg' => 'sign time out']);
+        //签名2分钟超时
+        $tradeData = Db::table('epay_order')->where([
+            'tradeNo' => $tradeNoOut
+        ])->limit(1)->field('status,money')->select();
+        if (empty($tradeData))
+            return json(['status' => 0, 'msg' => 'order data empty']);
+        if ($tradeData['status'])
+            return json(['status' => 0, 'msg' => 'order status paid']);
+        if ($tradeData[0]['money'] != $totalMoney)
+            return json(['status' => 0, 'msg' => 'order money error']);
+        if (!$centerPayModel->isPay($tradeNoOut))
+            return json(['status' => 0, 'msg' => 'order invalid']);
+        $updateResult = Db::table('epay_order')->where('tradeNo', $tradeNoOut)->limit(1)->update([
+            'status' => 1
+        ]);
+        if ($updateResult)
+            processOrder($tradeNoOut);
+        else
+            trace('[EpayCenterModel] 更新订单状态异常 tradeNo => ' . $tradeNoOut, 'error');
+        return json(['status' => 1, 'msg' => 'update order status success']);
+    }
+
+    /**
+     * 显示默认参数 免得报错
+     * @param $value
+     * @param string $default
+     * @return string
+     */
+    private function defaultValue($value, $default = '')
+    {
+        if (isset($value))
+            return $default;
+        return $value;
+    }
+}

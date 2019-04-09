@@ -71,11 +71,19 @@ class QQPay extends Controller
         if ($requestResult['return_code'] == 'SUCCESS' && $requestResult['result_code'] == 'SUCCESS')
             $codeUrl = $requestResult['code_url'];
         else
-            return $this->fetch('/SystemMessage', ['msg' => 'QQ钱包支付下单失败！[' . $requestResult['err_code'] . ']' . $requestResult['err_code_des']]);
+            if (!empty($requestResult['err_code']))
+                return $this->fetch('/SystemMessage', ['msg' => 'QQ钱包支付下单失败！<br>[' . $requestResult['err_code'] . ']' . $requestResult['err_code_des']]);
+            else
+                return $this->fetch('/SystemMessage', ['msg' => 'QQ钱包支付下单失败！<br>[' . $requestResult['return_code'] . ']' . $requestResult['return_msg']]);
+
+
+        if ($this->request->isMobile())
+            $codeUrl = 'https://myun.tenpay.com/mqq/pay/qrcode.html?_wv=1027&_bid=2183&t=' . $requestResult['prepay_id'];
+
         if (strpos($this->request->header('HTTP_USER_AGENT', ''), 'QQ/') !== false)
             return redirect($codeUrl, [], 302);
         //判断是否手机QQ
-        return $this->fetch('/QQPayTemplate', [
+        return $this->fetch('/QQPay' . ($this->request->isMobile() ? 'Mobile' : 'Pc') . 'Template', [
             'siteName'    => $siteName,
             'productName' => $result[0]['productName'],
             'money'       => $result[0]['money'] / 100,

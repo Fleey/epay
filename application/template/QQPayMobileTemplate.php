@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<div class="col-xs-12 col-sm-10 col-md-8 col-lg-6 center-block" style="float: none;">
+<div class="col-xs-12 col-sm-10 col-md-8 col-lg-6 center-block" style="float: none;padding-top: 3rem;">
     <div class="panel panel-default">
         <div class="panel-heading" style="text-align: center;">
             <h3 class="panel-title">

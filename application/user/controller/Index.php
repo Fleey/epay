@@ -40,27 +40,37 @@ class Index extends Controller
             ])->cache(120)->sum('money');
 
             $data['yesterdayOrderTypeCount'] = [
-                'wx'  => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
+                'wx'   => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
                     'uid'      => $uid,
                     'status'   => 1,
                     'type'     => 1,
                     'isShield' => 0
                 ])->sum('money'),
-                'qq'  => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
+                'qq'   => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
                     'uid'      => $uid,
                     'status'   => 1,
                     'type'     => 2,
                     'isShield' => 0
                 ])->sum('money'),
-                'ali' => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
+                'ali'  => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
                     'uid'      => $uid,
                     'status'   => 1,
                     'type'     => 3,
                     'isShield' => 0
+                ])->sum('money'),
+                'bank' => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
+                    'uid'      => $uid,
+                    'status'   => 1,
+                    'type'     => 4,
+                    'isShield' => 0
                 ])->sum('money')
             ];
 
-            $data['yesterdayOrderTotalMoney'] = $data['yesterdayOrderTypeCount']['wx'] + $data['yesterdayOrderTypeCount']['qq'] + $data['yesterdayOrderTypeCount']['ali'];
+            $data['yesterdayOrderTotalMoney'] =
+                $data['yesterdayOrderTypeCount']['wx'] +
+                $data['yesterdayOrderTypeCount']['qq'] +
+                $data['yesterdayOrderTypeCount']['ali'] +
+                $data['yesterdayOrderTypeCount']['bank'];
 
             $data['settleRecord'] = [];
             for ($i = 6; $i >= 1; $i--) {
@@ -190,7 +200,25 @@ class Index extends Controller
                 $searchData[] = ['a.productName', 'like', '%' . $searchContent . '%'];
                 break;
             case 4:
-                $searchData[] = ['a.money', '=', decimalsToInt($searchContent, 2)];
+                if (strpos($searchContent, '->') !== false) {
+                    $searchContent = explode('->', $searchContent);
+                    if (count($searchContent) != 2)
+                        break;
+                    $searchData[] = ['a.money', '>=', decimalsToInt($searchContent[0], 2)];
+                    $searchData[]= ['a.money', '<=', decimalsToInt($searchContent[1], 2)];
+                } else {
+                    $searchData[] = ['a.money', '=', decimalsToInt($searchContent, 2)];
+                    break;
+                }
+                break;
+            case 5:
+                if (strpos($searchContent, '->') !== false) {
+                    $searchContent = explode('->', $searchContent);
+                    if (count($searchContent) != 2)
+                        break;
+                    $searchData[] = ['a.createTime', '>=', $searchContent[0]];
+                    $searchData[] = ['a.createTime', '<=', $searchContent[1]];
+                }
                 break;
         }
         $totalRow = Db::table('epay_order')->alias('a')->where($searchData)->count('id');

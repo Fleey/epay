@@ -177,9 +177,9 @@
             legend: {
                 orient: 'vertical',
                 x: 'left',
-                data: ['财付通', '微信', '支付宝']
+                data: ['财付通', '微信', '支付宝', '银联']
             },
-            color: ['#de4307', '#8bc24c', '#50C1E9'],
+            color: ['#de4307', '#8bc24c', '#50C1E9','#005792'],
             series: [
                 {
                     name: '支付来源',
@@ -208,6 +208,7 @@
                         {value: <?php echo $yesterdayOrderTypeCount['qq'] / 100;?>, name: '财付通'},
                         {value: <?php echo $yesterdayOrderTypeCount['wx'] / 100;?>, name: '微信'},
                         {value: <?php echo $yesterdayOrderTypeCount['ali'] / 100;?>, name: '支付宝'},
+                        {value:<?php echo $yesterdayOrderTypeCount['bank'] / 100;?>, name: '银联'}
                     ]
                 }
             ]

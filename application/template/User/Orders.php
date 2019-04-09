@@ -25,14 +25,16 @@
                         <div class="col-md-2 m1">
                             <select class="input-sm form-control" id="type">
                                 <option value="1">交易号</option>
+                                <option value="5">交易时间</option>
                                 <option value="2">商户订单号</option>
                                 <option value="3">商品名称</option>
                                 <option value="4">商品金额</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="form-group">
-                                <input type="text" class="input-sm form-control" id="content" placeholder="搜索内容">
+                                <input type="text" class="input-sm form-control" id="content"
+                                       placeholder="支持某些项的区间查询 例如2018-06-07 16:15->2018-07-06 14:00">
                             </div>
                         </div>
                         <div class="col-md-4 m1">

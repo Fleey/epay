@@ -71,6 +71,13 @@ class Index extends Controller
                             'type'   => 3,
                             'status' => 1
                         ])->whereTime('endTime', 'yesterday')->sum('money')
+                    ],
+                    [
+                        'type'       => 1,
+                        'totalMoney' => Db::table('epay_order')->where([
+                            'type'   => 4,
+                            'status' => 1
+                        ])->whereTime('endTime', 'yesterday')->sum('money')
                     ]
                 ],
                 'today'     => [
@@ -92,6 +99,13 @@ class Index extends Controller
                         'type'       => 1,
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 3,
+                            'status' => 1
+                        ])->whereTime('endTime', 'today')->sum('money')
+                    ],
+                    [
+                        'type'       => 1,
+                        'totalMoney' => Db::table('epay_order')->where([
+                            'type'   => 4,
                             'status' => 1
                         ])->whereTime('endTime', 'today')->sum('money')
                     ]
@@ -119,7 +133,7 @@ class Index extends Controller
             echo '不能够删除小于或等于一日的数据';
             exit();
         }
-        $deleteTime = '- '.$time.' day';
+        $deleteTime = '- ' . $time . ' day';
         //delete 15 day before data
         Db::table('epay_order')->whereTime('createTime', '<=', $deleteTime)->delete();
         Db::table('epay_order_attr')->whereTime('createTime', '<=', $deleteTime)->delete();

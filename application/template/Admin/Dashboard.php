@@ -200,42 +200,42 @@
         ]
     };
     var option1 = {
-            title: {
-                text: '收入类型统计',
-            },
-            color: ['#f06966', '#6abe83'],
-            legend: {},
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                    type: 'cross',
-                    crossStyle: {
-                        color: '#999'
-                    }
+        title: {
+            text: '收入类型统计',
+        },
+        color: ['#f06966', '#6abe83'],
+        legend: {},
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                crossStyle: {
+                    color: '#999'
                 }
+            }
+        },
+        toolbox: {
+            feature: {
+                dataView: {show: true, readOnly: false},
+                restore: {show: true},
+                saveAsImage: {show: true}
+            }
+        },
+        xAxis: {type: 'category', data: ["微信", "财付通", "支付宝", '银联']},
+        yAxis: {},
+        series: [
+            {
+                name: '今天',
+                type: 'bar',
+                data: ["<?php  echo ($statistics['today'][0]['totalMoney'] / 100) . '","' . ($statistics['today'][1]['totalMoney'] / 100) . '","' . ($statistics['today'][2]['totalMoney'] / 100) . '","' . ($statistics['today'][3]['totalMoney'] / 100); ?>"]
             },
-            toolbox: {
-                feature: {
-                    dataView: {show: true, readOnly: false},
-                    restore: {show: true},
-                    saveAsImage: {show: true}
-                }
-            },
-            xAxis: {type: 'category', data: ["微信", "财付通", "支付宝"]},
-            yAxis: {},
-            series: [
-                {
-                    name: '今天',
-                    type: 'bar',
-                    data: ["<?php  echo ($statistics['today'][0]['totalMoney'] / 100) . '","' . ($statistics['today'][1]['totalMoney'] / 100) . '","' . $statistics['today'][2]['totalMoney'] / 100; ?>"]
-                },
-                {
-                    name: '昨天',
-                    type: 'bar',
-                    data: ["<?php  echo ($statistics['yesterday'][0]['totalMoney'] / 100) . '","' . ($statistics['yesterday'][1]['totalMoney'] / 100) . '","' . ($statistics['yesterday'][2]['totalMoney'] / 100);?>"]
-                }
-            ]
-        };
+            {
+                name: '昨天',
+                type: 'bar',
+                data: ["<?php  echo ($statistics['yesterday'][0]['totalMoney'] / 100) . '","' . ($statistics['yesterday'][1]['totalMoney'] / 100) . '","' . ($statistics['yesterday'][2]['totalMoney'] / 100) . '","' . ($statistics['yesterday'][3]['totalMoney'] / 100);?>"]
+            }
+        ]
+    };
 
     $(function () {
         $.getScript('/static/js/resource/echarts.min.js', function () {
@@ -250,7 +250,7 @@
             chartMap.setOption(option);
             chartMap1.setOption(option1);
         });
-        $('button[data-update-program]').off("click").on('click',function () {
+        $('button[data-update-program]').off("click").on('click', function () {
             swal({
                 title: '请稍后...',
                 text: '切勿关闭浏览器,正在为您更新程序',

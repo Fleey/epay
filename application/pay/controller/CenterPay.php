@@ -118,7 +118,7 @@ class CenterPay extends Controller
      */
     private function defaultValue($value, $default = '')
     {
-        if (isset($value))
+        if (!isset($value))
             return $default;
         return $value;
     }

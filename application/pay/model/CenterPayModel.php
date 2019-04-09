@@ -89,7 +89,7 @@ class CenterPayModel
      */
     public function buildSignMD5(array $data)
     {
-        $args = argSort(paraFilter($data));
+        $args = argSort(paraFilter($data, false));
         $sign = signMD5(createLinkString($args), $this->centerConfig['epayCenterKey']);
         return $sign;
     }

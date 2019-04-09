@@ -347,7 +347,7 @@ function argSort($para)
  * @param bool $isUrlDecode
  * @return array//去掉空值与签名参数后的新签名参数组
  */
-function paraFilter($para, $isUrlDecode = true)
+function paraFilter($para, $isUrlDecode = false)
 {
     $para_filter = array();
     foreach ($para as $key => $val) {
@@ -471,6 +471,9 @@ function buildCallBackUrl(string $tradeNo, string $type)
         case 3:
             $payType = 'alipay';
             break;
+        case 4:
+            $payType = 'bankpay';
+            break;
         default:
             $payType = 'none';
             break;
@@ -485,7 +488,7 @@ function buildCallBackUrl(string $tradeNo, string $type)
         'money'        => ($orderData['money'] + $orderData['discountMoney']) / 100,
         'trade_status' => 'TRADE_SUCCESS'
     ];
-    $args        = argSort(paraFilter($args, false));
+    $args        = argSort(paraFilter($args));
     $sign        = signMD5(createLinkString($args), $userKey);
     $callBackUrl = $orderData[$type . '_url'] . (strpos($orderData[$type . '_url'], '?') ? '&' : '?') . createLinkStringUrlEncode($args) . '&sign=' . $sign . '&sign_type=MD5';
     return $callBackUrl;
@@ -537,7 +540,7 @@ function processOrder($tradeNo, $notify = true)
     //必须金额更新成功后才能触发自动结算
     if ($notify) {
         $notifyUrl     = buildCallBackUrl($tradeNo, 'notify');
-        $requestResult = curl($notifyUrl, [], 'get', '', '', false, true);
+        $requestResult = curl($notifyUrl);
         if ($requestResult === false)
             addCallBackLog($orderInfo[0]['uid'], $notifyUrl);
         //回调事件

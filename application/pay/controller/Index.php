@@ -184,8 +184,9 @@ class Index extends Controller
         }
         //解决用户交易号重复问题
 
-        if ($this->systemConfig[$type]['apiType'] == 1)
-            return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo, '', false, true));
+        if (isset($this->systemConfig[$type]['apiType']))
+            if ($this->systemConfig[$type]['apiType'] == 1)
+                return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo, '', false, true));
         //中央支付
         if ($converPayType == 3) {
             return redirect(url('/Pay/Alipay/Submit?tradeNo=' . $tradeNo, '', false, true));

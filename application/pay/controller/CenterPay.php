@@ -40,7 +40,7 @@ class CenterPay extends Controller
         if (empty($this->systemConfig[$payName]))
             return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 系统异常请联系管理员处理！']);
         $payConfig = $this->systemConfig[$payName];
-        if (empty($payConfig['apiType']))
+        if (!isset($payConfig['apiType']))
             return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 该订单尚不支持中央支付！']);
         if (empty($payConfig['isOpen']))
             return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] ' . $payConfig['tips'] . '！']);

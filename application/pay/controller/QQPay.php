@@ -2,6 +2,7 @@
 
 namespace app\pay\controller;
 
+use app\pay\model\PayModel;
 use app\pay\model\QQPayModel;
 use think\App;
 use think\Controller;
@@ -46,6 +47,10 @@ class QQPay extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '支付方式有误！']);
         if ($result[0]['status'])
             return $this->fetch('/SystemMessage', ['msg' => '交易已经完成无法再次支付！']);
+
+        if (isset($this->qqPayConfig['apiType']))
+            if ($this->qqPayConfig['apiType'] != 0)
+                return $this->fetch('/SystemMessage', ['msg' => '该订单尚不支持原生支付！']);
 
         $productNameShowMode = intval(getPayUserAttr($result[0]['uid'], 'productNameShowMode'));
         $productName         = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];

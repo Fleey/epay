@@ -12,11 +12,13 @@ class CenterPay extends Controller
 {
     private $systemConfig;
     private $notifyUrl;
+    private $returnUrl;
 
     public function __construct(App $app = null)
     {
         parent::__construct($app);
         $this->systemConfig = getConfig();
+        $this->returnUrl    = url('/Pay/CenterPay/Return', '', false, true);
         if (empty($this->systemConfig['notifyDomain'])) {
             $this->notifyUrl = url('/Pay/CenterPay/Notify', '', false, true);
         } else {
@@ -52,7 +54,7 @@ class CenterPay extends Controller
         $config            = $payConfig;
         $config['gateway'] = 'http://center.zmz999.com';
         $centerPayModel    = new CenterPayModel($config);
-        $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, ($result[0]['money'] / 100), $this->notifyUrl);
+        $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);
         if ($requestResult['isSuccess'])
             return redirect($requestResult['url'], [], 302);
         return $this->fetch('/SystemMessage', ['msg' => $requestResult['msg']]);
@@ -94,20 +96,51 @@ class CenterPay extends Controller
         ])->limit(1)->field('status,money')->select();
         if (empty($tradeData))
             return json(['status' => 0, 'msg' => 'order data empty']);
-        if ($tradeData['status'])
+        if ($tradeData[0]['status'])
             return json(['status' => 0, 'msg' => 'order status paid']);
         if ($tradeData[0]['money'] != $totalMoney)
             return json(['status' => 0, 'msg' => 'order money error']);
         if (!$centerPayModel->isPay($tradeNoOut))
             return json(['status' => 0, 'msg' => 'order invalid']);
         $updateResult = Db::table('epay_order')->where('tradeNo', $tradeNoOut)->limit(1)->update([
-            'status' => 1
+            'status'  => 1,
+            'endTime' => getDateTime()
         ]);
         if ($updateResult)
             processOrder($tradeNoOut);
         else
             trace('[EpayCenterModel] 更新订单状态异常 tradeNo => ' . $tradeNoOut, 'error');
         return json(['status' => 1, 'msg' => 'update order status success']);
+    }
+
+    public function getReturn()
+    {
+        $tradeNoOut  = input('get.tradeNoOut/s');
+        $money       = input('get.money/s');
+        $tradeStatus = input('get.tradeStatus/s');
+        $payType     = input('get.payType/s');
+        $payTime     = input('get.endTime/s');
+        $signType    = input('get.sign_type/s');
+        $sign        = input('get.sign');
+
+        if ($signType != 'MD5')
+            return $this->fetch('/SystemMessage', ['msg' => '支付同步回调异常，签名类型目前仅支持MD5！']);
+        if (empty($this->systemConfig[$payType]))
+            return $this->fetch('/SystemMessage', ['msg' => '支付类型尚不支持回调，请联系站点管理员处理！']);
+
+        if (time() - strtotime($payTime) > 300)
+            return $this->fetch('/SystemMessage', ['msg' => '同步回调超时，可能已经支付成功了。。。但是超过5分钟了！']);
+
+        if (empty($this->systemConfig[$payType]['epayCenterKey']))
+            return $this->fetch('/SystemMessage', ['msg' => '后台参数配置缺失，请联系站点管理员处理！']);
+        $md5 = md5(createLinkString(argSort(paraFilter(input('get.')))) . $this->systemConfig[$payType]['epayCenterKey']);
+        if ($md5 != $sign)
+            return $this->fetch('/SystemMessage', ['msg' => '回调签名校验失败,请联系站点管理员处理！']);
+
+        if ($tradeStatus != 'SUCCESS')
+            return $this->fetch('/SystemMessage', ['msg' => '订单尚未支付,请支付后再操作！']);
+
+        return redirect(buildCallBackUrl($tradeNoOut, 'return'));
     }
 
     /**

@@ -11,7 +11,7 @@ class CenterPayModel
         $this->centerConfig = $centerConfig;
     }
 
-    public function getPayUrl(string $tradeNo, string $payType, string $money, string $notifyUrl)
+    public function getPayUrl(string $tradeNo, string $payType, string $money, string $notifyUrl, string $returnUrl)
     {
         if (empty($tradeNo) || empty($payType) || empty($money) || empty($notifyUrl))
             return ['isSuccess' => false, 'msg' => '[server] param empty'];
@@ -21,7 +21,8 @@ class CenterPayModel
             'tradeNo'   => $tradeNo,
             'payType'   => $payType,
             'money'     => $money,
-            'notifyUrl' => $notifyUrl
+            'notifyUrl' => $notifyUrl,
+            'returnUrl' => $returnUrl
         ];
         $result = $this->sendRequest($url, $param);
         if ($result === false)

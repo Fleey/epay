@@ -19,12 +19,11 @@ class Alipay extends Controller
         parent::__construct($app);
         $this->systemConfig = getConfig();
         $this->alipayConfig = $this->systemConfig['alipay'];
+        $this->returnUrl = url('/Pay/Alipay/Return', '', false, true);
         if (empty($this->systemConfig['notifyDomain'])) {
             $this->notifyUrl = url('/Pay/Alipay/Notify', '', false, true);
-            $this->returnUrl = url('/Pay/Alipay/Return', '', false, true);
         } else {
             $this->notifyUrl = $this->systemConfig['notifyDomain'] . '/Pay/Alipay/Notify';
-            $this->returnUrl = $this->systemConfig['notifyDomain'] . '/Pay/Alipay/Return';
         }
     }
 

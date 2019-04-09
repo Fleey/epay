@@ -31,6 +31,8 @@ $(function () {
                         return '财付通';
                     } else if (data === 3) {
                         return '支付宝';
+                    } else if (data === 4) {
+                        return '银联';
                     } else {
                         return '未知';
                     }
@@ -60,7 +62,7 @@ $(function () {
     };
     $('#orderList').DataTable(dataTableConfig);
 
-    $('button[data-type="reloadNotify"]').off("click").on('click',function () {
+    $('button[data-type="reloadNotify"]').off("click").on('click', function () {
         var tradeNo = $('span[data-name="tradeNo"]').text();
         $.ajax({
             url: '/cy2018/api/Notified',
@@ -83,7 +85,7 @@ $(function () {
         });
     });
 
-    $('button[data-type="setShield"]').off("click").on('click',function () {
+    $('button[data-type="setShield"]').off("click").on('click', function () {
         var tradeNo = $('span[data-name="tradeNo"]').text();
         var status = $('span[data-name="isShield"]').text() === '未屏蔽' ? 1 : 0;
         var buttonDom = $(this);
@@ -110,7 +112,7 @@ $(function () {
         }, 'json');
     });
 
-    $('#cancelSearchFilter').off("click").on('click',function () {
+    $('#cancelSearchFilter').off("click").on('click', function () {
         var dataTable = $('#orderList').dataTable();
         dataTable.fnDestroy();
         dataTableConfig['ajax'] = {
@@ -132,7 +134,7 @@ $(function () {
         $('#searchFilter').modal('hide');
         $('#cancelSearchFilter').hide();
     });
-    $('#searchContent').off("click").on('click',function () {
+    $('#searchContent').off("click").on('click', function () {
         var uid = $('#uid').val();
         var tradeNo = $('#tradeNo').val();
         var tradeNoOut = $('#tradeNoOut').val();
@@ -218,7 +220,9 @@ $(function () {
                         else if (value === 2)
                             value = '财付通';
                         else if (value === 3)
-                            value = '支付宝'
+                            value = '支付宝';
+                        else if(value === 4)
+                            value = '银联';
                     } else if (key === 'status') {
                         value = value ? '已付款' : '未付款';
                     } else if (key === 'isShield') {
@@ -277,7 +281,7 @@ $(function () {
         }
     });
 
-    $('#batchCallback').off("click").on('click',function () {
+    $('#batchCallback').off("click").on('click', function () {
         var uid = $('#uid1').val();
         var payType = $('#payTypeCallback').val();
         var startTime = $('#startCallbackTime').val();

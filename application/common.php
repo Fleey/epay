@@ -354,7 +354,7 @@ function paraFilter($para, $isUrlDecode = true)
         if ($key == 'sign' || $key == 'sign_type' || empty($val))
             continue;
         else
-            if($isUrlDecode)
+            if ($isUrlDecode)
                 $para_filter[$key] = urldecode($val);
             else
                 $para_filter[$key] = $val;
@@ -485,7 +485,7 @@ function buildCallBackUrl(string $tradeNo, string $type)
         'money'        => ($orderData['money'] + $orderData['discountMoney']) / 100,
         'trade_status' => 'TRADE_SUCCESS'
     ];
-    $args        = argSort(paraFilter($args));
+    $args        = argSort(paraFilter($args, false));
     $sign        = signMD5(createLinkString($args), $userKey);
     $callBackUrl = $orderData[$type . '_url'] . (strpos($orderData[$type . '_url'], '?') ? '&' : '?') . createLinkStringUrlEncode($args) . '&sign=' . $sign . '&sign_type=MD5';
     return $callBackUrl;

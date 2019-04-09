@@ -234,6 +234,7 @@
                                     <option value="1">微信支付</option>
                                     <option value="2">财付通支付</option>
                                     <option value="3">支付宝支付</option>
+                                    <option value="4">银联支付</option>
                                 </select>
                             </div>
                         </div>

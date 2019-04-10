@@ -4,7 +4,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>QQ钱包支付</title>
     <link href="/static/css/qq/mqq_pay.css?v=1" rel="stylesheet" media="screen">
-    <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/static/css/resource/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.staticfile.org/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 
@@ -19,7 +20,7 @@
             <div class="list-group-item">
                 <h1>￥<?php echo $money; ?><h1>
             </div>
-            <div class="list-group-item">
+            <div class="list-group-item" style="text-align: left;">
                 商品名称：<?php echo htmlentities($productName); ?>
                 <br>
                 商户订单号：<?php echo $tradeNo; ?>

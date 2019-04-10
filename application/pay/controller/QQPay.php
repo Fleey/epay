@@ -82,8 +82,8 @@ class QQPay extends Controller
                 return $this->fetch('/SystemMessage', ['msg' => 'QQ钱包支付下单失败！<br>[' . $requestResult['return_code'] . ']' . $requestResult['return_msg']]);
 
 
-        if ($this->request->isMobile())
-            $codeUrl = 'https://myun.tenpay.com/mqq/pay/qrcode.html?_wv=1027&_bid=2183&t=' . $requestResult['prepay_id'];
+//        if ($this->request->isMobile())
+//            $codeUrl = 'https://myun.tenpay.com/mqq/pay/qrcode.html?_wv=1027&_bid=2183&t=' . $requestResult['prepay_id'];
 
         if (strpos($this->request->header('HTTP_USER_AGENT', ''), 'QQ/') !== false)
             return redirect($codeUrl, [], 302);

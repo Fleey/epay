@@ -1047,7 +1047,7 @@
                                 <td>是</td>
                                 <td>String</td>
                                 <td>alipay</td>
-                                <td>alipay:支付宝,tenpay:财付通,<br/>qqpay:QQ钱包,wxpay:微信支付</td>
+                                <td>alipay:支付宝,tenpay:财付通,<br/>qqpay:QQ钱包,wxpay:微信支付<br>bankpay：银联支付</td>
                             </tr>
                             <tr>
                                 <td>商户订单号</td>

@@ -55,12 +55,14 @@ class CenterPay extends Controller
         $config['gateway'] = 'http://center.zmz999.com';
         $centerPayModel    = new CenterPayModel($config);
         $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);
-        if ($requestResult['isSuccess']){
-            if(empty($requestResult['html'])){
-                return redirect($requestResult['url'], [], 302);
-            }else{
-                return $requestResult['html'];
-            }
+        if ($requestResult['isSuccess']) {
+//            if (empty($requestResult['html'])) {
+//                return redirect($requestResult['url'], [], 302);
+//            } else {
+//                return $this->fetch('/CenterPayTemplate', ['url' => $requestResult['html']]);
+//            }
+            if(!empty($requestResult['url']))
+                return $this->fetch('/CenterPayTemplate', ['url' => $requestResult['url'],'tradeNo'=>$tradeNo,'payType'=>$result[0]['type']]);
         }
         return $this->fetch('/SystemMessage', ['msg' => $requestResult['msg']]);
     }

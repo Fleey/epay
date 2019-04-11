@@ -30,6 +30,8 @@ class CenterPayModel
         if ($result['status'] != 1 || empty($result['data']))
             return ['isSuccess' => false, 'msg' => $result['msg']];
         $result = json_decode($result['data'], true);
+        if ($result['isHtml'])
+            return ['isSuccess' => true, 'html' => $result['html']];
         return ['isSuccess' => true, 'url' => $result['url']];
     }
 
@@ -65,6 +67,9 @@ class CenterPayModel
         $requestParam['sign']      = $this->buildSignMD5($requestParam);
         $requestParam['sign_type'] = 'MD5';
         //build sign
+        $header = [];
+        if (request()->isMobile())
+            $header[] = 'User-Agent: Mozilla/5.0 (Linux; U; Android 8.1.0; zh-cn; BLA-AL00 Build/HUAWEIBLA-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.132 MQQBrowser/8.9 Mobile Safari/537.36';
         $requestResult = curl($url, [], 'post', $requestParam);
         if ($requestResult === false)
             return false;

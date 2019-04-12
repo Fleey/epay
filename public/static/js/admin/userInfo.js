@@ -182,6 +182,17 @@ $(function () {
         if (isRequest)
             return;
         var requestData = {};
+        var payConfigData = {};
+        $.each($('#setPayConfig div[data-name]'), function (key, value) {
+            var dom = $(value);
+            var tempData = {};
+            $.each(dom.find('[data-value]'), function (key1, value1) {
+                tempData[$(value1).attr('data-value')] = parseInt($(value1).val());
+            });
+            payConfigData[dom.attr('data-name')] = tempData;
+        });
+        requestData['payConfig'] = JSON.stringify(payConfigData);
+
         var discountsData = {};
         discountsData['isOpen'] = parseInt($('select[data-name="isOrderDiscountsOpen"]').val());
         discountsData['type'] = parseInt($('select[data-name="orderDiscountsType"]').val());
@@ -297,6 +308,15 @@ $(function () {
         $('select[data-name="clearMode"]').val(0).change();
         $('select[data-name="clearType"]').val(1).change();
         $('select[data-name="productNameShowMode"]').val('0').change();
+
+        $('#setPayConfig [data-name="alipay"] [data-value="apiType"]').val(0);
+        $('#setPayConfig [data-name="wxpay"] [data-value="apiType"]').val(0);
+        $('#setPayConfig [data-name="qqpay"] [data-value="apiType"]').val(0);
+        $('#setPayConfig [data-name="bankpay"] [data-value="apiType"]').val(0);
+        $('#setPayConfig [data-name="alipay"] [data-value="isOpen"]').val(1);
+        $('#setPayConfig [data-name="wxpay"] [data-value="isOpen"]').val(1);
+        $('#setPayConfig [data-name="qqpay"] [data-value="isOpen"]').val(1);
+        $('#setPayConfig [data-name="bankpay"] [data-value="isOpen"]').val(1);
     });
     $('.QrCodeImgPreview').off("click").on('click', function () {
         $('#QrCodeImg').click();
@@ -379,6 +399,22 @@ $(function () {
                             $.each(value['moneyList'], function (key1, value1) {
                                 addDiscountsMoneyList(value1);
                             });
+                        }
+                    } else if (key === 'payConfig') {
+                        if (value === '') {
+                            $('#setPayConfig [data-name="alipay"] [data-value="apiType"]').val(0);
+                            $('#setPayConfig [data-name="wxpay"] [data-value="apiType"]').val(0);
+                            $('#setPayConfig [data-name="qqpay"] [data-value="apiType"]').val(0);
+                            $('#setPayConfig [data-name="bankpay"] [data-value="apiType"]').val(0);
+                            $('#setPayConfig [data-name="alipay"] [data-value="isOpen"]').val(1);
+                            $('#setPayConfig [data-name="wxpay"] [data-value="isOpen"]').val(1);
+                            $('#setPayConfig [data-name="qqpay"] [data-value="isOpen"]').val(1);
+                            $('#setPayConfig [data-name="bankpay"] [data-value="isOpen"]').val(1);
+                        } else {
+                            $.each(value, function (key1, value1) {
+                                $('#setPayConfig [data-name="'+key1+'"] [data-value="apiType"]').val(value1['apiType']);
+                                $('#setPayConfig [data-name="'+key1+'"] [data-value="isOpen"]').val(value1['isOpen']);
+                            })
                         }
                     }
                     setDataNameInfo(key, value);

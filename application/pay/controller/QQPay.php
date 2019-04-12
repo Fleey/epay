@@ -48,9 +48,15 @@ class QQPay extends Controller
         if ($result[0]['status'])
             return $this->fetch('/SystemMessage', ['msg' => '交易已经完成无法再次支付！']);
 
-        if (isset($this->qqPayConfig['apiType']))
-            if ($this->qqPayConfig['apiType'] != 0)
-                return $this->fetch('/SystemMessage', ['msg' => '该订单尚不支持原生支付！']);
+        $userPayConfig = unserialize(getPayUserAttr($result[0]['uid'], 'payConfig'));
+        if (!empty($userPayConfig)) {
+            $apiType = $userPayConfig['qqpay']['apiType'];
+        } else {
+            $apiType = $this->qqPayConfig['apiType'];
+        }
+
+        if ($apiType == 1)
+            return $this->fetch('/SystemMessage', ['msg' => '该订单尚不支持原生支付！']);
 
         $productNameShowMode = intval(getPayUserAttr($result[0]['uid'], 'productNameShowMode'));
         $productName         = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];
@@ -82,10 +88,10 @@ class QQPay extends Controller
                 return $this->fetch('/SystemMessage', ['msg' => 'QQ钱包支付下单失败！<br>[' . $requestResult['return_code'] . ']' . $requestResult['return_msg']]);
 
 
-//        if ($this->request->isMobile())
-//            $codeUrl = 'https://myun.tenpay.com/mqq/pay/qrcode.html?_wv=1027&_bid=2183&t=' . $requestResult['prepay_id'];
+        if ($this->request->isMobile())
+            $codeUrl = 'https://myun.tenpay.com/mqq/pay/qrcode.html?_wv=1027&_bid=2183&t=' . $requestResult['prepay_id'];
 
-        if (strpos($this->request->header('HTTP_USER_AGENT', ''), 'QQ/') !== false)
+        if (strpos($this->request->header('user-agent'), 'QQ/') !== false)
             return redirect($codeUrl, [], 302);
         //判断是否手机QQ
         return $this->fetch('/QQPay' . ($this->request->isMobile() ? 'Mobile' : 'Pc') . 'Template', [

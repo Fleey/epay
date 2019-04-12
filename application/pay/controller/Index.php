@@ -122,7 +122,21 @@ class Index extends Controller
         } else if ($converPayType == 4 && !$this->systemConfig['bankpay']['isOpen']) {
             return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['bankpay']['tips']]);
         }
-        //check is open pay
+        //check is open pay 总开关有效
+
+        $userPayConfig = unserialize(getPayUserAttr($uid, 'payConfig'));
+        if (!empty($userPayConfig)) {
+            if ($converPayType == 3 && !$userPayConfig['alipay']['isOpen']) {
+                return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['alipay']['tips']]);
+            } else if ($converPayType == 2 && !$userPayConfig['qqpay']['isOpen']) {
+                return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['qqpay']['tips']]);
+            } else if ($converPayType == 1 && !$userPayConfig['wxpay']['isOpen']) {
+                return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['wxpay']['tips']]);
+            } else if ($converPayType == 4 && !$userPayConfig['bankpay']['isOpen']) {
+                return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['bankpay']['tips']]);
+            }
+            //检测用户是否有相应支付接口权限
+        }
 
         $clientIpv4 = getClientIp();
 
@@ -184,9 +198,15 @@ class Index extends Controller
         }
         //解决用户交易号重复问题
 
-        if (isset($this->systemConfig[$type]['apiType']))
-            if ($this->systemConfig[$type]['apiType'] == 1)
+        if (!empty($userPayConfig)) {
+            if ($userPayConfig[$type]['apiType'] == 1)
                 return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo, '', false, true));
+        } else {
+            if (isset($this->systemConfig[$type]['apiType']))
+                if ($this->systemConfig[$type]['apiType'] == 1)
+                    return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo, '', false, true));
+        }
+
         //中央支付
         if ($converPayType == 3) {
             return redirect(url('/Pay/Alipay/Submit?tradeNo=' . $tradeNo, '', false, true));

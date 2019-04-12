@@ -332,6 +332,9 @@ class Index extends Controller
         $data['orderDiscounts'] = getPayUserAttr($uid, 'orderDiscounts');
         if ($data['orderDiscounts'] != '')
             $data['orderDiscounts'] = unserialize($data['orderDiscounts']);
+        $data['payConfig'] = getPayUserAttr($uid, 'payConfig');
+        if ($data['payConfig'] != '')
+            $data['payConfig'] = unserialize($data['payConfig']);
 
         if ($data['clearType'] == 5 || $data['clearType'] == 6)
             $data['qrFileID'] = getPayUserAttr($uid, 'qrFileID');
@@ -515,6 +518,8 @@ class Index extends Controller
         $account             = input('post.account/s', '');
         $productNameShowMode = input('post.productNameShowMode/d', 0);
         $orderDiscounts      = input('post.orderDiscounts/s', '');
+        $payConfig           = input('post.payConfig/s', '');
+
 
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
@@ -568,6 +573,13 @@ class Index extends Controller
             setPayUserAttr($result, 'orderDiscounts', serialize($data));
         }
 
+        if (!empty($payConfig)) {
+            $data = json_decode($payConfig, true);
+            if (empty($data))
+                return json(['status' => 1, 'msg' => '新增用户成功,但是支付配置功能异常']);
+            setPayUserAttr($result, 'payConfig', serialize($data));
+        }
+
         return json(['status' => 1, 'msg' => '新增用户成功']);
     }
 
@@ -599,7 +611,7 @@ class Index extends Controller
         $account             = input('post.account/s', '');
         $productNameShowMode = input('post.productNameShowMode/d', 0);
         $orderDiscounts      = input('post.orderDiscounts/s', '');
-
+        $payConfig           = input('post.payConfig/s', '');
 
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
@@ -639,6 +651,12 @@ class Index extends Controller
             $data = json_decode($orderDiscounts, true);
             if (!empty($data))
                 setPayUserAttr($uid, 'orderDiscounts', serialize($data));
+        }
+        if (!empty($payConfig)) {
+            $data = json_decode($payConfig, true);
+            if (empty($data))
+                return json(['status' => 1, 'msg' => '新增用户成功,但是支付配置功能异常']);
+            setPayUserAttr($uid, 'payConfig', serialize($data));
         }
         return json(['status' => 1, 'msg' => '保存用户信息成功']);
     }

@@ -32,7 +32,7 @@ class CenterPay extends Controller
 //        $siteName = htmlentities(base64_decode(input('get.siteName')));
 //        if (empty($siteName))
 //            $siteName = '易支付';
-        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('money,status,type')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,status,type')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
         if ($result[0]['status'])
@@ -41,17 +41,28 @@ class CenterPay extends Controller
         $payName = PayModel::converPayName($result[0]['type'], true);
         if (empty($this->systemConfig[$payName]))
             return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 系统异常请联系管理员处理！']);
-        $payConfig = $this->systemConfig[$payName];
-        if (!isset($payConfig['apiType']))
-            return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 该订单尚不支持中央支付！']);
-        if (empty($payConfig['isOpen']))
-            return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] ' . $payConfig['tips'] . '！']);
-        if (!$payConfig['isOpen'])
-            return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] ' . $payConfig['tips'] . '！']);
-        if ($payConfig['apiType'] != 1)
-            return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 该订单尚不支持中央支付！']);
 
-        $config            = $payConfig;
+        $userPayConfig   = unserialize(getPayUserAttr($result[0]['uid'], 'payConfig'));
+        $systemPayConfig = $this->systemConfig[$payName];
+        if (empty($userPayConfig)) {
+            if (!isset($systemPayConfig['apiType']))
+                return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 该订单尚不支持中央支付！']);
+            if (empty($systemPayConfig['isOpen']))
+                return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] ' . $systemPayConfig['tips'] . '！']);
+            if (!$systemPayConfig['isOpen'])
+                return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] ' . $systemPayConfig['tips'] . '！']);
+            if ($systemPayConfig['apiType'] != 1)
+                return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 该订单尚不支持中央支付！']);
+        } else {
+            if ($userPayConfig[$payName]['apiType'] != 1)
+                return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 该订单尚不支持中央支付！']);
+            if (empty($systemPayConfig['epayCenterUid']))
+                return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 易支付中心系统接口商户号不能为空！']);
+            if (empty($systemPayConfig['epayCenterKey']))
+                return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 易支付中心系统接口密匙不能为空！']);
+        }
+
+        $config            = $systemPayConfig;
         $config['gateway'] = 'http://center.zmz999.com';
         $centerPayModel    = new CenterPayModel($config);
         $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);
@@ -61,8 +72,8 @@ class CenterPay extends Controller
 //            } else {
 //                return $this->fetch('/CenterPayTemplate', ['url' => $requestResult['html']]);
 //            }
-            if(!empty($requestResult['url']))
-                return $this->fetch('/CenterPayTemplate', ['url' => $requestResult['url'],'tradeNo'=>$tradeNo,'payType'=>$result[0]['type']]);
+            if (!empty($requestResult['url']))
+                return $this->fetch('/CenterPayTemplate', ['url' => $requestResult['url'], 'tradeNo' => $tradeNo, 'payType' => $result[0]['type']]);
         }
         return $this->fetch('/SystemMessage', ['msg' => $requestResult['msg']]);
     }
@@ -114,7 +125,7 @@ class CenterPay extends Controller
             'endTime' => getDateTime()
         ]);
         if ($updateResult)
-            processOrder($tradeNoOut);
+            processOrder($tradeNoOut, true);
         else
             trace('[EpayCenterModel] 更新订单状态异常 tradeNo => ' . $tradeNoOut, 'error');
         return json(['status' => 1, 'msg' => 'update order status success']);

@@ -165,11 +165,109 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-type="delete">删除账号</button>
                 <button type="button" class="btn btn-danger" data-type="reloadKey">重置密匙</button>
+                <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#setPayConfig">支付配置
+                </button>
                 <button type="button" class="btn btn-info" data-toggle="modal" data-target="#setOrderDiscounts">
                     设置下单减免
                 </button>
                 <button type="button" class="btn btn-primary" data-type="save">保存</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="setPayConfig" role="dialog" aria-labelledby="setPayConfig">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">支付配置</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="box-body">
+                        <div class="form-group row">
+                            <div class="col-md-12" data-name="alipay">
+                                <label class="control-label">支付宝支付</label>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <select class="form-control" data-value="apiType">
+                                            <option value="0">原生支付接口</option>
+                                            <option value="1">易支付中央系统</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-control" data-value="isOpen">
+                                            <option value="1">开启</option>
+                                            <option value="0">关闭</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-12" data-name="qqpay">
+                                <label class="control-label">QQ钱包支付</label>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <select class="form-control" data-value="apiType">
+                                            <option value="0">原生支付接口</option>
+                                            <option value="1">易支付中央系统</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-control" data-value="isOpen">
+                                            <option value="1">开启</option>
+                                            <option value="0">关闭</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-12" data-name="wxpay">
+                                <label class="control-label">微信支付</label>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <select class="form-control" data-value="apiType">
+                                            <option value="0">原生支付接口</option>
+                                            <option value="1">易支付中央系统</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-control" data-value="isOpen">
+                                            <option value="1">开启</option>
+                                            <option value="0">关闭</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-12" data-name="bankpay">
+                                <label class="control-label">银联支付</label>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <select class="form-control" data-value="apiType">
+                                            <option value="0">原生支付接口</option>
+                                            <option value="1">易支付中央系统</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-control" data-value="isOpen">
+                                            <option value="1">开启</option>
+                                            <option value="0">关闭</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary w96" data-dismiss="modal">确定</button>
             </div>
         </div>
     </div>
@@ -198,7 +296,8 @@
                         <div class="form-group row">
                             <div class="col-md-12">
                                 <label for="uid" class="control-label">最低减免金额</label>
-                                <input type="text" class="form-control" data-name="orderDiscountsMinMoney" placeholder="低于或等于这个金额，则不进行减免">
+                                <input type="text" class="form-control" data-name="orderDiscountsMinMoney"
+                                       placeholder="低于或等于这个金额，则不进行减免">
                                 <small class="form-text text-muted">0则不限制 如果减免后金额为负数或0就会触发免单机制</small>
                             </div>
                         </div>

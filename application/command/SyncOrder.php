@@ -52,8 +52,8 @@ class SyncOrder extends Command
         //从0开始 1 则为两次 2 则为三次
         for ($i = $callBackCount; $i >= 0; $i--) {
             $isProxy = false;
-            if ($i == 1)
-                $isProxy = true;
+//            if ($i == 1)
+//                $isProxy = true;
             $callbackList = Db::table('epay_callback')->where('status', $i)->field('id,url')->cursor();
             foreach ($callbackList as $value) {
                 $result = $this->curl($value['url'], [], 'get', '', '', true, $isProxy);

@@ -48,12 +48,12 @@ class SyncOrder extends Command
 
         $output->info(' start call back order');
 
-        $callBackCount = 1;
+        $callBackCount = 2;
         //从0开始 1 则为两次 2 则为三次
         for ($i = $callBackCount; $i >= 0; $i--) {
             $isProxy = false;
-//            if ($i == 1)
-//                $isProxy = true;
+            if ($i >= 1)
+                $isProxy = true;
             $callbackList = Db::table('epay_callback')->where('status', $i)->field('id,url')->cursor();
             foreach ($callbackList as $value) {
                 $result = $this->curl($value['url'], [], 'get', '', '', true, $isProxy);
@@ -115,11 +115,10 @@ class SyncOrder extends Command
 
         if ($isProxy) {
             curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-            curl_setopt($ch, CURLOPT_PROXY, '116.255.172.156');
+            curl_setopt($ch, CURLOPT_PROXY, '127.0.0.1');
             //代理服务器地址
-            curl_setopt($ch, CURLOPT_PROXYPORT, 16819);
+            curl_setopt($ch, CURLOPT_PROXYPORT, 8123);
             //代理服务器端口
-            curl_setopt($ch, CURLOPT_PROXYUSERPWD, '825190973:su4vf614');
         }
         //set proxy
         curl_setopt($ch, CURLOPT_ENCODING, 'gzip');

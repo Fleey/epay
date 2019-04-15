@@ -171,6 +171,9 @@ class ApiV1 extends Controller
         if ($type != 'qqpay' && $type != 'wxpay')
             return json(['code' => 0, 'msg' => '支付方式有误']);
         //check pay type
+        if (!preg_match('/^[0-9]+([.]{1}[0-9]+){0,1}$/', $money))
+            return json(['code' => 0, 'msg' => '金额(money) 格式不正确']);
+        //判断金额格式 禁止那些E
         $money = decimalsToInt($money, 2);
         if ($money <= 0)
             return json(['code' => 0, 'msg' => '支付金额有误']);

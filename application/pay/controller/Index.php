@@ -74,6 +74,9 @@ class Index extends Controller
         if (empty($this->getData['return_url']))
             return $this->fetch('/SystemMessage', ['msg' => '回调地址(return_url)不能为空']);
 
+        if (!preg_match('/^[0-9]+([.]{1}[0-9]+){0,1}$/', $this->getData['money']))
+            return $this->fetch('/SystemMessage', ['msg' => '金额(money) 格式不正确']);
+        //判断金额格式 禁止那些E
         $type        = $this->getData['type'];
         $tradeNoOut  = $this->getData['out_trade_no'];
         $notifyUrl   = strip_tags($this->getData['notify_url']);

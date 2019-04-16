@@ -43,11 +43,13 @@ class Alipay extends Controller
         if ($result[0]['status'])
             return $this->fetch('/SystemMessage', ['msg' => '交易已经完成无法再次支付！']);
 
+        $apiType       = 0;
         $userPayConfig = unserialize(getPayUserAttr($result[0]['uid'], 'payConfig'));
         if (!empty($userPayConfig)) {
             $apiType = $userPayConfig['alipay']['apiType'];
         } else {
-            $apiType = $this->alipayConfig['apiType'];
+            if (isset($this->alipayConfig['apiType']))
+                $apiType = $this->alipayConfig['apiType'];
         }
 
         if ($apiType == 1)

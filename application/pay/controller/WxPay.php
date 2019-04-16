@@ -45,11 +45,13 @@ class WxPay extends Controller
         if ($result[0]['status'])
             return $this->fetch('/SystemMessage', ['msg' => '交易已经完成无法再次支付！']);
 
+        $apiType       = 0;
         $userPayConfig = unserialize(getPayUserAttr($result[0]['uid'], 'payConfig'));
         if (!empty($userPayConfig)) {
             $apiType = $userPayConfig['wxpay']['apiType'];
         } else {
-            $apiType = $this->systemConfig['wxpay']['apiType'];
+            if (isset($this->systemConfig['wxpay']['apiType']))
+                $apiType = $this->systemConfig['wxpay']['apiType'];
         }
 
         if ($apiType == 1)

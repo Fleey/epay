@@ -48,11 +48,13 @@ class QQPay extends Controller
         if ($result[0]['status'])
             return $this->fetch('/SystemMessage', ['msg' => '交易已经完成无法再次支付！']);
 
+        $apiType       = 0;
         $userPayConfig = unserialize(getPayUserAttr($result[0]['uid'], 'payConfig'));
         if (!empty($userPayConfig)) {
             $apiType = $userPayConfig['qqpay']['apiType'];
         } else {
-            $apiType = $this->qqPayConfig['apiType'];
+            if (isset($this->qqPayConfig['apiType']))
+                $apiType = $this->qqPayConfig['apiType'];
         }
 
         if ($apiType == 1)

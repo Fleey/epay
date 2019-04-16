@@ -542,7 +542,8 @@ function processOrder($tradeNo, $notify = true)
         $notifyUrl     = buildCallBackUrl($tradeNo, 'notify');
         $requestResult = curl($notifyUrl);
         if ($requestResult === false)
-            addCallBackLog($orderInfo[0]['uid'], $notifyUrl);
+            if (curl($notifyUrl, [], '', '', '', true, true))
+                addCallBackLog($orderInfo[0]['uid'], $notifyUrl);
         //回调事件
 //        trace('日志信息: 请求结果 => '.$requestResult .' 请求url =>' .$notifyUrl,'info');
     }

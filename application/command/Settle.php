@@ -24,9 +24,13 @@ class Settle extends Command
         $this->settleUser();
         $output->info('end settle success');
 
-        $output->info('start optimize mysql');
-        $this->optimizeDatabase();
-        $output->info('end optimize mysql');
+        $nowHour = intval(date('h'));
+        if ($nowHour == 4) {
+            $output->info('start optimize mysql');
+            $this->optimizeDatabase();
+            $output->info('end optimize mysql');
+        }
+        //凌晨4点执行本任务
     }
 
     /**
@@ -151,8 +155,8 @@ class Settle extends Command
         $getTables = $tempArray;
         $tempArray = [];
         foreach ($getTables as $tableName) {
-            Db::execute('OPTIMIZE TABLE ?', [$tableName]);
-            Db::execute('ALTER TABLE ? ENGINE = InnoDB;', [$tableName]);
+            Db::execute('OPTIMIZE TABLE `' . $tableName . '`');
+            Db::execute('ALTER TABLE `' . $tableName . '` ENGINE = InnoDB;');
         }
         //优化表
     }

@@ -10,8 +10,9 @@ use think\Db;
 
 class ApiV2 extends Controller
 {
-    private $userKey = '';
     private $requestData = [];
+    private $uid = 0;
+    private $userKey = '';
     private $systemConfig;
 
     public function loadTemplate()
@@ -33,17 +34,24 @@ class ApiV2 extends Controller
             $this->returnJson(['status' => 0, 'msg' => '请求数据不能为空，仅支持POST方式传递参数']);
         if (empty($this->requestData['uid']))
             $this->returnJson(['status' => 0, 'msg' => '商户号不能为空']);
-        if(empty($this->requestData['sign_type']))
-            $this->returnJson(['status' => 0, 'msg' => '签名效验失败，仅支持MD5签名']);
-        if($this->requestData['sign_type'] != 'MD5')
-            $this->returnJson(['status' => 0, 'msg' => '签名效验失败，仅支持MD5签名']);
+        if (empty($this->requestData['time']))
+            $this->returnJson(['status' => 0, 'msg' => '时间戳不能为空']);
+        if (time() - intval($this->requestData['time']) > 180)
+            $this->returnJson(['status' => 0, 'msg' => '校验失效,数据请求超时（三分钟）']);
+        if (empty($this->requestData['sign_type']))
+            $this->returnJson(['status' => 0, 'msg' => '[10001]签名效验失败，仅支持MD5签名']);
+        if ($this->requestData['sign_type'] != 'MD5')
+            $this->returnJson(['status' => 0, 'msg' => '[10002]签名效验失败，仅支持MD5签名']);
         $userKey = Db::table('epay_user')->where('id', $this->requestData['uid'])->field('key')->limit(1)->select();
         if (empty($userKey))
-            $this->returnJson(['status' => 0, 'msg' => '签名效验失败，仅支持MD5签名']);
+            $this->returnJson(['status' => 0, 'msg' => '[10003]签名效验失败，仅支持MD5签名']);
+        $userKey = $userKey[0]['key'];
         if (!$this->checkSign($this->requestData, $userKey, $this->requestData['sign']))
-            $this->returnJson(['status' => 0, 'msg' => '签名效验失败，仅支持MD5签名']);
+            $this->returnJson(['status' => 0, 'msg' => '[10004]签名效验失败，仅支持MD5签名']);
         //check sign
-        $this->userKey = $userKey;
+        $this->uid         = $this->requestData['uid'];
+        $this->requestData = json_decode(urldecode($this->requestData['data']), true);
+        $this->userKey     = $userKey;
     }
 
     /**
@@ -82,6 +90,11 @@ class ApiV2 extends Controller
         ]);
     }
 
+    public function postOrders()
+    {
+
+    }
+
     /**
      * 效验签名
      * @param array $data
@@ -91,7 +104,9 @@ class ApiV2 extends Controller
      */
     private function checkSign(array $data, string $key, string $sign)
     {
-        return verifyMD5(createLinkString(argSort(paraFilter($data))), $key, $sign);
+        $str1 = createLinkString(argSort(paraFilter($data, true)));
+        $str1 = md5($str1 . $key);
+        return $str1 == $sign;
     }
 
     /**
@@ -103,10 +118,12 @@ class ApiV2 extends Controller
         if (empty($this->userKey))
             exit(json_encode($data));
         //key is empty
-        $args              = argSort(paraFilter($data));
-        $sign              = signMD5(createLinkString($args), $this->userKey);
+        $data['time']      = time();
+        $args              = argSort(paraFilter($data, false));
+        $sign              = md5(createLinkString($args) . $this->userKey);
         $data['sign']      = $sign;
         $data['sign_type'] = 'MD5';
         exit(json_encode($data));
     }
+
 }

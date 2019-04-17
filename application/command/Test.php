@@ -20,9 +20,10 @@ class Test extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
+        exit(dump(date("h")));
 
         $test = 'Mozilla/5.0 (Linux; Android 9; MIX 2S Build/PKQ1.180729.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/66.0.3359.126 MQQBrowser/6.2 TBS/044606 Mobile Safari/537.36 V1_AND_SQ_7.9.9_1010_YYB_D QQ/7.9.9.3965 NetType/4G WebP/0.3.0 Pixel/1080 StatusBarHeight/76';
-        dump(strpos($test, 'QQ/')!==false);
+        dump(strpos($test, 'QQ/') !== false);
 
 //        $test = new CenterPayModel([
 //            'gateway' => 'http://center.pay.cn',

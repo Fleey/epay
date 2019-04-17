@@ -40,7 +40,7 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link waves-effect waves-dark sidebar-link" target="_blank" href="/doc/v1"
+                    <a class="sidebar-link waves-effect waves-dark sidebar-link" target="_blank" href="https://documenter.getpostman.com/view/5333712/S1EQTdcL"
                        aria-expanded="false">
                         <i class="mdi mdi-book-open-page-variant"></i>
                         <span class="hide-menu">开发文档</span>

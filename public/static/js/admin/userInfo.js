@@ -141,6 +141,7 @@ $(function () {
     });
     $('select[data-name="clearMode"]').change(function () {
         var selectValue = $(this).val();
+        $('input[data-name="settleHour"]').parent().hide();
         if (selectValue === '2') {
             $('#deposit').show();
             $('#settleMoney').show();
@@ -155,6 +156,9 @@ $(function () {
                 '<option value="5">微信转账（二维码）</option>' +
                 '<option value="6">支付宝转账（二维码）</option>'
             );
+        }
+        if (selectValue === '3') {
+            $('input[data-name="settleHour"]').parent().show();
         }
     });
     $('select[data-name="productNameShowMode"]').change(function () {
@@ -282,24 +286,35 @@ $(function () {
     $('button[data-type="reloadKey"]').off("click").on('click', function () {
         var uid = $('input[data-name="id"]').val();
         swal({
-            title: '请稍后...',
-            text: '正在积极等待服务器响应',
-            showConfirmButton: false
-        });
-        $.post('/cy2018/api/ReloadKey', {uid: uid}, function (data) {
-            if (data['status'] !== 1) {
-                swal('请求失败', data['msg'], 'error');
-                return true;
-            }
-            $('input[data-name="key"]').val(data['key']);
-            $('#orderList1').dataTable().fnDraw(false);
-            swal('请求成功', '新的密匙为：' + data['key'], 'success');
-        }, 'json');
+                title: '操作提示',
+                text: '确定要重置该账户密匙？',
+                type: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "确定",
+                cancelButtonText: '取消',
+                closeOnConfirm: false
+            },
+            function () {
+                swal({
+                    title: '请稍后...',
+                    text: '正在积极等待服务器响应',
+                    showConfirmButton: false
+                });
+                $.post('/cy2018/api/ReloadKey', {uid: uid}, function (data) {
+                    if (data['status'] !== 1) {
+                        swal('请求失败', data['msg'], 'error');
+                        return true;
+                    }
+                    $('input[data-name="key"]').val(data['key']);
+                    $('#orderList1').dataTable().fnDraw(false);
+                    swal('请求成功', '新的密匙为：' + data['key'], 'success');
+                }, 'json');
+            });
     });
     $('#addUser').off("click").on('click', function () {
         $('input[data-name="id"]').parent().hide();
         $('input[data-name="key"]').parent().hide();
-        $('input[data-name="balance"]').parent().hide();
         $('button[data-type="delete"]').hide();
         $('button[data-type="reloadKey"]').hide();
         $('button[data-type="save"]').text('新增用户');
@@ -308,6 +323,7 @@ $(function () {
         $('select[data-name="clearMode"]').val(0).change();
         $('select[data-name="clearType"]').val(1).change();
         $('select[data-name="productNameShowMode"]').val('0').change();
+        $('input[data-name="balance"]').val(0);
 
         $('#setPayConfig [data-name="alipay"] [data-value="apiType"]').val(0);
         $('#setPayConfig [data-name="wxpay"] [data-value="apiType"]').val(0);
@@ -412,8 +428,8 @@ $(function () {
                             $('#setPayConfig [data-name="bankpay"] [data-value="isOpen"]').val(1);
                         } else {
                             $.each(value, function (key1, value1) {
-                                $('#setPayConfig [data-name="'+key1+'"] [data-value="apiType"]').val(value1['apiType']);
-                                $('#setPayConfig [data-name="'+key1+'"] [data-value="isOpen"]').val(value1['isOpen']);
+                                $('#setPayConfig [data-name="' + key1 + '"] [data-value="apiType"]').val(value1['apiType']);
+                                $('#setPayConfig [data-name="' + key1 + '"] [data-value="isOpen"]').val(value1['isOpen']);
                             })
                         }
                     }
@@ -421,6 +437,7 @@ $(function () {
                 });
                 //基础信息置入
                 var fileID = data['qrFileID'];
+                setDataNameInfo('setUserBalance','');
                 $('select[data-name="clearType"]').val(data['clearType']).change();
                 $('input[data-name="id"]').parent().show();
                 $('input[data-name="key"]').parent().show();

@@ -241,7 +241,13 @@ class Index extends Controller
                 $desc = '';
                 switch ($value['addType']) {
                     case 1:
-                        $desc = '系统零时自动结账';
+                        $desc = '系统自动结账';
+                        break;
+                    case 2:
+                        $desc = '支付宝自动结账';
+                        break;
+                    case 3:
+                        $desc = '用户手动提交结账';
                         break;
                 }
                 $body[] = [$value['uid'], $clearName, $value['account'], $value['username'], $value['money'] / 100, $desc];
@@ -328,6 +334,25 @@ class Index extends Controller
             $data['productName'] = getPayUserAttr($uid, 'productName');
         else
             $data['productName'] = '';
+
+        {
+            $settleConfig = getPayUserAttr($uid, 'settleConfig');
+            if ($settleConfig != '')
+                $settleConfig = unserialize($settleConfig);
+            else
+                $settleConfig = [];
+
+            if (isset($settleConfig['settleFee']))
+                $data['settleFee'] = $settleConfig['settleFee'] / 1000;
+            else
+                $data['settleFee'] = 0;
+
+            if (isset($settleConfig['settleHour']))
+                $data['settleHour'] = $settleConfig['settleHour'];
+            else
+                $data['settleHour'] = 0;
+        }
+        //结算配置加载
 
         $data['orderDiscounts'] = getPayUserAttr($uid, 'orderDiscounts');
         if ($data['orderDiscounts'] != '')
@@ -502,7 +527,7 @@ class Index extends Controller
         if (empty($username))
             return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
 
-        $balance             = input('post.balance/s', 0);
+        $setUserBalance      = input('post.setUserBalance/s', 0);
         $clearType           = input('post.clearType/s', 1);
         $clearMode           = input('post.clearMode/d', 0);
         $deposit             = input('post.deposit/s', 0);
@@ -519,7 +544,8 @@ class Index extends Controller
         $productNameShowMode = input('post.productNameShowMode/d', 0);
         $orderDiscounts      = input('post.orderDiscounts/s', '');
         $payConfig           = input('post.payConfig/s', '');
-
+        $settleHour          = input('post.settleHour/d', 0);
+        $settleFee           = input('post.settleFee/s', 0);
 
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
@@ -530,9 +556,42 @@ class Index extends Controller
         }
         //add rate default
 
+        $isAdd = false;
+
+        if (!empty($setUserBalance)) {
+            $setUserBalanceLength = strlen($setUserBalance);
+            if ($setUserBalanceLength == 1)
+                return json(['status' => 0, 'msg' => '更新用户金额格式不正确']);
+            $isAdd = substr($setUserBalance, 0, 1);
+            if ($isAdd != '+' && $isAdd != '-')
+                return json(['status' => 0, 'msg' => '余额操作符仅支持 + 或 -']);
+            $isAdd = $isAdd == '+';
+            //判断是否增加金额
+            $setUserBalance = substr($setUserBalance, 1, $setUserBalanceLength - 1);
+            if (!is_IntOrDecimal($setUserBalance))
+                return json(['status' => 0, 'msg' => '用户金额格式有误']);
+            //判断金额格式 禁止那些E
+        }
+        //设置增加余额不为空
+
+        if (!empty($settleFee)) {
+            if (!is_IntOrDecimal($settleFee)) {
+                return json(['status' => 0, 'msg' => '结算手续费格式有误']);
+            }
+        } else {
+            $settleFee = 0;
+        }
+        //判断手续费格式
+        if ($clearMode == 3) {
+            if (empty($settleHour))
+                return json(['status' => 0, 'msg' => '自定义结算时间格式有误']);
+        }
+        //校验自定义结算时间数据
+
+        //上面上开校验参数了。。。
+
         $result = Db::table('epay_user')->insertGetId([
             'key'        => getRandChar(32),
-            'balance'    => decimalsToInt($balance, 3),
             'clearMode'  => $clearMode,
             'clearType'  => $clearType,
             'domain'     => $domain,
@@ -546,6 +605,27 @@ class Index extends Controller
         ]);
         if (!$result)
             return json(['status' => 0, 'msg' => '新增用户失败,请重试']);
+
+        if (!empty($setUserBalance))
+            if ($isAdd)
+                Db::table('epay_user')->where('id', $result)->limit(1)->inc('balance', decimalsToInt($setUserBalance, 3))->update();
+            else
+                Db::table('epay_user')->where('id', $result)->limit(1)->dec('balance', decimalsToInt($setUserBalance, 3))->update();
+        //更新用户余额
+        {
+            $settleConfig = getPayUserAttr($result, 'settleConfig');
+            if (empty($settleConfig))
+                $settleConfig = [];
+            else
+                $settleConfig = unserialize($settleConfig);
+            //判断数据是否为空 不为空则序列化
+
+            $settleConfig['settleFee']  = decimalsToInt($settleFee, 3);
+            $settleConfig['settleHour'] = $settleHour;
+
+            setPayUserAttr($result, 'settleConfig', serialize($settleConfig));
+        }
+        //保存结算数据
 
         if ($clearType == 5 || $clearType == 6) {
             $qrFileID = input('post.qrFileID/d');
@@ -595,7 +675,7 @@ class Index extends Controller
         $result = Db::table('epay_user')->where('id', $uid)->field('id')->limit(1)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '用户不存在']);
-        $balance             = input('post.balance/s', 0);
+        $setUserBalance      = input('post.setUserBalance/s', 0);
         $clearType           = input('post.clearType/s', 1);
         $clearMode           = input('post.clearMode/d', 0);
         $deposit             = input('post.deposit/s', 0);
@@ -612,10 +692,46 @@ class Index extends Controller
         $productNameShowMode = input('post.productNameShowMode/d', 0);
         $orderDiscounts      = input('post.orderDiscounts/s', '');
         $payConfig           = input('post.payConfig/s', '');
+        $settleHour          = input('post.settleHour/d', 0);
+        $settleFee           = input('post.settleFee/s', 0);
 
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
             $rate = 10000;
+
+        $isAdd = false;
+
+        if (!empty($setUserBalance)) {
+            $setUserBalanceLength = strlen($setUserBalance);
+            if ($setUserBalanceLength == 1)
+                return json(['status' => 0, 'msg' => '更新用户金额格式不正确']);
+            $isAdd = substr($setUserBalance, 0, 1);
+            if ($isAdd != '+' && $isAdd != '-')
+                return json(['status' => 0, 'msg' => '余额操作符仅支持 + 或 -']);
+            $isAdd = $isAdd == '+';
+            //判断是否增加金额
+            $setUserBalance = substr($setUserBalance, 1, $setUserBalanceLength - 1);
+            if (!is_IntOrDecimal($setUserBalance))
+                return json(['status' => 0, 'msg' => '用户金额格式有误']);
+            //判断金额格式 禁止那些E
+        }
+        //设置增加余额不为空
+
+        if (!empty($settleFee)) {
+            if (!is_IntOrDecimal($settleFee)) {
+                return json(['status' => 0, 'msg' => '结算手续费格式有误']);
+            }
+        } else {
+            $settleFee = 0;
+        }
+        //判断手续费格式
+        if ($clearMode == 3) {
+            if (empty($settleHour))
+                return json(['status' => 0, 'msg' => '自定义结算时间格式有误']);
+        }
+        //校验自定义结算时间数据
+
+        //上面上开校验参数了。。。
 
         if ($clearType == 5 || $clearType == 6) {
             $qrFileID = input('post.qrFileID/d');
@@ -631,7 +747,6 @@ class Index extends Controller
         }
 
         Db::table('epay_user')->where('id', $uid)->limit(1)->update([
-            'balance'   => decimalsToInt($balance, 3),
             'clearType' => $clearType,
             'clearMode' => $clearMode,
             'domain'    => $domain,
@@ -642,6 +757,28 @@ class Index extends Controller
             'username'  => $username,
             'account'   => $account
         ]);
+        //更新用户数据
+        if (!empty($setUserBalance))
+            if ($isAdd)
+                Db::table('epay_user')->where('id', $uid)->limit(1)->inc('balance', decimalsToInt($setUserBalance, 3))->update();
+            else
+                Db::table('epay_user')->where('id', $uid)->limit(1)->dec('balance', decimalsToInt($setUserBalance, 3))->update();
+        //更新用户余额
+        {
+            $settleConfig = getPayUserAttr($uid, 'settleConfig');
+            if (empty($settleConfig))
+                $settleConfig = [];
+            else
+                $settleConfig = unserialize($settleConfig);
+            //判断数据是否为空 不为空则序列化
+
+            $settleConfig['settleFee']  = decimalsToInt($settleFee, 3);
+            $settleConfig['settleHour'] = $settleHour;
+
+            setPayUserAttr($uid, 'settleConfig', serialize($settleConfig));
+        }
+        //保存结算数据
+
         setPayUserAttr($uid, 'productNameShowMode', $productNameShowMode);
         setPayUserAttr($uid, 'deposit', decimalsToInt($deposit, 2));
         setPayUserAttr($uid, 'settleMoney', decimalsToInt($settleMoney, 2));

@@ -26,6 +26,6 @@ class DeleteRecord extends Command
         Db::table('epay_order_attr')->whereTime('createTime', '<=', $deleteTime)->delete();
         Db::table('epay_settle')->whereTime('createTime', '<=', $deleteTime)->delete();
         Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
-        $output->info('settle success');
+        $output->info('delete data success');
     }
 }

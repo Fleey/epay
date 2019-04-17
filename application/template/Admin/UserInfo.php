@@ -61,29 +61,62 @@
             </div>
             <div class="modal-body">
                 <div class="box-body">
-                    <div class="form-group">
-                        <label for="uid">商户ID</label>
-                        <input type="text" class="form-control" data-name="id" value="" disabled>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="uid">商户ID</label>
+                                <input type="text" class="form-control" data-name="id" value="" disabled>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label for="userKey">商户密匙</label>
+                                <input type="text" class="form-control" data-name="key" value="" disabled>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="userKey">商户密匙</label>
-                        <input type="text" class="form-control" data-name="key" value="" disabled>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>商户余额</label>
+                                <input type="text" class="form-control" data-name="balance" value="" disabled>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>设置金额</label>
+                                <input type="text" class="form-control" data-name="setUserBalance" value=""
+                                       placeholder="设置用户余额 例如+50 -100">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="isBan">是否封禁</label>
+                                <select class="form-control" data-name="isBan">
+                                    <option value="0">正常</option>
+                                    <option value="1">封禁</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="userKey">商户余额</label>
-                        <input type="text" class="form-control" data-name="balance" value="" placeholder="请输入商户余额">
-                    </div>
-                    <div class="form-group">
-                        <label for="clearMode">结算方式</label>
-                        <select class="form-control" data-name="clearMode">
-                            <option value="0">凌晨自动结算</option>
-                            <option value="1">手动提交结算</option>
-                            <option value="2">系统自动结算</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>结算类型</label>
-                        <select class="form-control" data-name="clearType"></select>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="clearMode">结算方式</label>
+                                <select class="form-control" data-name="clearMode">
+                                    <option value="0">凌晨自动结算</option>
+                                    <option value="1">手动提交结算</option>
+                                    <option value="2">系统自动结算</option>
+                                    <option value="3">自定义时间自动结算</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>结算类型</label>
+                                <select class="form-control" data-name="clearType"></select>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group" id="deposit" style="display: none;">
                         <label for="deposit">保证金金额</label>
@@ -113,31 +146,61 @@
                         <input type="text" class="form-control" data-name="username" value=""
                                placeholder="请输入结算用户名">
                     </div>
-                    <div class="form-group">
-                        <label for="rate">结算费率</label>
-                        <input type="text" class="form-control" data-name="rate" value="" placeholder="请输入结算费率">
+                    <div class="form-group" style="display: none;">
+                        <label for="settleHour">每N小时执行自动结算（从上一单结算完成开始计算时间）</label>
+                        <input type="text" class="form-control" data-name="settleHour" value=""
+                               placeholder="每N小时执行自动结算 不支持超过24小时 不支持小数">
                     </div>
-                    <div class="form-group">
-                        <label for="payMoneyMax">单笔最大支付金额</label>
-                        <input type="text" class="form-control" data-name="payMoneyMax" value="" placeholder="单笔最大支付金额">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="rate">结算费率（百分比%）</label>
+                                <input type="text" class="form-control" data-name="rate" value="" placeholder="请输入结算费率">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="settleFee">每笔结算手续费（单位RMB）</label>
+                                <input type="text" class="form-control" data-name="settleFee" value=""
+                                       placeholder="结算手续费 支持两位小数 0 则不收手续费">
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="payDayMoneyMax">单日最大支付金额</label>
-                        <input type="text" class="form-control" data-name="payDayMoneyMax" value=""
-                               placeholder="单日最大累计金额">
-                        <small class="form-text text-muted">0 为不限制</small>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="payMoneyMax">单笔最大支付金额</label>
+                                <input type="text" class="form-control" data-name="payMoneyMax" value=""
+                                       placeholder="单笔最大支付金额 0 为不限制">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="payDayMoneyMax">单日最大支付金额</label>
+                                <input type="text" class="form-control" data-name="payDayMoneyMax" value=""
+                                       placeholder="单日最大累计金额 0 为不限制">
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="domain">网站域名</label>
-                        <input type="text" class="form-control" data-name="domain" value="" placeholder="网站域名">
-                    </div>
-                    <div class="form-group">
-                        <label for="email1">电子邮箱</label>
-                        <input type="text" class="form-control" data-name="email" value="" placeholder="电子邮箱">
-                    </div>
-                    <div class="form-group">
-                        <label for="qq">QQ账号</label>
-                        <input type="text" class="form-control" data-name="qq" value="" placeholder="QQ账号">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="domain">网站域名</label>
+                                <input type="text" class="form-control" data-name="domain" value="" placeholder="网站域名">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="email1">电子邮箱</label>
+                                <input type="text" class="form-control" data-name="email" value="" placeholder="电子邮箱">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="qq">QQ账号</label>
+                                <input type="text" class="form-control" data-name="qq" value="" placeholder="QQ账号">
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="productNameShowMode">商品名显示模式</label>
@@ -152,14 +215,6 @@
                         <input type="text" class="form-control" data-name="productName" value=""
                                placeholder="商户自行指定商品名称">
                     </div>
-                    <div class="form-group">
-                        <label for="isBan">是否封禁</label>
-                        <select class="form-control" data-name="isBan">
-                            <option value="0">正常</option>
-                            <option value="1">封禁</option>
-                        </select>
-                    </div>
-
                 </div>
             </div>
             <div class="modal-footer">

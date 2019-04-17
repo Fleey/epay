@@ -120,6 +120,10 @@ function intToDecimals($int, int $decimalPlace)
     return $str;
 }
 
+function is_IntOrDecimal($text){
+    return preg_match('/^[0-9]+([.]{1}[0-9]+){0,1}$/', $text);
+}
+
 function is_mobile($text)
 {
     $search = '/^1[34578]{1}\d{9}$/';

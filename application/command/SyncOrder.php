@@ -6,6 +6,8 @@ use think\console\Command;
 use think\console\Input;
 use think\console\Output;
 use think\Db;
+use think\Exception;
+use think\exception\PDOException;
 
 class SyncOrder extends Command
 {
@@ -20,6 +22,21 @@ class SyncOrder extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
+        $output->info('[' . getDateTime() . '] start sync order');
+        $this->statisticalOrderMoney();
+        $output->info('[' . getDateTime() . '] sync order success ');
+
+
+        $output->info(' start call back order');
+        $this->supplyOrder(2);
+        $output->info('end call back order');
+    }
+
+    /**
+     * 统计订单数据
+     */
+    private function statisticalOrderMoney()
+    {
         $userData       = Db::table('epay_user')->field('id,rate,clearMode')->cursor();
         $totalRateMoney = 0;
         foreach ($userData as $value) {
@@ -30,11 +47,11 @@ class SyncOrder extends Command
                 'status'   => 1,
                 'isShield' => 0
             ])->whereTime('endTime', 'today')->sum('money');
-            if ($value['clearMode'] == 0) {
-                Db::table('epay_user')->where('id', $uid)->limit(1)->update([
-                    'balance' => $totalMoney * ($rate / 100) * 10
-                ]);
-            }
+//            if ($value['clearMode'] == 0) {
+//                Db::table('epay_user')->where('id', $uid)->limit(1)->update([
+//                    'balance' => $totalMoney * ($rate / 100) * 10
+//                ]);
+//            }
             $totalRateMoney += $totalMoney * ($rate / 100);
         }
         $totalMoney = Db::table('epay_order')->where([
@@ -43,13 +60,16 @@ class SyncOrder extends Command
 
         setServerConfig('totalMoney', $totalMoney);
         setServerConfig('totalMoneyRate', $totalRateMoney);
+    }
 
-        $output->info('[' . getDateTime() . '] sync order success ');
-
-        $output->info(' start call back order');
-
-        $callBackCount = 2;
-        //从0开始 1 则为两次 2 则为三次
+    /**
+     * 补发订单
+     * @param int $callBackCount //从0开始 1 则为两次 2 则为三次
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
+     */
+    private function supplyOrder($callBackCount = 1)
+    {
         for ($i = $callBackCount; $i >= 0; $i--) {
             $isProxy = false;
             if ($i >= 1)
@@ -68,10 +88,9 @@ class SyncOrder extends Command
             }
             //采用不代理方式进行更新
         }
-        $output->info('end call back order');
     }
 
-    protected function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlEncode = true, $isProxy = false)
+    private function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlEncode = true, $isProxy = false)
     {
         if (empty($url))
             return '';

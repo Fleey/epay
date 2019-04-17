@@ -58,7 +58,7 @@ class ApiV1 extends Controller
                 'pid'          => $uid,
                 'key'          => $userKey,
                 'type'         => 1,
-                'active'       => !$userInfo[0]['isBan'],
+                'active'       => !$userInfo[0]['isBan'] ? 1 : 0,
                 'money'        => $userInfo[0]['balance'] / 100,
                 'account'      => $userInfo[0]['account'],
                 'username'     => $userInfo[0]['username'],
@@ -67,6 +67,7 @@ class ApiV1 extends Controller
                 'money_rate'   => $userInfo[0]['rate'] / 100
             ]);
         } else if ($act == 'change') {
+            return json(['code' => 0, 'msg' => '修改收款账号失败,请联系管理员修改']);
             $account  = input('get.account/s');
             $username = input('get.username/s');
             if (empty($account) || empty($username))

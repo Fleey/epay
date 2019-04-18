@@ -248,6 +248,17 @@
                                 <input type="float" class="form-control" id="productMaxPrice" placeholder="最高价格">
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label for="productMinPrice" class="col-md-3 control-label">订单创建时间</label>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="productStartTime" placeholder="开始时间">
+                            </div>
+                            <label class="spent">~</label>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="productEndTime" placeholder="结束时间">
+                            </div>
+                            <small class="form-text text-muted" style="position: relative;left: 140px;">时间格式 2019-2-30 23:59:59</small>
+                        </div>
                     </div>
                 </form>
             </div>

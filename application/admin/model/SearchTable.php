@@ -137,6 +137,10 @@ class SearchTable
                 $queryResult = $queryResult->where('money', '<=', decimalsToInt($this->args['productMaxPrice'], 2));
             if (isset($this->args['productName']))
                 $queryResult = $queryResult->where('productName', 'like', '%' . $this->args['productName'] . '%');
+            if (isset($this->args['productStartTime']))
+                $queryResult = $queryResult->where('createTime', '>=', $this->args['productStartTime']);
+            if (isset($this->args['productEndTime']))
+                $queryResult = $queryResult->where('createTime', '<=', $this->args['productEndTime']);
         } else if ($this->searchTable == 'epay_user') {
             if (isset($this->args['uid']))
                 $queryResult = $queryResult->where('id', $this->args['uid']);

@@ -130,6 +130,8 @@ $(function () {
         $('#payType').val('all');
         $('#productMinPrice').val('');
         $('#productMaxPrice').val('');
+        $('#productStartTime').val('');
+        $('#productEndTime').val('');
         $('#orderList').dataTable(dataTableConfig);
         $('#searchFilter').modal('hide');
         $('#cancelSearchFilter').hide();
@@ -142,11 +144,13 @@ $(function () {
         var status = $('#orderStatus').val();
         var productMinPrice = $('#productMinPrice').val();
         var productMaxPrice = $('#productMaxPrice').val();
+        var productStartTime = $('#productStartTime').val();
+        var productEndTime = $('#productEndTime').val();
 
         var dataTable = $('#orderList').dataTable();
         dataTable.fnDestroy();
 
-        if (!uid && !tradeNo && !tradeNoOut && payType === 'all' && status === 'all' && !productMinPrice && !productMaxPrice) {
+        if (!uid && !tradeNo && !tradeNoOut && payType === 'all' && status === 'all' && !productMinPrice && !productMaxPrice && !productStartTime && !productEndTime) {
             dataTableConfig['ajax'] = {
                 url: baseUrl + 'cy2018/api/searchTable',
                 type: 'post',
@@ -160,6 +164,30 @@ $(function () {
             return true;
         }
 
+        if (productStartTime) {
+            if (!strDateTime(productStartTime)) {
+                swal({
+                    title: '',
+                    text: '开始时间格式有误',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    type: 'error'
+                });
+                return true;
+            }
+        }
+        if (productEndTime) {
+            if (!strDateTime(productEndTime)) {
+                swal({
+                    title: '',
+                    text: '结束时间格式有误',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    type: 'error'
+                });
+                return true;
+            }
+        }
 
         var data = {'searchTable': 'epay_order', 'search': {}, 'args': {}};
         if (uid)
@@ -176,6 +204,11 @@ $(function () {
             data['args']['productMinPrice'] = productMinPrice;
         if (productMaxPrice)
             data['args']['productMaxPrice'] = productMaxPrice;
+        if (productStartTime)
+            data['args']['productStartTime'] = productStartTime;
+        if (productEndTime)
+            data['args']['productEndTime'] = productEndTime;
+
         dataTableConfig['ajax'] = {
             url: baseUrl + 'cy2018/api/searchTable',
             type: 'post',
@@ -221,7 +254,7 @@ $(function () {
                             value = '财付通';
                         else if (value === 3)
                             value = '支付宝';
-                        else if(value === 4)
+                        else if (value === 4)
                             value = '银联';
                     } else if (key === 'status') {
                         value = value ? '已付款' : '未付款';

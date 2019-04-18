@@ -24,7 +24,7 @@ class Settle extends Command
         $this->settleUser();
         $output->info('end settle success');
 
-        $nowHour = intval(date('h'));
+        $nowHour = intval(date('H'));
         if ($nowHour == 4) {
             $output->info('start optimize mysql');
             $this->optimizeDatabase();
@@ -55,7 +55,6 @@ class Settle extends Command
                 $userSettleInfo = [];
             }
             //初始化用户结算配置
-
             $isSettle = $this->isSettle([
                 'userInfo'     => $value,
                 'settleConfig' => $userSettleInfo
@@ -113,7 +112,7 @@ class Settle extends Command
      */
     private function isSettle(array $userData)
     {
-        $nowHour        = intval(date('h'));
+        $nowHour        = intval(date('H'));
         $lastSettleData = Db::table('epay_settle')->where('uid', $userData['userInfo']['id'])
             ->field('status,updateTime')->order('id desc')
             ->limit(1)->select();

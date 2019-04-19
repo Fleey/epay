@@ -90,9 +90,54 @@ class ApiV2 extends Controller
         ]);
     }
 
-    public function postOrders()
+    /**
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function postOrderList()
     {
+        $limit = 20;
+        $page  = 1;
+        if (!empty($this->requestData['limit']))
+            $limit = intval($this->requestData['limit']);
+        if ($limit > 50 || $limit <= 0)
+            $limit = 20;
+        if (!empty($this->requestData['page']))
+            $page = intval($this->requestData['page']);
+        if ($page <= 0)
+            $page = 1;
 
+        $selectResult = Db::table('epay_order')
+            ->field('type,tradeNo,tradeNoOut,productName,createTime,endTime,status,money')
+            ->order('createTime desc')->where('uid', $this->uid)->page($page, $limit)->select();
+        if (empty($selectResult))
+            $this->returnJson(['status' => 0, 'msg' => '暂无查询到更多的订单']);
+
+        foreach ($selectResult as $key => $value) {
+            $selectResult[$key]['trade_no'] = (string)$value['trade_no'];
+            $selectResult[$key]['money']    = $value['money'] / 100;
+        }
+
+        $this->returnJson([
+            'status' => 1,
+            'msg'    => '查询订单记录成功',
+            'data'   => json_encode($selectResult)
+        ]);
+    }
+
+    public function postSettleList()
+    {
+        $settleResult = Db::table('epay_settle')->where('uid', $this->uid)
+            ->field('clearType,account,username,money,status,createTime,updateTime')
+            ->order('id', 'desc')->limit(10)->select();
+        if (empty($settleResult))
+            $this->returnJson(['status' => 0, 'msg' => '暂无查询到结算记录']);
+        $this->returnJson([
+            'status' => 1,
+            'msg'    => '查询结算记录成功',
+            'data'   => $settleResult
+        ]);
     }
 
     /**

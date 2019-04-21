@@ -18,9 +18,9 @@
  */
 function getRandChar($length = 8)
 {
-    $str    = null;
+    $str = null;
     $strPol = "ABCDEFGHIJKMNPQRSTUVWXYZ23456789abcdefghjkmnpqrstuvwxyz";
-    $max    = strlen($strPol) - 1;
+    $max = strlen($strPol) - 1;
     for ($i = 0; $i < $length; $i++) {
         $str .= $strPol[rand(0, $max)];
     }
@@ -85,9 +85,9 @@ function decimalsToInt(string $decimals, int $decimalPlace)
         $decimalMultiple *= 10;
     }
     $decimalsLength = strlen($str[1]);
-    $temp1          = intval($str[0]) * $decimalMultiple;
+    $temp1 = intval($str[0]) * $decimalMultiple;
     if ($decimalPlace > $decimalsLength) {
-        $temp2           = $decimalPlace - $decimalsLength;
+        $temp2 = $decimalPlace - $decimalsLength;
         $decimalMultiple = 1;
         for ($i = 1; $i <= $temp2; $i++) {
             $decimalMultiple *= 10;
@@ -100,7 +100,7 @@ function decimalsToInt(string $decimals, int $decimalPlace)
     //需求小数位符合
     if ($decimalPlace < $decimalsLength) {
         $str[1] = substr($str[1], 0, $decimalPlace);
-        $temp1  += intval($str[1]);
+        $temp1 += intval($str[1]);
     }
     //需求小数位大于
     return $temp1;
@@ -114,9 +114,9 @@ function decimalsToInt(string $decimals, int $decimalPlace)
  */
 function intToDecimals($int, int $decimalPlace)
 {
-    $str       = strval($int);
+    $str = strval($int);
     $strLength = strlen($str);
-    $str       = substr($str, 0, $strLength - $decimalPlace) . '.' . substr($str, $strLength - $decimalPlace, $strLength);
+    $str = substr($str, 0, $strLength - $decimalPlace) . '.' . substr($str, $strLength - $decimalPlace, $strLength);
     return $str;
 }
 
@@ -145,7 +145,7 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     if (empty($url))
         return '';
     //容错处理
-    $headers  = [
+    $headers = [
         'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
     ];
     $postType = strtolower($postType);
@@ -155,7 +155,7 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
             $tempBuff .= $key . '=' . $value . '&';
         }
         $tempBuff = trim($tempBuff, '&');
-        $url      .= '?' . $tempBuff;
+        $url .= '?' . $tempBuff;
     }
     //手动build get请求参数
 
@@ -210,7 +210,7 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     //只要不是get姿势都塞东西给他post
     if ($requestType != 'get') {
         if ($postType == 'json') {
-            $headers[]   = 'Content-Type: application/json; charset=utf-8';
+            $headers[] = 'Content-Type: application/json; charset=utf-8';
             $requestData = is_array($requestData) ? json_encode($requestData) : $requestData;
         } else if ($postType == 'xml') {
             $headers[] = 'Content-Type:text/xml; charset=utf-8';
@@ -247,8 +247,8 @@ function hideStr($string, $bengin = 0, $len = 4, $type = 0, $glue = "@")
         $strlen = $length = mb_strlen($string);
         while ($strlen) {
             $array[] = mb_substr($string, 0, 1, "utf8");
-            $string  = mb_substr($string, 1, $strlen, "utf8");
-            $strlen  = mb_strlen($string);
+            $string = mb_substr($string, 1, $strlen, "utf8");
+            $strlen = mb_strlen($string);
         }
     }
     if ($type == 0) {
@@ -265,17 +265,17 @@ function hideStr($string, $bengin = 0, $len = 4, $type = 0, $glue = "@")
         }
         $string = implode("", array_reverse($array));
     } else if ($type == 2) {
-        $array    = explode($glue, $string);
+        $array = explode($glue, $string);
         $array[0] = hideStr($array[0], $bengin, $len, 1);
-        $string   = implode($glue, $array);
+        $string = implode($glue, $array);
     } else if ($type == 3) {
-        $array    = explode($glue, $string);
+        $array = explode($glue, $string);
         $array[1] = hideStr($array[1], $bengin, $len, 0);
-        $string   = implode($glue, $array);
+        $string = implode($glue, $array);
     } else if ($type == 4) {
-        $left  = $bengin;
+        $left = $bengin;
         $right = $len;
-        $tem   = array();
+        $tem = array();
         for ($i = 0; $i < ($length - $right); $i++) {
             if (isset($array[$i]))
                 $tem[] = $i >= $left ? "*" : $array[$i];
@@ -434,6 +434,7 @@ function arrayToXml(array $arr)
  */
 function xmlToArray(string $xml)
 {
+    libxml_disable_entity_loader(true);
     return json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
 }
 
@@ -484,17 +485,17 @@ function buildCallBackUrl(string $tradeNo, string $type)
             break;
     }
     //兼容层
-    $args        = [
-        'pid'          => $orderData['uid'],
-        'trade_no'     => $orderData['tradeNo'],
+    $args = [
+        'pid' => $orderData['uid'],
+        'trade_no' => $orderData['tradeNo'],
         'out_trade_no' => $orderData['tradeNoOut'],
-        'type'         => $payType,
-        'name'         => $orderData['productName'],
-        'money'        => ($orderData['money'] + $orderData['discountMoney']) / 100,
+        'type' => $payType,
+        'name' => $orderData['productName'],
+        'money' => ($orderData['money'] + $orderData['discountMoney']) / 100,
         'trade_status' => 'TRADE_SUCCESS'
     ];
-    $args        = argSort(paraFilter($args));
-    $sign        = signMD5(createLinkString($args), $userKey);
+    $args = argSort(paraFilter($args));
+    $sign = signMD5(createLinkString($args), $userKey);
     $callBackUrl = $orderData[$type . '_url'] . (strpos($orderData[$type . '_url'], '?') ? '&' : '?') . createLinkStringUrlEncode($args) . '&sign=' . $sign . '&sign_type=MD5';
     return $callBackUrl;
 }
@@ -524,7 +525,7 @@ function processOrder($tradeNo, $notify = true)
         return;
 
     if (empty($orderInfo[0]['rate'])) {
-        $config               = getConfig();
+        $config = getConfig();
         $orderInfo[0]['rate'] = $config['defaultMoneyRate'];
     }
     $rate = $userInfo[0]['rate'] / 100;
@@ -544,10 +545,10 @@ function processOrder($tradeNo, $notify = true)
     }
     //必须金额更新成功后才能触发自动结算
     if ($notify) {
-        $notifyUrl     = buildCallBackUrl($tradeNo, 'notify');
+        $notifyUrl = buildCallBackUrl($tradeNo, 'notify');
         $requestResult = curl($notifyUrl);
         if ($requestResult === false)
-            if (curl($notifyUrl, [], '', '', '', true, true))
+            if (curl($notifyUrl, [], '', '', '', true, true) === false)
                 addCallBackLog($orderInfo[0]['uid'], $notifyUrl);
         //回调事件
 //        trace('日志信息: 请求结果 => '.$requestResult .' 请求url =>' .$notifyUrl,'info');
@@ -557,9 +558,9 @@ function processOrder($tradeNo, $notify = true)
 function addCallBackLog($uid, $url)
 {
     \think\Db::table('epay_callback')->insert([
-        'url'        => $url,
-        'uid'        => $uid,
-        'status'     => 0,
+        'url' => $url,
+        'uid' => $uid,
+        'status' => 0,
         'createTime' => getDateTime()
     ]);
 }
@@ -575,14 +576,14 @@ function addCallBackLog($uid, $url)
  */
 function settleUserDepositMoney($uid)
 {
-    $deposit     = getPayUserAttr($uid, 'deposit');
+    $deposit = getPayUserAttr($uid, 'deposit');
     $settleMoney = getPayUserAttr($uid, 'settleMoney');
     if (empty($deposit) || empty($settleMoney))
         return;
     if (intval($settleMoney) < 20)
         return;
     //不允许低于0.2元
-    $deposit     = intval($deposit) * 10;
+    $deposit = intval($deposit) * 10;
     $settleMoney = intval($settleMoney) * 10;
     //进制转换
     $userInfo = \think\Db::table('epay_user')->field('balance,account,username')->limit(1)->where('id', $uid)->select();
@@ -594,9 +595,9 @@ function settleUserDepositMoney($uid)
         return;
     //判断用户金额是否达到自动结算金额
     $systemConfig = getConfig();
-    $settleID     = date('Ymd') . rand(111, 999);
+    $settleID = date('Ymd') . rand(111, 999);
     //结算ID
-    $aliPayModel   = new \app\pay\model\AliPayModel($systemConfig['alipay']);
+    $aliPayModel = new \app\pay\model\AliPayModel($systemConfig['alipay']);
     $transferMoney = number_format($settleMoney / 1000, 2, '.', '');
     //需要转账的金额
     $transferResult = $aliPayModel->toAccountTransfer($settleID, $userInfo[0]['account'], $userInfo[0]['username'], $transferMoney);
@@ -606,14 +607,14 @@ function settleUserDepositMoney($uid)
             trace('自动结算用户余额有误 uid=>' . $uid . ' 目标金额=>' . $transferMoney, 'error');
         else
             \think\Db::table('epay_settle')->insert([
-                'uid'        => $uid,
-                'clearType'  => 4,
-                'addType'    => 2,
-                'account'    => $userInfo[0]['account'],
-                'username'   => $userInfo[0]['username'],
-                'money'      => $transferMoney * 100,
-                'fee'        => 0,
-                'status'     => 1,
+                'uid' => $uid,
+                'clearType' => 4,
+                'addType' => 2,
+                'account' => $userInfo[0]['account'],
+                'username' => $userInfo[0]['username'],
+                'money' => $transferMoney * 100,
+                'fee' => 0,
+                'status' => 1,
                 'createTime' => getDateTime()
             ]);
         //记录信息
@@ -697,7 +698,7 @@ function setServerConfig(string $key, string $value)
         ]);
     } else {
         return \think\Db::table('epay_config')->insertGetId([
-            'key'   => $key,
+            'key' => $key,
             'value' => $value
         ]);
     }
@@ -744,8 +745,8 @@ function setPayUserAttr($uid, string $key, string $value)
         ]);
     } else {
         return \think\Db::table('epay_user_attr')->insertGetId([
-            'uid'   => $uid,
-            'key'   => $key,
+            'uid' => $uid,
+            'key' => $key,
             'value' => $value
         ]);
     }

@@ -202,6 +202,8 @@ class Index extends Controller
         //解决用户交易号重复问题
 
         if (!empty($userPayConfig)) {
+            if ($type == 'tenpay')
+                $type = 'qqpay';
             if ($userPayConfig[$type]['apiType'] == 1)
                 return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo, '', false, true));
         } else {
@@ -215,6 +217,8 @@ class Index extends Controller
             return redirect(url('/Pay/Alipay/Submit?tradeNo=' . $tradeNo, '', false, true));
             //转跳到支付宝支付
         } else if ($converPayType == 1) {
+            if (!empty($this->systemConfig['notifyDomain']))
+                return redirect($this->systemConfig['notifyDomain'] . '/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName);
             return redirect(url('/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName, '', false, true));
             //转跳到微信支付
         } else if ($converPayType == 2) {

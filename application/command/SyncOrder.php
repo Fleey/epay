@@ -6,8 +6,6 @@ use think\console\Command;
 use think\console\Input;
 use think\console\Output;
 use think\Db;
-use think\Exception;
-use think\exception\PDOException;
 
 class SyncOrder extends Command
 {
@@ -125,8 +123,8 @@ class SyncOrder extends Command
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 2);
 
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         //设置允许302转跳

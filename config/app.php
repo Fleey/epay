@@ -19,7 +19,7 @@ return [
     // 应用地址
     'app_host'                => '',
     // 应用调试模式
-    'app_debug'               => false,
+    'app_debug'               => true,
     // 应用Trace
     'app_trace'               => false,
     // 是否支持多模块
@@ -134,8 +134,8 @@ return [
     'dispatch_error_tmpl'     => Env::get('think_path') . 'tpl/dispatch_jump.tpl',
 
     // 异常页面的模板文件
-    'exception_tmpl'          => Env::get('APP_PATH') . '/template/PhpException.php',
-    // 错误显示信息,非调试模式有效
+//    'exception_tmpl'          => Env::get('APP_PATH') . '/template/PhpException.php',
+//    // 错误显示信息,非调试模式有效
     'http_exception_template' => [
         404 => Env::get('APP_PATH') . '/template/NotFindPageTemplate.php',
     ],
@@ -145,5 +145,5 @@ return [
     // 异常处理handle类 留空使用 \think\exception\Handle
     'exception_handle'        => '',
 
-    'app_version' => 'v1.7.3'
+    'app_version' => 'v1.7.4'
 ];

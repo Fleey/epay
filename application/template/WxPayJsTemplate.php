@@ -33,7 +33,6 @@
                             getOrderStatus();
                         }
                         //WeixinJSBridge.log(res.err_msg);
-                        //alert(res.err_code+res.err_desc+res.err_msg);
                     }
                 );
             }
@@ -79,7 +78,7 @@
                         //从服务器得到数据，显示数据并继续查询
                         if (data['status'] === 1) {
                             layer.msg('支付成功，正在跳转中...', {icon: 16, shade: 0.01, time: 15000});
-                            window.location.href = '<?php echo $redirectUrl?>';
+                            setTimeout(window.location.href = data['url'], 1000);
                         } else {
                             setTimeout('getOrderStatus()', 4000);
                         }

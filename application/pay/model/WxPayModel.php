@@ -5,36 +5,38 @@ namespace app\pay\model;
 class WxPayModel
 {
     private $wxConfig;
+    private $signType = 'MD5';
 
     public function __construct(array $wxConfig)
     {
         $this->wxConfig = $wxConfig;
     }
 
-    public function getWxOpenID()
+    public function getWxOpenCode($returnUrl)
     {
-        $code = input('get.code');
-        if (empty($code)) {
-            $baseUrl = urlencode(request()->url(true));
-            //获取当前请求连接与参数
-            $requestData = [
-                'appid'         => $this->wxConfig['appid'],
-                'redirect_uri'  => $this->$baseUrl,
-                'response_type' => 'code',
-                'scope'         => 'snsapi_base',
-                'state'         => 'STATE#wechat_redirect'
-            ];
-            $requestUrl  = 'https://open.weixin.qq.com/connect/oauth2/authorize?' . $this->buildUrlParam($requestData);
-            Header('Location: ' . $requestUrl);
-            exit();
-        }
+        $baseUrl = urlencode($returnUrl);
+        //获取当前请求连接与参数
+        $requestData = [
+            'appid'         => $this->wxConfig['appid'],
+            'redirect_uri'  => $baseUrl,
+            'response_type' => 'code',
+            'scope'         => 'snsapi_base',
+            'state'         => 'STATE'
+        ];
+        $requestUrl  = 'https://open.weixin.qq.com/connect/oauth2/authorize?' . $this->buildUrlParam($requestData) . '#wechat_redirect';
+        Header('Location: ' . $requestUrl);
+        exit();
+    }
+
+    public function getWxOpenid($code)
+    {
         $requestData   = [
             'appid'      => $this->wxConfig['appid'],
             'secret'     => $this->wxConfig['appSecret'],
             'code'       => $code,
             'grant_type' => 'authorization_code'
         ];
-        $requestResult = json_decode(curl('https://api.weixin.qq.com/sns/oauth2/access_token', [], 'get', $requestData));
+        $requestResult = json_decode(curl('https://api.weixin.qq.com/sns/oauth2/access_token', [], 'get', $requestData), true);
         if (empty($requestResult['openid']))
             return 'request fail';
         return $requestResult['openid'];
@@ -72,9 +74,6 @@ class WxPayModel
             'mch_id'    => $this->wxConfig['mchid'],
             'nonce_str' => getRandChar(32)
         ];
-        if ($type == 'JSAPI')
-            $requestData['openid'] = $this->getWxOpenID();
-        //get open id
         if ($type == 'out_trade_no')
             $requestData['out_trade_no'] = $orderID;
         else
@@ -92,30 +91,33 @@ class WxPayModel
      * @param array $tradeData
      * @param string $type
      * @param string $notifyUrl
+     * @param string $openCode
      * @return array|mixed|object
      */
-    public function sendPayRequest(array $tradeData, string $type, string $notifyUrl)
+    public function sendPayRequest(array $tradeData, string $type, string $notifyUrl, string $openCode = '')
     {
         $requestUrl  = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
         $requestData = [
             'appid'            => $this->wxConfig['appid'],
             'mch_id'           => $this->wxConfig['mchid'],
-            'body'             => $tradeData['productName'],
+            'body'             => '111',
             'out_trade_no'     => $tradeData['tradeNo'],
             'total_fee'        => $tradeData['money'],
             'spbill_create_ip' => getClientIp(),
             'trade_type'       => $type,
             'notify_url'       => $notifyUrl,
-            'nonce_str'        => getRandChar(32)
+            'nonce_str'        => getRandChar(32),
+            'product_id'       => md5(time()),
+//            'sign_type'        => $this->signType
         ];
-        if ($type == 'NATIVE')
-            $requestData['product_id'] = '010086';
-        if ($type == 'MWEB')
-            $requestData['scene_info'] = json_encode(['h5_info' => ['type' => '', 'wap_url' => url('/', '', false, true), 'wap_name' => '余额充值']]);
+        if ($type == 'JSAPI') {
+            $openID                = $this->getWxOpenID($openCode);
+            $requestData['openid'] = $openID;
+        }
+
 
         $requestData['sign'] = $this->signParam($requestData);
-
-        $xml = arrayToXml($requestData);
+        $xml                 = arrayToXml($requestData);
         //build xml
         $result = curl($requestUrl, [], 'post', $xml, 'xml');
         return xmlToArray($result);
@@ -129,15 +131,17 @@ class WxPayModel
     public function signParam(array $param)
     {
         ksort($param);
-        $stringA = '';
-        foreach ($param as $key => $value) {
-            if ($value != '' && $key != 'sign')
-                $stringA .= $key . '=' . $value . '&';
-        }
+        $stringA = $this->buildUrlParam($param);
+        $stringA .= '&key=' . $this->wxConfig['key'];
         //排序并组合字符串
-        $stringA .= 'key=' . $this->wxConfig['key'];
-        $stringA = strtoupper(md5($stringA));
-        return $stringA;
+//        $stringA = md5($stringA);
+        trace($stringA,'info');
+        if ($this->signType == 'MD5') {
+            $stringA = md5($stringA);
+        } else {
+            $stringA = hash_hmac('sha256', $stringA, $this->wxConfig['key']);
+        }
+        return strtoupper($stringA);
     }
 
     /**
@@ -172,7 +176,7 @@ class WxPayModel
             'timeStamp' => $initTime,
             'nonceStr'  => getRandChar(32),
             'package'   => 'prepay_id=' . $data['prepay_id'],
-            'signType'  => 'md5'
+            'signType'  => $this->signType
         ];
         $param['paySign'] = $this->signParam($param);
         return json_encode($param);

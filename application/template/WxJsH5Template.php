@@ -29,6 +29,10 @@
         .weui-btn_primary {
             background-color: #1AAD19;
         }
+
+        html, body {
+            overflow-x: scroll;
+        }
     </style>
 </head>
 <body style="height: 100%;">
@@ -36,19 +40,21 @@
     <h1 class="title">微信安全支付</h1>
 </div>
 <div class="qr-image" id="qrcode"
-     style="display: block;position: relative;top: 120px;width: 230px;margin: 0 auto;"></div>
-<div class="tips" style="position: relative;top: 180px;width: 230px;margin: 0 auto;">
+     style="display: block;position: relative;top: 80px;width: 230px;margin: 0 auto;"></div>
+<div class="tips" style="position: relative;top: 90px;width: 230px;margin: 0 auto;">
     <p>订单号码：<?php echo $tradeNo; ?></p>
     <p>支付金额：<?php echo $money; ?> RMB</p>
-    <div style="margin-top: 25%;font-weight: 600;font-size: 17px;">
+    <div style="margin-top: 18%;font-weight: 600;font-size: 17px;">
         <p style="text-align: center;">长按保存二维码到相册</p>
         <p style="text-align: center;">微信打开扫一扫</p>
+        <p style="text-align: center;">如长按无法保存 请截屏页面 到微信扫一扫即可</p>
     </div>
+    <a id="download" style="display: none;"></a>
 </div>
-<div style="width: 100%;padding: 0 20px;position: relative;top: 30%;">
+<div style="width: 100%;padding: 0 20px;position: relative;top: 16%;">
     <a href="weixin://" style="width: 100%;" class="weui-btn weui-btn_primary">点击打开微信</a>
-    <a href="javascript:;" class="weui-btn_primary weui-btn" id="copyLink" data-clipboard-text="<?php echo $codeUrl; ?>"
-       style="margin-top: 20px;">复制链接微信打开</a>
+    <a download="qrcode.jpg" class="weui-btn_primary weui-btn" id="save"
+       style="margin-top: 20px;">一键保存二维码</a>
 </div>
 </body>
 <script src="/static/js/qq/qrcode.min.js"></script>
@@ -64,17 +70,11 @@
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
     });
-
-    var clipboard = new ClipboardJS('#copyLink');
-    clipboard.on('success', function (e) {
-        alert("复制成功！");
-        return;
-    });
-
-    clipboard.on('error', function (e) {
-        var link = $("#copyLink").attr("data-clipboard-text");
-        alert("复制失败！请手动复制，地址“" + link + "”");
-        return;
+    $("#save").click(function () {
+        var canvas = $('#qrcode').find("canvas").get(0);
+        var url = canvas.toDataURL('image/jpeg');
+        $("#download").attr('href', url).attr("download", "二维码.png").get(0).click();
+        return false;
     });
 </script>
 </html>

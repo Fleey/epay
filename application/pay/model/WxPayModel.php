@@ -135,7 +135,6 @@ class WxPayModel
         $stringA .= '&key=' . $this->wxConfig['key'];
         //排序并组合字符串
 //        $stringA = md5($stringA);
-        trace($stringA,'info');
         if ($this->signType == 'MD5') {
             $stringA = md5($stringA);
         } else {
@@ -173,7 +172,7 @@ class WxPayModel
         $initTime         = time();
         $param            = [
             'appId'     => $data['appid'],
-            'timeStamp' => $initTime,
+            'timeStamp' => (string)$initTime,
             'nonceStr'  => getRandChar(32),
             'package'   => 'prepay_id=' . $data['prepay_id'],
             'signType'  => $this->signType

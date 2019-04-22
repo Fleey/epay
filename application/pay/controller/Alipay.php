@@ -74,9 +74,11 @@ class Alipay extends Controller
             'return_url'     => $this->returnUrl,
             'subject'        => $productName,
             'out_trade_no'   => $tradeNo,
+            'it_b_pay'       => '6m',
             'total_fee'      => $result[0]['money'] / 100,
             '_input_charset' => 'UTF-8'
         ];
+        //订单超时6分钟
         if ($isMobile)
             $param['app_pay'] = 'Y';
         $aliPayModel = new AliPayModel($this->alipayConfig);

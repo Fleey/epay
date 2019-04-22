@@ -71,12 +71,14 @@ class QQPay extends Controller
 
         $param         = [
             'out_trade_no'     => $tradeNo,
-            'body'             => $productName,
+            'body'             => '商品支付-' . md5($productName),
             'fee_type'         => 'CNY',
             'notify_url'       => $this->notifyUrl,
             'spbill_create_ip' => getClientIp(),
             'total_fee'        => $result[0]['money'],
-            'trade_type'       => 'NATIVE'
+            'trade_type'       => 'NATIVE',
+            'time_start'       => date('YmdHms', time()),
+            'time_expire'      => date('YmdHms', time() + 360),
         ];
         $QQPayModel    = new QQPayModel($this->qqPayConfig);
         $requestResult = $QQPayModel->sendPayRequest($param);

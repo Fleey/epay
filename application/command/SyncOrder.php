@@ -24,6 +24,9 @@ class SyncOrder extends Command
         $this->statisticalOrderMoney();
         $output->info('[' . getDateTime() . '] sync order success ');
 
+        $output->info('start delete fail order');
+        $this->delFailOrder();
+        $output->info('end delete fail order');
 
         $output->info(' start call back order');
         $this->supplyOrder(2);
@@ -88,14 +91,17 @@ class SyncOrder extends Command
         }
     }
 
+    private function delFailOrder()
+    {
+        Db::table('epay_order')->where('status', 0)->whereTime('createTime', '-8 min')->delete();
+    }
+
     private function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlEncode = true, $isProxy = false)
     {
         if (empty($url))
             return '';
         //容错处理
-        $headers  = [
-            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
-        ];
+        $headers  = [];
         $postType = strtolower($postType);
         if ($requestType != 'get') {
             if ($postType == 'json') {

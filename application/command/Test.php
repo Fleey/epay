@@ -23,7 +23,7 @@ class Test extends Command
     {
         // 指令输出
 
-        dump( Db::table('epay_order')->where('status', 0)->whereTime('createTime', '-8 min')->select(false));
+        dump(date('YmdHms', time()));
 //        $test = 'Mozilla/5.0 (Linux; Android 9; MIX 2S Build/PKQ1.180729.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/66.0.3359.126 MQQBrowser/6.2 TBS/044606 Mobile Safari/537.36 V1_AND_SQ_7.9.9_1010_YYB_D QQ/7.9.9.3965 NetType/4G WebP/0.3.0 Pixel/1080 StatusBarHeight/76';
 //        dump(strpos($test, 'QQ/') !== false);
 

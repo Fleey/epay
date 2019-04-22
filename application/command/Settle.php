@@ -24,10 +24,6 @@ class Settle extends Command
         $this->settleUser();
         $output->info('end settle success');
 
-        $output->info('start delete fail order');
-        $this->delFailOrder();
-        $output->info('end delete fail order');
-
         $nowHour = intval(date('H'));
         if ($nowHour == 4) {
             $output->info('start optimize mysql');
@@ -106,10 +102,6 @@ class Settle extends Command
         }
     }
 
-    private function delFailOrder()
-    {
-        Db::table('epay_order')->where('status', 0)->whereTime('createTime', '-8 min')->delete();
-    }
 
     /**
      * 判断是否需要结算

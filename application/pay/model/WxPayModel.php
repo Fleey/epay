@@ -108,8 +108,11 @@ class WxPayModel
             'notify_url'       => $notifyUrl,
             'nonce_str'        => getRandChar(32),
             'product_id'       => md5(time()),
+            'time_start'       => date('YmdHms', time()),
+            'time_expire'      => date('YmdHms', time() + 360),
             'sign_type'        => $this->signType
         ];
+        //订单失效6分钟
         if ($type == 'JSAPI') {
             $openID                = $this->getWxOpenID($openCode);
             $requestData['openid'] = $openID;

@@ -76,8 +76,7 @@
                     <div class="form-group">
                         <label for="partner">接口类型</label>
                         <select class="form-control" data-name="apiType">
-                            <option value="0">原生接口（H5支付）</option>
-                            <option value="2">原生接口（公众号支付）</option>
+                            <option value="0">原生接口</option>
                             <option value="1">易支付中央系统</option>
                         </select>
                     </div>

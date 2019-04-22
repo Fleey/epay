@@ -100,7 +100,7 @@ class WxPayModel
         $requestData = [
             'appid'            => $this->wxConfig['appid'],
             'mch_id'           => $this->wxConfig['mchid'],
-            'body'             => '111',
+            'body'             => '商品支付-' . md5($tradeData['productName']),
             'out_trade_no'     => $tradeData['tradeNo'],
             'total_fee'        => $tradeData['money'],
             'spbill_create_ip' => getClientIp(),
@@ -108,7 +108,7 @@ class WxPayModel
             'notify_url'       => $notifyUrl,
             'nonce_str'        => getRandChar(32),
             'product_id'       => md5(time()),
-//            'sign_type'        => $this->signType
+            'sign_type'        => $this->signType
         ];
         if ($type == 'JSAPI') {
             $openID                = $this->getWxOpenID($openCode);
@@ -134,7 +134,6 @@ class WxPayModel
         $stringA = $this->buildUrlParam($param);
         $stringA .= '&key=' . $this->wxConfig['key'];
         //排序并组合字符串
-//        $stringA = md5($stringA);
         if ($this->signType == 'MD5') {
             $stringA = md5($stringA);
         } else {

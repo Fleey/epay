@@ -20,7 +20,7 @@ cd  /www/wwwroot/网站目录
 php think syncOrder
 ```
 
-每天, 0点1分 执行 系统凌晨结算
+每 1时1分 执行 系统结算
 
 ```code
 #!/bin/sh

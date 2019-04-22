@@ -23,13 +23,6 @@ class WxPay extends Controller
         }
     }
 
-    public function gettest()
-    {
-        return $this->fetch('/WxJsH5Template', [
-            'codeUrl' => 'http://baidu.com'
-        ]);
-    }
-
     public function getWxOpenCode()
     {
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay']);
@@ -87,25 +80,32 @@ class WxPay extends Controller
         //is wx browser
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay']);
         if ($isWxBrowser) {
-            $wxOpenCode = input('get.code/s');
-            //wx open code
-            if (empty($wxOpenCode)) {
-                return redirect(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s') . '&siteName=' . input('post.siteName/s'), '', false, true));
+            if (empty($this->systemConfig['wxpay']['appSecret'])) {
+                return '<h1 style="margin-top: 50%;text-align: center;font-size: 18px;font-weight: 600;">请使用手机浏览器访问问页面，暂不支持微信内打开</h1>';
+            } else {
+                $wxOpenCode = input('get.code/s');
+                //wx open code
+                if (empty($wxOpenCode)) {
+                    return redirect(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s') . '&siteName=' . input('post.siteName/s'), '', false, true));
+                }
+                $requestResult = $wxPayModel->sendPayRequest($tradeData, 'JSAPI', $this->notifyUrl, $wxOpenCode);
             }
-            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'JSAPI', $this->notifyUrl, $wxOpenCode);
             //手机微信内置浏览器支付
         } else {
-            $requestResult['code_url']    = url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s') . '&siteName=' . input('post.siteName/s'), '', false, true);
-            $requestResult['return_code'] = 'SUCCESS';
-            $requestResult['result_code'] = 'SUCCESS';
+            if (empty($this->systemConfig['wxpay']['appSecret'])) {
+                if ($this->request->isMobile()) {
+                    $requestResult = $wxPayModel->sendPayRequest($tradeData, 'MWEB', $this->notifyUrl);
+                    //手机端微信支付
+                } else {
+                    $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE', $this->notifyUrl);
+                    //PC端微信支付
+                }
+            } else {
+                $requestResult['code_url']    = url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s') . '&siteName=' . input('post.siteName/s'), '', false, true);
+                $requestResult['return_code'] = 'SUCCESS';
+                $requestResult['result_code'] = 'SUCCESS';
+            }
         }
-//        } else if ($this->request->isMobile()) {
-//            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'MWEB', $this->notifyUrl);
-//            //手机端微信支付
-//        } else {
-//            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE', $this->notifyUrl);
-//            //PC端微信支付
-//        }
         if ($requestResult['return_code'] != 'SUCCESS')
             return $this->fetch('/SystemMessage', ['msg' => '微信支付下单失败！<br>[' . $requestResult['return_code'] . '] ' . $requestResult['return_msg']]);
         if ($requestResult['result_code'] != 'SUCCESS')
@@ -117,9 +117,11 @@ class WxPay extends Controller
                     'tradeNo'    => $tradeNo
                 ]);
             } else if ($this->request->isMobile()) {
-//                $returnUrl = url('/Pay/WxPay/WapReturn?tradeNo=' . $tradeNo, '', false, true);
-//                return '<script>window.location.replace(\'' . $requestResult['mweb_url'] . '&redirect_url=' . urlencode($returnUrl) . '\');</script>';
-                return $this->fetch('/WxJsH5Template', [
+                if (empty($this->systemConfig['wxpay']['appSecret'])) {
+                    $returnUrl = url('/Pay/WxPay/WapReturn?tradeNo=' . $tradeNo, '', false, true);
+                    return '<script>window.location.replace(\'' . $requestResult['mweb_url'] . '&redirect_url=' . urlencode($returnUrl) . '\');</script>';
+                }
+                return $this->fetch('/WxPayJsH5Template', [
                     'codeUrl' => $requestResult['code_url'],
                     'money'   => $result[0]['money'] / 100,
                     'tradeNo' => $tradeNo

@@ -19,7 +19,7 @@ return [
     // 应用地址
     'app_host'                => '',
     // 应用调试模式
-    'app_debug'               => true,
+    'app_debug'               => false,
     // 应用Trace
     'app_trace'               => false,
     // 是否支持多模块
@@ -145,5 +145,5 @@ return [
     // 异常处理handle类 留空使用 \think\exception\Handle
     'exception_handle'        => '',
 
-    'app_version' => 'v1.7.4'
+    'app_version' => 'v1.7.5'
 ];

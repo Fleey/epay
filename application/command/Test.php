@@ -8,6 +8,7 @@ use app\pay\model\WxPayModel;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
+use think\Db;
 
 class Test extends Command
 {
@@ -22,16 +23,7 @@ class Test extends Command
     {
         // 指令输出
 
-        $a = new WxPayModel(getConfig()['wxpay']);
-        $param            = [
-            'appId'     => 'wxc44b2356b553a57a',
-            'timeStamp' => '1555803552',
-            'nonceStr'  => 'Dra42qvztyG9kF6MtUU3dfAfRMDnFv89',
-            'package'   => 'prepay_id=wx2107391223418667852cb7cf1306721883',
-            'signType'  => 'HMAC-SHA256'
-        ];
-        $param['paySign'] = $a->signParam($param);
-        dump($param);
+        dump( Db::table('epay_order')->where('status', 0)->whereTime('createTime', '-8 min')->select(false));
 //        $test = 'Mozilla/5.0 (Linux; Android 9; MIX 2S Build/PKQ1.180729.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/66.0.3359.126 MQQBrowser/6.2 TBS/044606 Mobile Safari/537.36 V1_AND_SQ_7.9.9_1010_YYB_D QQ/7.9.9.3965 NetType/4G WebP/0.3.0 Pixel/1080 StatusBarHeight/76';
 //        dump(strpos($test, 'QQ/') !== false);
 

@@ -60,7 +60,6 @@
 <script src="/static/js/qq/qrcode.min.js"></script>
 <script src="/static/js/qq/qcloud_util.js"></script>
 <script src="/static/js/layer/layer.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
 <script>
     var qrcode = new QRCode('qrcode', {
         text: '<?php echo $codeUrl;?>',

@@ -7,7 +7,7 @@
     <meta name="renderer" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title><?php echo htmlentities($webName); ?>聚合支付</title>
-    <link href="/static/css/resource/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="card" style="width: 1024px;margin: 5rem auto 0;">

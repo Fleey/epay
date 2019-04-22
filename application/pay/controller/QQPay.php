@@ -77,8 +77,8 @@ class QQPay extends Controller
             'spbill_create_ip' => getClientIp(),
             'total_fee'        => $result[0]['money'],
             'trade_type'       => 'NATIVE',
-            'time_start'       => date('YmdHms', time()),
-            'time_expire'      => date('YmdHms', time() + 360),
+            'time_start'       => date('YmdHis',time()),
+            'time_expire'      => date('YmdHis', time()+360),
         ];
         $QQPayModel    = new QQPayModel($this->qqPayConfig);
         $requestResult = $QQPayModel->sendPayRequest($param);

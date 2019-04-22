@@ -112,7 +112,6 @@ class WxPayModel
             'time_expire'      => date('YmdHis', time()+360),
             'sign_type'        => $this->signType
         ];
-        exit(dump($requestData));
         //订单失效6分钟
         if ($type == 'JSAPI') {
             $openID                = $this->getWxOpenID($openCode);

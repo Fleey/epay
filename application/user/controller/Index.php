@@ -205,7 +205,7 @@ class Index extends Controller
                     if (count($searchContent) != 2)
                         break;
                     $searchData[] = ['a.money', '>=', decimalsToInt($searchContent[0], 2)];
-                    $searchData[]= ['a.money', '<=', decimalsToInt($searchContent[1], 2)];
+                    $searchData[] = ['a.money', '<=', decimalsToInt($searchContent[1], 2)];
                 } else {
                     $searchData[] = ['a.money', '=', decimalsToInt($searchContent, 2)];
                     break;
@@ -274,14 +274,24 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '您的余额不足,不能够结算这么多']);
         if ($userInfo[0]['clearMode'] != 1)
             return json(['status' => 0, 'msg' => '您当前账号结算方式，不支持手动提交结算申请']);
+
+        $userSettleConfig = getPayUserAttr($uid, 'settleConfig');
+        if (empty($userSettleConfig))
+            $userSettleConfig = [];
+        else
+            $userSettleConfig = unserialize($userSettleConfig);
+
+        $settleFee = 0;
+        if (!empty($userSettleConfig['settleFee']))
+            $settleFee = $userSettleConfig['settleFee'];
         $result = Db::table('epay_settle')->insertGetId([
             'uid'        => $uid,
             'clearType'  => $userInfo[0]['clearType'],
             'addType'    => 3,
             'account'    => $userInfo[0]['account'],
             'username'   => $userInfo[0]['username'],
-            'money'      => $money,
-            'fee'        => 0,
+            'money'      => $money - $settleFee,
+            'fee'        => $settleFee,
             'status'     => 0,
             'createTime' => getDateTime()
         ]);

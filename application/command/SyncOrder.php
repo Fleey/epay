@@ -93,7 +93,7 @@ class SyncOrder extends Command
 
     private function delFailOrder()
     {
-        Db::table('epay_order')->where('status', 0)->whereTime('createTime', '<=','-8 min')->delete();
+        Db::table('epay_order')->where('status', 0)->whereTime('createTime', '<=','-2 day')->delete();
     }
 
     private function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlEncode = true, $isProxy = false)

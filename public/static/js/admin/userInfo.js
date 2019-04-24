@@ -333,7 +333,7 @@ $(function () {
         $('#setPayConfig [data-name="qqpay"] [data-value="isOpen"]').val(1);
         $('#setPayConfig [data-name="bankpay"] [data-value="isOpen"]').val(1);
 
-        $('#setPayConfig [data-value="payAisle"]').html('<option value="0">没有更多选项</option>').attr('disabled', 'disabled');
+        $('#setPayConfig [data-value="payAisle"]').html('<option value="0" selected = "selected">没有更多选项</option>').attr('disabled', 'disabled');
     });
     $('#setPayConfig select[data-value="apiType"]').change(function () {
         var configDom = $(this).parent().parent().parent();
@@ -341,12 +341,12 @@ $(function () {
         var selectApiType = $(this).val();
 
         if (selectApiType !== '1') {
-            configDom.find('select[data-value="payAisle"]').html('<option value="0">没有更多选项</option>').attr('disabled', 'disabled');
+            configDom.find('select[data-value="payAisle"]').html('<option value="0" selected = "selected">没有更多选项</option>').attr('disabled', 'disabled');
         } else {
             var html = '';
             var payApiList = getCenterPayApiList(configPayName);
             if (payApiList['status'] !== 1 || payApiList['data'].length === 0) {
-                configDom.find('select[data-value="payAisle"]').html('<option value="0">没有更多选项</option>').attr('disabled', 'disabled');
+                configDom.find('select[data-value="payAisle"]').html('<option value="0" selected = "selected">没有更多选项</option>').attr('disabled', 'disabled');
             } else {
                 payApiList = payApiList['data'];
                 $.each(payApiList, function (key, value) {
@@ -450,7 +450,7 @@ $(function () {
                             $('#setPayConfig [data-name="qqpay"] [data-value="isOpen"]').val(1);
                             $('#setPayConfig [data-name="bankpay"] [data-value="isOpen"]').val(1);
 
-                            $('#setPayConfig [data-value="payAisle"]').html('<option value="0">没有更多选项</option>').attr('disabled', 'disabled');
+                            $('#setPayConfig [data-value="payAisle"]').html('<option value="0" selected = "selected">没有更多选项</option>').attr('disabled', 'disabled');
                         } else {
                             $.each(value, function (key1, value1) {
                                 $('#setPayConfig [data-name="' + key1 + '"] [data-value="apiType"]').val(value1['apiType']).change();

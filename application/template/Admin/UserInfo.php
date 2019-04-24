@@ -246,10 +246,15 @@
                             <div class="col-md-12" data-name="alipay">
                                 <label class="control-label">支付宝支付</label>
                                 <div class="row">
-                                    <div class="col-md-8">
+                                    <div class="col-md-4">
                                         <select class="form-control" data-value="apiType">
                                             <option value="0">原生支付接口</option>
                                             <option value="1">易支付中央系统</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-control" data-value="payAisle" disabled>
+                                            <option value="0">没有更多选项</option>
                                         </select>
                                     </div>
                                     <div class="col-md-4">
@@ -265,10 +270,15 @@
                             <div class="col-md-12" data-name="qqpay">
                                 <label class="control-label">QQ钱包支付</label>
                                 <div class="row">
-                                    <div class="col-md-8">
+                                    <div class="col-md-4">
                                         <select class="form-control" data-value="apiType">
                                             <option value="0">原生支付接口</option>
                                             <option value="1">易支付中央系统</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-control" data-value="payAisle" disabled>
+                                            <option value="0">没有更多选项</option>
                                         </select>
                                     </div>
                                     <div class="col-md-4">
@@ -284,10 +294,15 @@
                             <div class="col-md-12" data-name="wxpay">
                                 <label class="control-label">微信支付</label>
                                 <div class="row">
-                                    <div class="col-md-8">
+                                    <div class="col-md-4">
                                         <select class="form-control" data-value="apiType">
                                             <option value="0">原生支付接口</option>
                                             <option value="1">易支付中央系统</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-control" data-value="payAisle" disabled>
+                                            <option value="0">没有更多选项</option>
                                         </select>
                                     </div>
                                     <div class="col-md-4">
@@ -303,10 +318,15 @@
                             <div class="col-md-12" data-name="bankpay">
                                 <label class="control-label">银联支付</label>
                                 <div class="row">
-                                    <div class="col-md-8">
+                                    <div class="col-md-4">
                                         <select class="form-control" data-value="apiType">
                                             <option value="0">原生支付接口</option>
                                             <option value="1">易支付中央系统</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-control" data-value="payAisle" disabled>
+                                            <option value="0">没有更多选项</option>
                                         </select>
                                     </div>
                                     <div class="col-md-4">

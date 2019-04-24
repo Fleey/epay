@@ -3,6 +3,8 @@
 namespace app\admin\controller;
 
 use app\admin\model\SearchTable;
+use app\pay\model\CenterPayModel;
+use app\pay\model\PayModel;
 use think\Controller;
 use think\Db;
 use ZipArchive;
@@ -796,6 +798,28 @@ class Index extends Controller
             setPayUserAttr($uid, 'payConfig', serialize($data));
         }
         return json(['status' => 1, 'msg' => '保存用户信息成功']);
+    }
+
+    /**
+     * @return \think\response\Json
+     */
+    public function getCenterPayApiList()
+    {
+        $payType = input('get.payType/s');
+
+        $systemPayConfig = getConfig();
+        if (!empty($systemPayConfig[$payType]))
+            $systemPayConfig = $systemPayConfig[$payType];
+        else
+            $systemPayConfig = [];
+
+        if (!isset($systemPayConfig['epayCenterUid']) || !isset($systemPayConfig['epayCenterKey']))
+            return json(['status' => 1, 'data' => []]);
+
+        $systemPayConfig['gateway'] = 'http://center.zmz999.com';
+        $centerPayModel    = new CenterPayModel($systemPayConfig);
+
+        return json(['status' => 1, 'data' => $centerPayModel->getPayApiList(PayModel::converPayName($payType))]);
     }
 
     public function postReloadKey()

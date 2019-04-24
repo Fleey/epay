@@ -11,7 +11,16 @@ class CenterPayModel
         $this->centerConfig = $centerConfig;
     }
 
-    public function getPayUrl(string $tradeNo, string $payType, string $money, string $notifyUrl, string $returnUrl)
+    /**
+     * 获取聚合支付链接
+     * @param string $tradeNo
+     * @param string $payType
+     * @param string $money
+     * @param string $notifyUrl
+     * @param string $returnUrl
+     * @return array
+     */
+    public function getPayUrl(string $tradeNo, string $payType, string $payAisle, string $money, string $notifyUrl, string $returnUrl)
     {
         if (empty($tradeNo) || empty($payType) || empty($money) || empty($notifyUrl))
             return ['isSuccess' => false, 'msg' => '[server] param empty'];
@@ -20,6 +29,7 @@ class CenterPayModel
         $param  = [
             'tradeNo'   => $tradeNo,
             'payType'   => $payType,
+            'payAisle'  => $payAisle,
             'money'     => $money,
             'notifyUrl' => $notifyUrl,
             'returnUrl' => $returnUrl
@@ -33,6 +43,47 @@ class CenterPayModel
         if ($result['isHtml'])
             return ['isSuccess' => true, 'html' => $result['html']];
         return ['isSuccess' => true, 'url' => $result['url']];
+    }
+
+    /**
+     * @return array|bool|mixed|string
+     */
+    public function getPayApiListAll()
+    {
+        $url = $this->centerConfig['gateway'] . '/api/v1/PayApiListAll';
+
+        $param = [];
+
+        $result = $this->sendRequest($url, $param);
+
+        if ($result === false)
+            return [];
+        if (empty($result['status']) || empty($result['data']))
+            return [];
+
+        $result = json_decode($result['data'], true);
+        return $result;
+    }
+
+    /**
+     * @param int $payType
+     * @return array|bool|mixed|string
+     */
+    public function getPayApiList(int $payType)
+    {
+        $url = $this->centerConfig['gateway'] . '/api/v1/PayApiList';
+
+        $param  = [
+            'type' => $payType
+        ];
+        $result = $this->sendRequest($url, $param);
+
+        if ($result === false)
+            return [];
+        if (empty($result['status']) || empty($result['data']))
+            return [];
+        $result = json_decode($result['data'], true);
+        return $result;
     }
 
     /**
@@ -64,6 +115,7 @@ class CenterPayModel
             'data' => json_encode($param)
         ];
         $requestParam['uid']       = $this->centerConfig['epayCenterUid'];
+        $requestParam['time']      = time();
         $requestParam['sign']      = $this->buildSignMD5($requestParam);
         $requestParam['sign_type'] = 'MD5';
         //build sign

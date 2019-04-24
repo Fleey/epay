@@ -60,12 +60,14 @@ class CenterPay extends Controller
                 return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 易支付中心系统接口商户号不能为空！']);
             if (empty($systemPayConfig['epayCenterKey']))
                 return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 易支付中心系统接口密匙不能为空！']);
+            if (empty($userPayConfig[$payName]['payAisle']))
+                return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 支付接口方式有误，请联系管理员处理！']);
         }
 
         $config            = $systemPayConfig;
         $config['gateway'] = 'http://center.zmz999.com';
         $centerPayModel    = new CenterPayModel($config);
-        $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);
+        $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, $userPayConfig[$payName]['payAisle'], ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);
         if ($requestResult['isSuccess']) {
 //            if (empty($requestResult['html'])) {
 //                return redirect($requestResult['url'], [], 302);

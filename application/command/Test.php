@@ -22,8 +22,11 @@ class Test extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
-
-        dump(Db::table('epay_order')->where('status', 0)->whereTime('createTime', '<=', '-2 day')->select(false));
+        $systemPayConfig   = getConfig()['alipay'];
+        $config            = $systemPayConfig;
+        $config['gateway'] = 'http://center.zmz999.com';
+        $centerPayModel    = new CenterPayModel($config);
+        dump($centerPayModel->getPayApiList(2));
 //        $test = 'Mozilla/5.0 (Linux; Android 9; MIX 2S Build/PKQ1.180729.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/66.0.3359.126 MQQBrowser/6.2 TBS/044606 Mobile Safari/537.36 V1_AND_SQ_7.9.9_1010_YYB_D QQ/7.9.9.3965 NetType/4G WebP/0.3.0 Pixel/1080 StatusBarHeight/76';
 //        dump(strpos($test, 'QQ/') !== false);
 
@@ -36,7 +39,6 @@ class Test extends Command
 //        dump($test->getPayUrl('12329', 'bankpay', '10', 'http://center.zmz999.com/test'));
 //        $orderList = Db::table('epay_order')->where('status', 1)->field('tradeNo')->whereTime('endtime', '>=', '2019-4-2 12:30:00')->whereTime('endtime', '<=', '2019-4-2 13:30:59')->select(false);
 //        exit(dump(buildCallBackUrl('2019032915384048736','notify')));
-        echo 'ok';
     }
 
     private function buildCallBackUrlA(string $tradeNo, string $type)

@@ -71,7 +71,6 @@ $(function () {
         });
     });
 
-
     $('#cancelSearchFilter').off("click").on('click', function () {
         var dataTable = $('#orderList1').dataTable();
         dataTable.fnDestroy();
@@ -333,6 +332,30 @@ $(function () {
         $('#setPayConfig [data-name="wxpay"] [data-value="isOpen"]').val(1);
         $('#setPayConfig [data-name="qqpay"] [data-value="isOpen"]').val(1);
         $('#setPayConfig [data-name="bankpay"] [data-value="isOpen"]').val(1);
+
+        $('#setPayConfig [data-value="payAisle"]').html('<option value="0">没有更多选项</option>').attr('disabled', 'disabled');
+    });
+    $('#setPayConfig select[data-value="apiType"]').change(function () {
+        var configDom = $(this).parent().parent().parent();
+        var configPayName = configDom.attr('data-name');
+        var selectApiType = $(this).val();
+
+        if (selectApiType !== '1') {
+            configDom.find('select[data-value="payAisle"]').html('<option value="0">没有更多选项</option>').attr('disabled', 'disabled');
+        } else {
+            var html = '';
+            var payApiList = getCenterPayApiList(configPayName);
+            if (payApiList['status'] !== 1 || payApiList['data'].length === 0) {
+                configDom.find('select[data-value="payAisle"]').html('<option value="0">没有更多选项</option>').attr('disabled', 'disabled');
+            } else {
+                payApiList = payApiList['data'];
+                $.each(payApiList, function (key, value) {
+                    html += '<option value="' + value['aisle'] + '">' + value['name'] + '</option>';
+                });
+                configDom.find('select[data-value="payAisle"]').html(html).removeAttr('disabled');
+            }
+
+        }
     });
     $('.QrCodeImgPreview').off("click").on('click', function () {
         $('#QrCodeImg').click();
@@ -426,18 +449,21 @@ $(function () {
                             $('#setPayConfig [data-name="wxpay"] [data-value="isOpen"]').val(1);
                             $('#setPayConfig [data-name="qqpay"] [data-value="isOpen"]').val(1);
                             $('#setPayConfig [data-name="bankpay"] [data-value="isOpen"]').val(1);
+
+                            $('#setPayConfig [data-value="payAisle"]').html('<option value="0">没有更多选项</option>').attr('disabled', 'disabled');
                         } else {
                             $.each(value, function (key1, value1) {
-                                $('#setPayConfig [data-name="' + key1 + '"] [data-value="apiType"]').val(value1['apiType']);
+                                $('#setPayConfig [data-name="' + key1 + '"] [data-value="apiType"]').val(value1['apiType']).change();
                                 $('#setPayConfig [data-name="' + key1 + '"] [data-value="isOpen"]').val(value1['isOpen']);
-                            })
+                                $('#setPayConfig [data-name="' + key1 + '"] [data-value="payAisle"]').val(value1['payAisle']);
+                            });
                         }
                     }
                     setDataNameInfo(key, value);
                 });
                 //基础信息置入
                 var fileID = data['qrFileID'];
-                setDataNameInfo('setUserBalance','');
+                setDataNameInfo('setUserBalance', '');
                 $('select[data-name="clearType"]').val(data['clearType']).change();
                 $('input[data-name="id"]').parent().show();
                 $('input[data-name="key"]').parent().show();
@@ -504,6 +530,23 @@ $(function () {
     $('.orderDiscountsMoneyList').html('');
     addDiscountsMoneyList('');
 });
+
+function getCenterPayApiList(payType) {
+    var returnData = {};
+    $.ajax({
+        url: '/cy2018/api/CenterPayApiList',
+        async: false,
+        cache: false,
+        data: {
+            payType: payType
+        },
+        dataType: 'json',
+        success: function (data) {
+            returnData = data;
+        }
+    });
+    return returnData;
+}
 
 function readHashEvent(hash, args) {
     var fileID = getServerFileID(hash);

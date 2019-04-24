@@ -290,7 +290,7 @@ class Index extends Controller
             'addType'    => 3,
             'account'    => $userInfo[0]['account'],
             'username'   => $userInfo[0]['username'],
-            'money'      => $money - $settleFee,
+            'money'      => $money,
             'fee'        => $settleFee,
             'status'     => 0,
             'createTime' => getDateTime()

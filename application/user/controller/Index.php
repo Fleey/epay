@@ -108,6 +108,18 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '需要登陆后才能继续操作']);
         $result = Db::table('epay_user')->field('id,key,account,balance,email,qq,domain,clearType,clearMode,username')->where('id', $uid)->select();
         $data   = $result[0];
+
+        $userSettleConfig = getPayUserAttr($uid, 'settleConfig');
+        if (empty($userSettleConfig))
+            $userSettleConfig = [];
+        else
+            $userSettleConfig = unserialize($userSettleConfig);
+        $settleFee = 0;
+        if (!empty($userSettleConfig['settleFee']))
+            $settleFee = $userSettleConfig['settleFee'] / 10;
+
+        $data['settleFee'] = $settleFee;
+
         return json(['status' => 1, 'data' => $data]);
     }
 
@@ -270,27 +282,28 @@ class Index extends Controller
         $userInfo = Db::table('epay_user')->where('id', $uid)->field('balance,clearType,clearMode,username,account')->limit(1)->select();
         if (empty($userInfo))
             return json(['status' => 0, 'msg' => '数据异常,请联系管理员处理']);
-        if ($userInfo[0]['balance'] < ($money * 10))
-            return json(['status' => 0, 'msg' => '您的余额不足,不能够结算这么多']);
-        if ($userInfo[0]['clearMode'] != 1)
-            return json(['status' => 0, 'msg' => '您当前账号结算方式，不支持手动提交结算申请']);
 
         $userSettleConfig = getPayUserAttr($uid, 'settleConfig');
         if (empty($userSettleConfig))
             $userSettleConfig = [];
         else
             $userSettleConfig = unserialize($userSettleConfig);
-
         $settleFee = 0;
         if (!empty($userSettleConfig['settleFee']))
-            $settleFee = $userSettleConfig['settleFee'];
+            $settleFee = $userSettleConfig['settleFee'] / 10;
+
+        if ($userInfo[0]['balance'] < ($money * 10 + $settleFee))
+            return json(['status' => 0, 'msg' => '您的余额不足,不能够结算这么多']);
+        if ($userInfo[0]['clearMode'] != 1)
+            return json(['status' => 0, 'msg' => '您当前账号结算方式，不支持手动提交结算申请']);
+
         $result = Db::table('epay_settle')->insertGetId([
             'uid'        => $uid,
             'clearType'  => $userInfo[0]['clearType'],
             'addType'    => 3,
             'account'    => $userInfo[0]['account'],
             'username'   => $userInfo[0]['username'],
-            'money'      => $money,
+            'money'      => $money + $settleFee,
             'fee'        => $settleFee,
             'status'     => 0,
             'createTime' => getDateTime()

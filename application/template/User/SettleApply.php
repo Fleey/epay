@@ -26,6 +26,10 @@
                         <small class="form-text text-muted">修改结算信息，请到个人信息处修改</small>
                     </div>
                     <div class="form-group">
+                        <label for="username">结算手续费（RMB）</label>
+                        <input type="text" class="form-control" id="settleFee" value="" disabled>
+                    </div>
+                    <div class="form-group">
                         <label for="username">结算金额</label>
                         <input type="text" class="form-control" id="settleMoney" value="">
                         <small class="form-text text-muted">您当前可结算余额为
@@ -41,17 +45,22 @@
 </div>
 <script>
     $(function ($) {
-        $.getJSON('/user/api/info', function (data) {
-            if (data['status'] === 1) {
-                data = data['data'];
-                var money = (data['balance'] / 1000).toFixed(3);
-                $('#balance').text(money.substring(0, money.lastIndexOf('.') + 3));
-                $('#settleType').val(data['clearType']);
-                $('#account').val(data['account']);
-                $('#username').val(data['username'])
-            }
-        });
-        $('#settleAll').off("click").on('click',function () {
+
+        var reloadData = function () {
+            $.getJSON('/user/api/info', function (data) {
+                if (data['status'] === 1) {
+                    data = data['data'];
+                    var money = ((data['balance'] - (data['settleFee'] * 10)) / 1000).toFixed(3);
+                    $('#balance').text(money.substring(0, money.lastIndexOf('.') + 3));
+                    $('#settleType').val(data['clearType']);
+                    $('#account').val(data['account']);
+                    $('#username').val(data['username']);
+                    $('#settleFee').val(data['settleFee'] / 100);
+                }
+            });
+        };
+        reloadData();
+        $('#settleAll').off("click").on('click', function () {
             $('#settleMoney').val($('#balance').text())
         });
         $('#settleApply').off("click").on('click', function () {
@@ -72,6 +81,7 @@
                     });
                     return true
                 }
+                reloadData();
                 swal({
                     title: '',
                     text: data['msg'],

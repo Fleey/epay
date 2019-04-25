@@ -43,6 +43,10 @@ $(function () {
                 }
             }, {
                 'render': function (data) {
+                    return data / 100;
+                }
+            }, {
+                'render': function (data) {
                     return data === 1 ? '<span style="color: green;">已完成</span>' : '<span style="color: red;">未完成</span>';
                 }
             }, {}
@@ -56,7 +60,7 @@ $(function () {
                     html += '</div>';
                     return html;
                 },
-                'targets': 8
+                'targets': 9
             }
         ],
         'fnDrawCallback': function (obj) {
@@ -144,11 +148,13 @@ $(function () {
             $.getJSON('/cy2018/api/SettleOperate', {type: 'userSettleInfo', uid: uid}, function (data) {
                 if (data['status'] === 1) {
                     $.getScript('/static/js/resource/echarts.min.js', function () {
-                        var dateList = [];
-                        var dataList = [];
+                        var dataSettleFeeList = [];
+                        var dataSettleMoneyList = [];
+                        var date = [];
                         $.each(data['data'], function (key, value) {
-                            dateList.push(value['createTime']);
-                            dataList.push(value['money'] / 100);
+                            date.push(value['createTime']);
+                            dataSettleMoneyList.push(value['money'] / 100);
+                            dataSettleFeeList.push(value['fee'] / 100);
                         });
                         var option = {
                             title: {
@@ -159,9 +165,15 @@ $(function () {
                                 axisPointer: {
                                     type: 'cross',
                                     crossStyle: {
-                                        color: '#999'
+                                        color: '#6a7985'
                                     }
                                 }
+                            },
+                            grid: {
+                                left: '3%',
+                                right: '4%',
+                                bottom: '3%',
+                                containLabel: true
                             },
                             toolbox: {
                                 feature: {
@@ -175,7 +187,7 @@ $(function () {
                                 {
                                     type: 'category',
                                     boundaryGap: false,
-                                    data: dateList,
+                                    data: date,
                                 }
                             ],
                             yAxis: {
@@ -183,11 +195,17 @@ $(function () {
                             },
                             series: [
                                 {
-                                    name: '一周内结算金额统计',
-                                    data: dataList,
+                                    name: '结算金额统计',
+                                    data: dataSettleMoneyList,
                                     type: 'line',
                                     areaStyle: {}
-                                }
+                                },
+                                {
+                                    name: '结算手续费统计',
+                                    data: dataSettleFeeList,
+                                    type: 'line',
+                                    areaStyle: {}
+                                },
                             ]
                         };
                         $('#userSettleInfo').show();
@@ -203,7 +221,7 @@ $(function () {
             });
         }
     });
-    $('button[data-type="deleteRecord"]').off("click").on('click',function () {
+    $('button[data-type="deleteRecord"]').off("click").on('click', function () {
         var id = $(this).attr('data-settle-id');
         swal({
                 title: '操作提示',
@@ -238,7 +256,7 @@ $(function () {
                 }, 'json');
             });
     });
-    $('button[data-type="confirmPay"]').off("click").on('click',function () {
+    $('button[data-type="confirmPay"]').off("click").on('click', function () {
         var id = $(this).attr('data-settle-id');
         var remark = $('input[data-name="settleRemark"]').val();
         swal({

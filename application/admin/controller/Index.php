@@ -280,6 +280,7 @@ class Index extends Controller
             $data[] = ['createTime' => date('Y-m-d', strtotime('now'))];
             foreach ($data as $key => $value) {
                 $data[$key]['money'] = Db::table('epay_settle')->where(['uid' => $uid])->whereBetweenTime('createTime', $value['createTime'])->sum('money');
+                $data[$key]['fee'] = Db::table('epay_settle')->where(['uid' => $uid])->whereBetweenTime('createTime', $value['createTime'])->sum('fee');
             }
             return json(['status' => 1, 'data' => $data]);
         }

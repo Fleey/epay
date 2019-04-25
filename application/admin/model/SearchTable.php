@@ -208,7 +208,7 @@ class SearchTable
         } else if ($this->searchTable == 'epay_user') {
             $searchOrderList = ['id', 'key', 'balance', 'account', 'username', 'isBan'];
         } else if ($this->searchTable == 'epay_settle') {
-            $searchOrderList = ['id', 'uid', 'clearType', 'account', 'username', 'money', 'status', 'createTime'];
+            $searchOrderList = ['id', 'uid', 'clearType', 'account', 'username', 'money', 'fee', 'status', 'createTime'];
         }
         $field = '';
         foreach ($searchOrderList as $item) {

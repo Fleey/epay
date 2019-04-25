@@ -30,7 +30,7 @@
                         <input type="text" class="form-control" id="settleFee" value="" disabled>
                     </div>
                     <div class="form-group">
-                        <label for="username">结算金额</label>
+                        <label for="username">结算金额（RMB）</label>
                         <input type="text" class="form-control" id="settleMoney" value="">
                         <small class="form-text text-muted">您当前可结算余额为
                             <span id="balance">0</span>

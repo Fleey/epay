@@ -177,6 +177,8 @@ class WxPay extends Controller
         //get post xml
         $requestData = xmlToArray($requestData);
         //数据转换
+        if (empty($requestData['sign']))
+            return xml(['return_code' => 'FAIL', 'return_msg' => '签名不能为空']);
         $sign       = $requestData['sign'];
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay']);
         if ($wxPayModel->signParam($requestData) != $sign)

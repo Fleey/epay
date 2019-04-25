@@ -98,21 +98,26 @@ class Test extends Controller
     public function getReturn()
     {
         $getData = input('get.');
-        $pid     = $getData['pid'];
-        //商户号
-        $tradeNo = $getData['trade_no'];
-        //小老弟订单号
-        $tradeNoOut = $getData['out_trade_no'];
-        //	商户系统内部的订单号
-        $payType = $getData['type'];
-        //alipay:支付宝,tenpay:财付通,
-        //qqpay:QQ钱包,wxpay:微信支付,
-        //alipaycode:支付宝扫码,jdpay:京东支付
-        $productName = $getData['name'];
-        //商品名称
-        $money    = $getData['money'];
-        $status   = $getData['trade_status'];
-        $sign     = $getData['sign'];
+//        $pid     = $getData['pid'];
+//        //商户号
+//        $tradeNo = $getData['trade_no'];
+//        //小老弟订单号
+//        $tradeNoOut = $getData['out_trade_no'];
+//        //	商户系统内部的订单号
+//        $payType = $getData['type'];
+//        //alipay:支付宝,tenpay:财付通,
+//        //qqpay:QQ钱包,wxpay:微信支付,
+//        //alipaycode:支付宝扫码,jdpay:京东支付
+//        $productName = $getData['name'];
+//        //商品名称
+//        $money    = $getData['money'];
+//        $status   = $getData['trade_status'];
+//        $sign     = $getData['sign'];
+
+        if (empty($getData['sign']) || empty($getData['sign_type'])) {
+            trace('这个小屁孩在搞事', 'INFO');
+            return $this->fetch('/SystemMessage', ['msg' => '告诉你个秘密，我留个后门在header哪里，自己去挖掘吧！']);
+        }
         $signType = $getData['sign_type'];
 
         if ($signType != 'MD5')

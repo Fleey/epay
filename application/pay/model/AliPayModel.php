@@ -136,6 +136,8 @@ class AliPayModel
         $getData = input($type . '.');
         if (empty($getData))
             return false;
+        if (empty($getData['sign']))
+            return false;
         if (!$this->verifySign($getData, $getData['sign']))
             return false;
         //验证签名

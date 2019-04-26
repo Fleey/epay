@@ -146,6 +146,7 @@ $(function () {
         var productMaxPrice = $('#productMaxPrice').val();
         var productStartTime = $('#productStartTime').val();
         var productEndTime = $('#productEndTime').val();
+        var productName = $('#productName').val();
 
         var dataTable = $('#orderList').dataTable();
         dataTable.fnDestroy();
@@ -208,6 +209,8 @@ $(function () {
             data['args']['productStartTime'] = productStartTime;
         if (productEndTime)
             data['args']['productEndTime'] = productEndTime;
+        if (productName)
+            data['args']['productName'] = productName;
 
         dataTableConfig['ajax'] = {
             url: baseUrl + 'cy2018/api/searchTable',

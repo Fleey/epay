@@ -24,9 +24,9 @@ class SyncOrder extends Command
         $this->statisticalOrderMoney();
         $output->info('[' . getDateTime() . '] sync order success ');
 
-        $output->info('start delete fail order');
-        $this->delFailOrder();
-        $output->info('end delete fail order');
+//        $output->info('start delete fail order');
+//        $this->delFailOrder();
+//        $output->info('end delete fail order');
 
         $output->info(' start call back order');
         $this->supplyOrder(2);

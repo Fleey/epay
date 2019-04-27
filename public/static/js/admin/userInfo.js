@@ -435,9 +435,13 @@ $(function () {
                             setDataNameInfo('orderDiscountsType', value['type']);
                             setDataNameInfo('orderDiscountsMinMoney', value['minMoney']);
                             $('.orderDiscountsMoneyList').html('');
-                            $.each(value['moneyList'], function (key1, value1) {
-                                addDiscountsMoneyList(value1);
-                            });
+                            if (value['moneyList'].length === 0){
+                                addDiscountsMoneyList('');
+                            }else {
+                                $.each(value['moneyList'], function (key1, value1) {
+                                    addDiscountsMoneyList(value1);
+                                });
+                            }
                         }
                     } else if (key === 'payConfig') {
                         if (value === '') {

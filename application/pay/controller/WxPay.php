@@ -43,7 +43,8 @@ class WxPay extends Controller
             $siteName = '易支付';
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
-        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,productName,status,type,createTime')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])
+            ->field('uid,money,productName,status,type,createTime')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
         if ($result[0]['type'] != 1)
@@ -151,7 +152,7 @@ class WxPay extends Controller
         $tradeNo = input('get.tradeNo');
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '订单ID无效！']);
-        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('id')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->field('id')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '订单ID无效！']);
         return $this->fetch('/WxPayReturnTemplate', ['tradeNo' => $tradeNo]);
@@ -194,14 +195,15 @@ class WxPay extends Controller
         //check order pay status
 
 
-        $result = Db::table('epay_order')->where('tradeNo', $requestData['out_trade_no'])->field('status')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $requestData['out_trade_no']])
+            ->field('status')->limit(1)->select();
         if (empty($result))
             return xml(['return_code' => 'FAIL', 'return_msg' => '订单无效']);
         if ($result[0]['status'])
             return xml(['return_code' => 'SUCCESS', 'return_msg' => 'OK']);
         //订单已经付款成功
 
-        Db::table('epay_order')->where('tradeNo', $requestData['out_trade_no'])->limit(1)->update([
+        Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $requestData['out_trade_no']])->limit(1)->update([
             'status'  => 1,
             'endTime' => getDateTime()
         ]);

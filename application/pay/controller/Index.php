@@ -145,7 +145,7 @@ class Index extends Controller
 
         $tradeNo = date('YmdHis') . rand(11111, 99999);
 
-        $tradeNoData = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('id')->select();
+        $tradeNoData = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->limit(1)->field('id')->select();
         if (!empty($tradeNoData))
             $tradeNo = date('YmdHis') . rand(11111, 99999);
         //防止单号重复
@@ -194,7 +194,7 @@ class Index extends Controller
         } else {
             $tradeNo = $tradeNoOutData[0]['tradeNo'];
             if ($tradeNoOutData[0]['type'] != $converPayType)
-                Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
+                Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo'=>$tradeNo])->limit(1)->update([
                     'type' => $converPayType
                 ]);
             //改变支付类型，注意这里可能存在问题，如果这个改变订单支付类型并且金额更新大于原先输入的金额数量
@@ -248,7 +248,7 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '未付款']);
         if (empty($type))
             return json(['status' => 0, 'msg' => '未付款']);
-        $result = Db::table('epay_order')->field('status')->limit(1)->where('tradeNo', $tradeNo)->select();
+        $result = Db::table('epay_order')->field('status')->limit(1)->where('tradeNo=:tradeNo', ['tradeNo'=>$tradeNo])->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '未付款']);
         $returnData = ['status' => $result[0]['status'], 'msg' => $result[0]['status'] ? '已付款' : '未付款'];

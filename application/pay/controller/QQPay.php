@@ -34,13 +34,14 @@ class QQPay extends Controller
      */
     public function getSubmit()
     {
-        $tradeNo  = input('get.tradeNo');
+        $tradeNo  = input('get.tradeNo/s');
         $siteName = htmlentities(base64_decode(input('get.siteName')));
         if (empty($siteName))
             $siteName = '易支付';
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
-        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,productName,status,type,createTime')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])
+            ->field('uid,money,productName,status,type,createTime')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
         if ($result[0]['type'] != 2)
@@ -77,8 +78,8 @@ class QQPay extends Controller
             'spbill_create_ip' => getClientIp(),
             'total_fee'        => $result[0]['money'],
             'trade_type'       => 'NATIVE',
-            'time_start'       => date('YmdHis',time()),
-            'time_expire'      => date('YmdHis', time()+360),
+            'time_start'       => date('YmdHis', time()),
+            'time_expire'      => date('YmdHis', time() + 360),
         ];
         $QQPayModel    = new QQPayModel($this->qqPayConfig);
         $requestResult = $QQPayModel->sendPayRequest($param);
@@ -136,7 +137,7 @@ class QQPay extends Controller
         $moneyType = $requestData['fee_type'];
         //币种
 
-        $result = Db::table('epay_order')->where('tradeNo', $tradeNoOut)->field('status')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNoOut])->field('status')->limit(1)->select();
         if (empty($result))
             return xml(['return_code' => 'FAIL', 'return_msg' => '订单无效']);
         if ($result[0]['status'])
@@ -144,7 +145,7 @@ class QQPay extends Controller
         //订单已经付款成功
 
         if ($requestData['trade_state'] == 'SUCCESS') {
-            Db::table('epay_order')->where('tradeNo', $tradeNoOut)->limit(1)->update([
+            Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNoOut])->limit(1)->update([
                 'status'  => 1,
                 'endTime' => getDateTime()
             ]);

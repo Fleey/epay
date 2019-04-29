@@ -121,7 +121,7 @@ class Settle extends Command
             if ($lastSettleData[0]['status'] == 0)
                 return false;
         //查询到上一次有记录 并且状态尚未结算
-        if ($userData['userInfo']['balance'] < 0)
+        if ($userData['userInfo']['balance'] <= 0)
             return false;
         //用户余额为正数不进行结算
         if ($userData['userInfo']['clearMode'] == 0) {

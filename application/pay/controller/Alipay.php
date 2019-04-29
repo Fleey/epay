@@ -35,7 +35,7 @@ class Alipay extends Controller
         $tradeNo = input('get.tradeNo');
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
-        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,productName,status,type')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->field('uid,money,productName,status,type')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
         if ($result[0]['type'] != 3)
@@ -104,7 +104,7 @@ class Alipay extends Controller
 
         $tradeNoOut  = $getData['out_trade_no'];
         $tradeStatus = $getData['trade_status'];
-        $result      = Db::table('epay_order')->where('tradeNo', $tradeNoOut)->field('status,return_url')->limit(1)->select();
+        $result      = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNoOut])->field('status,return_url')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '订单不存在，请联系管理员处理！']);
         //判断订单是否存在
@@ -143,7 +143,7 @@ class Alipay extends Controller
         $buyerEmail = input('get.buyer_email');
         //买家支付宝
 
-        $result = Db::table('epay_order')->where('tradeNo', $tradeNoOut)->field('status')->limit(1)->select();
+        $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNoOut])->field('status')->limit(1)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => 'fail']);
         //判断订单是否存在
@@ -151,7 +151,7 @@ class Alipay extends Controller
             return json(['status' => 0, 'msg' => 'fail']);
         //订单状态已经被更新
         if ($tradeStatus == 'TRADE_SUCCESS') {
-            Db::table('epay_order')->where('tradeNo', $tradeNoOut)->limit(1)->update([
+            Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo'=>$tradeNoOut])->limit(1)->update([
                 'status'  => 1,
                 'endTime' => getDateTime()
             ]);

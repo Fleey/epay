@@ -209,7 +209,7 @@ class ApiV1 extends Controller
         $converPayType = PayModel::converPayName($type);
         $clientIp      = getClientIp();
 
-        $tradeNoData = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('id,status,productName')->select();
+        $tradeNoData = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->limit(1)->field('id,status,productName')->select();
         if (!empty($tradeNoData))
             $tradeNo = date('YmdHis') . rand(11111, 99999);
         //防止单号重复
@@ -260,7 +260,7 @@ class ApiV1 extends Controller
             $tradeNo     = $tradeNoOutData[0]['tradeNo'];
             $productName = $tradeNoData[0]['productName'];
             if ($tradeNoOutData[0]['type'] != $converPayType)
-                Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update(['type' => $converPayType]);
+                Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->limit(1)->update(['type' => $converPayType]);
             //改变支付类型
         }
         //解决用户交易号重复问题

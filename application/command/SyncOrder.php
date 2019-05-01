@@ -73,8 +73,8 @@ class SyncOrder extends Command
     {
         for ($i = $callBackCount; $i >= 0; $i--) {
             $isProxy = false;
-            if ($i >= 1)
-                $isProxy = true;
+//            if ($i >= 1)
+//                $isProxy = true;
             $callbackList = Db::table('epay_callback')->where('status', $i)->field('id,url')->cursor();
             foreach ($callbackList as $value) {
                 $result = $this->curl($value['url'], [], 'get', '', '', true, $isProxy);
@@ -129,10 +129,10 @@ class SyncOrder extends Command
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
         curl_setopt($ch, CURLOPT_TIMEOUT, 2);
 
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         //设置允许302转跳
         curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 

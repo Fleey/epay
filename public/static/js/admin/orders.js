@@ -73,10 +73,12 @@ $(function () {
             },
             success: function (data) {
                 if (data['status'] === 0) {
-                    swal(data['msg'], {
-                        buttons: false,
+                    swal({
+                        title: '',
+                        text: data['msg'],
+                        showConfirmButton: false,
                         timer: 1500,
-                        icon: 'warning'
+                        type: 'warning'
                     });
                     return true;
                 }
@@ -102,10 +104,12 @@ $(function () {
                 swal('请求失败', '更改状态失败,请重试', 'error');
                 return;
             }
-            swal('更改状态成功', {
-                buttons: false,
+            swal({
+                title: '',
+                text: '更改状态成功',
+                showConfirmButton: false,
                 timer: 1500,
-                icon: 'success'
+                type: 'success'
             });
             $('span[data-name="isShield"]').text(!status ? '未屏蔽' : '已屏蔽');
             buttonDom.text(status ? '恢复订单' : '屏蔽订单');

@@ -280,7 +280,7 @@ class Index extends Controller
             $data[] = ['createTime' => date('Y-m-d', strtotime('now'))];
             foreach ($data as $key => $value) {
                 $data[$key]['money'] = Db::table('epay_settle')->where(['uid' => $uid])->whereBetweenTime('createTime', $value['createTime'])->sum('money');
-                $data[$key]['fee'] = Db::table('epay_settle')->where(['uid' => $uid])->whereBetweenTime('createTime', $value['createTime'])->sum('fee');
+                $data[$key]['fee']   = Db::table('epay_settle')->where(['uid' => $uid])->whereBetweenTime('createTime', $value['createTime'])->sum('fee');
             }
             return json(['status' => 1, 'data' => $data]);
         }
@@ -433,6 +433,26 @@ class Index extends Controller
             'status'  => $status,
             'endTime' => getDateTime()
         ]);
+        if ($result) {
+            $orderData = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('uid,money')->select();
+            if (empty($orderData)) {
+                trace('更新订单状态时，修改用户余额异常', 'INFO');
+                return json(['status' => 0, 'msg' => '程序异常,请联系管理员处理']);
+            }
+            $orderData = $orderData[0];
+
+            $userInfo = Db::table('epay_user')->where('id', $orderData['uid'])->field('rate')->limit(1)->select();
+
+            $rate         = $userInfo[0]['rate'] / 100;
+            $addMoneyRate = $orderData['money'] * ($rate / 100);
+            //计算费率
+
+            if ($status)
+                Db::table('epay_user')->where('id', $orderData['uid'])->limit(1)->inc('balance', $addMoneyRate * 10)->update();
+            else
+                Db::table('epay_user')->where('id', $orderData['uid'])->limit(1)->dec('balance', $addMoneyRate * 10)->update();
+        }
+        //订单状态确实更新成功
         return json(['status' => $result, 'msg' => '更新订单状态' . ($result ? '成功' : '失败')]);
     }
 
@@ -818,7 +838,7 @@ class Index extends Controller
             return json(['status' => 1, 'data' => []]);
 
         $systemPayConfig['gateway'] = 'http://center.zmz999.com';
-        $centerPayModel    = new CenterPayModel($systemPayConfig);
+        $centerPayModel             = new CenterPayModel($systemPayConfig);
 
         return json(['status' => 1, 'data' => $centerPayModel->getPayApiList(PayModel::converPayName($payType))]);
     }
@@ -868,7 +888,7 @@ class Index extends Controller
             'isShield' => $status
         ]);
         if ($result) {
-            if ($status)
+            if (!$status)
                 Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate * 10)->update();
             else
                 Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->dec('balance', $addMoneyRate * 10)->update();

@@ -144,7 +144,7 @@ class SyncOrder extends Command
             //代理服务器端口
         }
         //set proxy
-        curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
+//        curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
         //gzip
 
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);

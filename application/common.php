@@ -179,7 +179,7 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
         curl_setopt($ch, CURLOPT_PROXYPORT, 8123); //代理服务器端口
         //set proxy
     }
-    curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
+//    curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
     //gzip
 
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);

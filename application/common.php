@@ -175,8 +175,8 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
 
     if ($isProxy) {
         curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-        curl_setopt($ch, CURLOPT_PROXY, '127.0.0.1'); //代理服务器地址
-        curl_setopt($ch, CURLOPT_PROXYPORT, 8123); //代理服务器端口
+        curl_setopt($ch, CURLOPT_PROXY, '43.248.187.89'); //代理服务器地址
+        curl_setopt($ch, CURLOPT_PROXYPORT, 8118); //代理服务器端口
         //set proxy
     }
 //    curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
@@ -547,7 +547,7 @@ function processOrder($tradeNo, $notify = true)
     //必须金额更新成功后才能触发自动结算
     if ($notify) {
         $notifyUrl     = buildCallBackUrl($tradeNo, 'notify');
-        $requestResult = curl($notifyUrl);
+        $requestResult = curl($notifyUrl,[],'get','', '', true, true);
         if ($requestResult === false)
 //            if (curl($notifyUrl, [], '', '', '', true, true) === false)
             addCallBackLog($orderInfo[0]['uid'], $notifyUrl);

@@ -73,8 +73,8 @@ class SyncOrder extends Command
     {
         for ($i = $callBackCount; $i >= 0; $i--) {
             $isProxy = false;
-//            if ($i >= 1)
-//                $isProxy = true;
+            if ($i >= 1)
+                $isProxy = true;
             $callbackList = Db::table('epay_callback')->where('status', $i)->field('id,url')->cursor();
             foreach ($callbackList as $value) {
                 $result = $this->curl($value['url'], [], 'get', '', '', true, $isProxy);
@@ -138,9 +138,9 @@ class SyncOrder extends Command
 
         if ($isProxy) {
             curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-            curl_setopt($ch, CURLOPT_PROXY, '127.0.0.1');
+            curl_setopt($ch, CURLOPT_PROXY, '43.248.187.89');
             //代理服务器地址
-            curl_setopt($ch, CURLOPT_PROXYPORT, 8123);
+            curl_setopt($ch, CURLOPT_PROXYPORT, 8118);
             //代理服务器端口
         }
         //set proxy

@@ -12,6 +12,10 @@ class WxPayModel
         $this->wxConfig = $wxConfig;
     }
 
+    /**
+     * 获取微信OpenCode
+     * @param $returnUrl
+     */
     public function getWxOpenCode($returnUrl)
     {
         $baseUrl = urlencode($returnUrl);
@@ -28,6 +32,11 @@ class WxPayModel
         exit();
     }
 
+    /**
+     * 获取微信OpenID
+     * @param $code
+     * @return string
+     */
     public function getWxOpenid($code)
     {
         $requestData   = [
@@ -40,6 +49,53 @@ class WxPayModel
         if (empty($requestResult['openid']))
             return 'request fail';
         return $requestResult['openid'];
+    }
+
+    /**
+     * 微信订单退款接口
+     * @param string $tradeNo
+     * @param int $money //注意单位为分
+     * @param string $notifyUrl //申请退款回调地址
+     * @return array //成功返回 [true] 失败[false,(String)失败原因]
+     */
+    public function orderRefund(string $tradeNo, int $money, string $notifyUrl = '')
+    {
+        $requestUrl  = 'https://api.mch.weixin.qq.com/secapi/pay/refund';
+        $requestData = [
+            'appid'         => $this->wxConfig['appid'],
+            'mch_id'        => $this->wxConfig['mchid'],
+            'nonce_str'     => getRandChar(32),
+            'out_trade_no'  => $tradeNo,
+            'out_refund_no' => $tradeNo,
+            'total_fee'     => $money,
+            'refund_fee'    => $money
+        ];
+        if (!empty($requestData)) {
+            if (strlen($notifyUrl) > 256)
+                return [false, '回调地址长度不能超过 256 个字符'];
+            $requestData['notify_url'] = $notifyUrl;
+        }
+        $requestData['sign']      = $this->signParam($requestData);
+        $requestData['sign_type'] = $this->signType;
+        $xml                      = arrayToXml($requestData);
+        //build xml
+        $result = curl($requestUrl, [], 'post', $xml, 'xml');
+        dump($xml);
+        if ($result === false)
+            return [false, '请求目标网关失败,请联系管理员处理'];
+        $result = xmlToArray($result);
+        dump($result);
+        if ($this->signParam($result) != $result['sign'])
+            return [false, '签名失败,可能数据被修改,请联系管理员处理'];
+        //检查是否被劫持 验签数据
+        if ($result['return_code'] != 'SUCCESS')
+            return [false, $result['return_msg']];
+        if (!empty($result['err_code']))
+            return [false, '[' . $result['err_code'] . ']' . $result['err_code_des']];
+        if ($result['result_code'] != 'SUCCESS')
+            return [false, '提交业务失败,请重试'];
+
+        return [true];
     }
 
     /**
@@ -72,15 +128,16 @@ class WxPayModel
         $requestData = [
             'appid'     => $this->wxConfig['appid'],
             'mch_id'    => $this->wxConfig['mchid'],
-            'nonce_str' => getRandChar(32)
+            'nonce_str' => getRandChar(32),
         ];
         if ($type == 'out_trade_no')
             $requestData['out_trade_no'] = $orderID;
         else
             $requestData['transaction_id'] = $orderID;
 
-        $requestData['sign'] = $this->signParam($requestData);
-        $xml                 = arrayToXml($requestData);
+        $requestData['sign']      = $this->signParam($requestData);
+        $requestData['sign_type'] = $this->signType;
+        $xml                      = arrayToXml($requestData);
         //build xml
         $result = curl($requestUrl, [], 'post', $xml, 'xml');
         return xmlToArray($result);
@@ -108,8 +165,8 @@ class WxPayModel
             'notify_url'       => $notifyUrl,
             'nonce_str'        => getRandChar(32),
             'product_id'       => md5(time()),
-            'time_start'       => date('YmdHis',time()),
-            'time_expire'      => date('YmdHis', time()+360),
+            'time_start'       => date('YmdHis', time()),
+            'time_expire'      => date('YmdHis', time() + 360),
             'sign_type'        => $this->signType
         ];
         //订单失效6分钟

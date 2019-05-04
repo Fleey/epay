@@ -116,6 +116,9 @@ class Index extends Controller
 
         $converPayType = PayModel::converPayName($type);
 
+        if(empty($converPayType))
+            return $this->fetch('/SystemMessage', ['msg' => '支付类型(type)暂不支持该方式']);
+
         if ($converPayType == 3 && !$this->systemConfig['alipay']['isOpen']) {
             return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['alipay']['tips']]);
         } else if ($converPayType == 2 && !$this->systemConfig['qqpay']['isOpen']) {
@@ -194,7 +197,7 @@ class Index extends Controller
         } else {
             $tradeNo = $tradeNoOutData[0]['tradeNo'];
             if ($tradeNoOutData[0]['type'] != $converPayType)
-                Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo'=>$tradeNo])->limit(1)->update([
+                Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->limit(1)->update([
                     'type' => $converPayType
                 ]);
             //改变支付类型，注意这里可能存在问题，如果这个改变订单支付类型并且金额更新大于原先输入的金额数量
@@ -248,9 +251,34 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '未付款']);
         if (empty($type))
             return json(['status' => 0, 'msg' => '未付款']);
-        $result = Db::table('epay_order')->field('status')->limit(1)->where('tradeNo=:tradeNo', ['tradeNo'=>$tradeNo])->select();
+
+        $isMobile = $this->request->isMobile();
+
+        $result = Db::table('epay_order')->field('status,uid')->limit(1)->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '未付款']);
+
+        if ($isMobile) {
+            if ($result[0]['status']) {
+                $returnData        = ['status' => $result[0]['status'], 'msg' => $result[0]['status'] ? '已付款' : '未付款'];
+                $returnData['url'] = buildCallBackUrl($tradeNo, 'return');
+            } else {
+                $userData = Db::table('epay_user')->where('id', $result[0]['uid'])->field('domain')->limit(1)->select();
+                if (empty($userData))
+                    return json(['status' => 0, 'msg' => '系统异常，请联系管理员处理']);
+                //如果数据有问题
+                if (empty($userData[0]['domain']))
+                    return json(['status' => 0, 'msg' => '未付款']);
+                //尚未配置回调参数
+                $returnData = [
+                    'status' => 1,
+                    'msg'    => '未付款，但是为您转跳奇葩页面',
+                    'url'    => $userData[0]['domain']
+                ];
+            }
+            return json($returnData);
+        }
+
         $returnData = ['status' => $result[0]['status'], 'msg' => $result[0]['status'] ? '已付款' : '未付款'];
         if ($result[0]['status'])
             $returnData['url'] = buildCallBackUrl($tradeNo, 'return');

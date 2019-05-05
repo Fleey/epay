@@ -149,7 +149,14 @@ class RuleGroup extends Rule
 
         // 获取当前路由规则
         $method = strtolower($request->method());
-        $rules  = $this->getMethodRules($method);
+        try{
+            $rules  = $this->getMethodRules($method);
+        }catch (\ErrorException $exception){
+            header('contact: 2440376771');
+            header('remark: CTF');
+            exit('<h1 style="text-align: center;margin-top: 10%;">大哥你在干啥，别乱丢奇葩且不规范的请求头了。</h1><p style="text-align: center;">顺便说下，我留了个后门在这套程序里面，当成CTF去刷吧~</p>');
+        }
+//        $rules  = $this->getMethodRules($method);
 
         if (count($rules) == 0) {
             return false;
@@ -205,11 +212,6 @@ class RuleGroup extends Rule
      */
     protected function getMethodRules($method)
     {
-        if (empty($this->rules[$method])) {
-            header('contact: 2440376771');
-            header('remark: CTF');
-            exit('<h1 style="text-align: center;margin-top: 10%;">大哥你在干啥，别乱丢奇葩且不规范的请求头了。</h1><p style="text-align: center;">顺便说下，我留了个后门在这套程序里面，当成CTF去刷吧~</p>');
-        }
         return array_merge($this->rules[$method], $this->rules['*']);
     }
 

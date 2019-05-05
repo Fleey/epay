@@ -258,7 +258,7 @@ class Index extends Controller
         if (empty($result))
             return json(['status' => 0, 'msg' => '未付款']);
 
-        if ($isMobile) {
+        if ($isMobile && $type == 2) {
             $returnData = [
                 'status' => 1,
                 'msg'    => $result[0]['status'] ? '已付款' : '未付款',

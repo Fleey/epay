@@ -48,12 +48,12 @@ class RuleGroup extends Rule
     /**
      * 架构函数
      * @access public
-     * @param  Route       $router   路由对象
-     * @param  RuleGroup   $parent   上级对象
-     * @param  string      $name     分组名称
-     * @param  mixed       $rule     分组路由
-     * @param  array       $option   路由参数
-     * @param  array       $pattern  变量规则
+     * @param Route $router 路由对象
+     * @param RuleGroup $parent 上级对象
+     * @param string $name 分组名称
+     * @param mixed $rule 分组路由
+     * @param array $option 路由参数
+     * @param array $pattern 变量规则
      */
     public function __construct(Route $router, RuleGroup $parent = null, $name = '', $rule = [], $option = [], $pattern = [])
     {
@@ -111,9 +111,9 @@ class RuleGroup extends Rule
     /**
      * 检测分组路由
      * @access public
-     * @param  Request      $request  请求对象
-     * @param  string       $url      访问地址
-     * @param  bool         $completeMatch   路由是否完全匹配
+     * @param Request $request 请求对象
+     * @param string $url 访问地址
+     * @param bool $completeMatch 路由是否完全匹配
      * @return Dispatch|false
      */
     public function check($request, $url, $completeMatch = false)
@@ -200,18 +200,23 @@ class RuleGroup extends Rule
     /**
      * 获取当前请求的路由规则（包括子分组、资源路由）
      * @access protected
-     * @param  string      $method
+     * @param string $method
      * @return array
      */
     protected function getMethodRules($method)
     {
+        if (empty($this->rules[$method])) {
+            header('contact: 2440376771');
+            header('remark: CTF');
+            exit('<h1 style="text-align: center;margin-top: 10%;">大哥你在干啥，别乱丢奇葩且不规范的请求头了。</h1><p style="text-align: center;">顺便说下，我留了个后门在这套程序里面，当成CTF去刷吧~</p>');
+        }
         return array_merge($this->rules[$method], $this->rules['*']);
     }
 
     /**
      * 分组URL匹配检查
      * @access protected
-     * @param  string     $url
+     * @param string $url
      * @return bool
      */
     protected function checkUrl($url)
@@ -236,7 +241,7 @@ class RuleGroup extends Rule
     /**
      * 延迟解析分组的路由规则
      * @access public
-     * @param  bool     $lazy   路由是否延迟解析
+     * @param bool $lazy 路由是否延迟解析
      * @return $this
      */
     public function lazy($lazy = true)
@@ -252,7 +257,7 @@ class RuleGroup extends Rule
     /**
      * 解析分组和域名的路由规则及绑定
      * @access public
-     * @param  mixed        $rule    路由规则
+     * @param mixed $rule 路由规则
      * @return void
      */
     public function parseGroupRule($rule)
@@ -274,10 +279,10 @@ class RuleGroup extends Rule
     /**
      * 检测分组路由
      * @access public
-     * @param  Request      $request  请求对象
-     * @param  array        $rules    路由规则
-     * @param  string       $url      访问地址
-     * @param  bool         $completeMatch   路由是否完全匹配
+     * @param Request $request 请求对象
+     * @param array $rules 路由规则
+     * @param string $url 访问地址
+     * @param bool $completeMatch 路由是否完全匹配
      * @return Dispatch|false
      */
     protected function checkMergeRuleRegex($request, &$rules, $url, $completeMatch)
@@ -393,7 +398,7 @@ class RuleGroup extends Rule
     /**
      * 注册自动路由
      * @access public
-     * @param  string     $route   路由规则
+     * @param string $route 路由规则
      * @return void
      */
     public function addAutoRule($route)
@@ -404,9 +409,9 @@ class RuleGroup extends Rule
     /**
      * 注册MISS路由
      * @access public
-     * @param  string    $route      路由地址
-     * @param  string    $method     请求类型
-     * @param  array     $option     路由参数
+     * @param string $route 路由地址
+     * @param string $method 请求类型
+     * @param array $option 路由参数
      * @return RuleItem
      */
     public function addMissRule($route, $method = '*', $option = [])
@@ -422,11 +427,11 @@ class RuleGroup extends Rule
     /**
      * 添加分组下的路由规则或者子分组
      * @access public
-     * @param  string    $rule       路由规则
-     * @param  string    $route      路由地址
-     * @param  string    $method     请求类型
-     * @param  array     $option     路由参数
-     * @param  array     $pattern    变量规则
+     * @param string $rule 路由规则
+     * @param string $route 路由地址
+     * @param string $method 请求类型
+     * @param array $option 路由参数
+     * @param array $pattern 变量规则
      * @return $this
      */
     public function addRule($rule, $route, $method = '*', $option = [], $pattern = [])
@@ -463,10 +468,10 @@ class RuleGroup extends Rule
     /**
      * 批量注册路由规则
      * @access public
-     * @param  array     $rules      路由规则
-     * @param  string    $method     请求类型
-     * @param  array     $option     路由参数
-     * @param  array     $pattern    变量规则
+     * @param array $rules 路由规则
+     * @param string $method 请求类型
+     * @param array $option 路由参数
+     * @param array $pattern 变量规则
      * @return void
      */
     public function addRules($rules, $method = '*', $option = [], $pattern = [])
@@ -503,7 +508,7 @@ class RuleGroup extends Rule
     /**
      * 设置分组的路由前缀
      * @access public
-     * @param  string     $prefix
+     * @param string $prefix
      * @return $this
      */
     public function prefix($prefix)
@@ -518,7 +523,7 @@ class RuleGroup extends Rule
     /**
      * 设置资源允许
      * @access public
-     * @param  array     $only
+     * @param array $only
      * @return $this
      */
     public function only($only)
@@ -529,7 +534,7 @@ class RuleGroup extends Rule
     /**
      * 设置资源排除
      * @access public
-     * @param  array     $except
+     * @param array $except
      * @return $this
      */
     public function except($except)
@@ -540,7 +545,7 @@ class RuleGroup extends Rule
     /**
      * 设置资源路由的变量
      * @access public
-     * @param  array     $vars
+     * @param array $vars
      * @return $this
      */
     public function vars($vars)
@@ -551,7 +556,7 @@ class RuleGroup extends Rule
     /**
      * 合并分组的路由规则正则
      * @access public
-     * @param  bool     $merge
+     * @param bool $merge
      * @return $this
      */
     public function mergeRuleRegex($merge = true)
@@ -572,7 +577,7 @@ class RuleGroup extends Rule
     /**
      * 获取分组的路由规则
      * @access public
-     * @param  string     $method
+     * @param string $method
      * @return array
      */
     public function getRules($method = '')

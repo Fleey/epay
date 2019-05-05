@@ -135,8 +135,8 @@ class WxPayModel
         else
             $requestData['transaction_id'] = $orderID;
 
-        $requestData['sign']      = $this->signParam($requestData);
         $requestData['sign_type'] = $this->signType;
+        $requestData['sign']      = $this->signParam($requestData);
         $xml                      = arrayToXml($requestData);
         //build xml
         $result = curl($requestUrl, [], 'post', $xml, 'xml');

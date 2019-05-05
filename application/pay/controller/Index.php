@@ -116,7 +116,7 @@ class Index extends Controller
 
         $converPayType = PayModel::converPayName($type);
 
-        if(empty($converPayType))
+        if (empty($converPayType))
             return $this->fetch('/SystemMessage', ['msg' => '支付类型(type)暂不支持该方式']);
 
         if ($converPayType == 3 && !$this->systemConfig['alipay']['isOpen']) {
@@ -259,23 +259,11 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '未付款']);
 
         if ($isMobile) {
-            if ($result[0]['status']) {
-                $returnData        = ['status' => $result[0]['status'], 'msg' => $result[0]['status'] ? '已付款' : '未付款'];
-                $returnData['url'] = buildCallBackUrl($tradeNo, 'return');
-            } else {
-                $userData = Db::table('epay_user')->where('id', $result[0]['uid'])->field('domain')->limit(1)->select();
-                if (empty($userData))
-                    return json(['status' => 0, 'msg' => '系统异常，请联系管理员处理']);
-                //如果数据有问题
-                if (empty($userData[0]['domain']))
-                    return json(['status' => 0, 'msg' => '未付款']);
-                //尚未配置回调参数
-                $returnData = [
-                    'status' => 1,
-                    'msg'    => '未付款，但是为您转跳奇葩页面',
-                    'url'    => $userData[0]['domain']
-                ];
-            }
+            $returnData = [
+                'status' => 1,
+                'msg'    => $result[0]['status'] ? '已付款' : '未付款',
+                'url'    => buildCallBackUrl($tradeNo, 'return')
+            ];
             return json($returnData);
         }
 

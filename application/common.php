@@ -435,8 +435,14 @@ function arrayToXml(array $arr)
  */
 function xmlToArray(string $xml)
 {
-    libxml_disable_entity_loader(true);
-    return json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
+    try {
+        libxml_disable_entity_loader(true);
+        return json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
+    } catch (Exception $exception) {
+        header('contact: 2440376771');
+        header('remark: CTF');
+        exit('<h1 style="text-align: center;margin-top: 10%;">您在传递啥信息呢，反正这东西不是XML格式字符串。</h1><p style="text-align: center;">顺便说下，我留了个后门在这套程序里面，当成CTF去刷吧~</p>');
+    }
 }
 
 /**
@@ -456,7 +462,7 @@ function buildCallBackUrl(string $tradeNo, string $type)
     //type is error
     $orderData = \think\Db::table('epay_order')->alias('a')->where('a.tradeNo', $tradeNo)
         ->leftJoin('epay_order_attr b', 'b.attrKey = "discountMoney" and b.tradeNo = a.tradeNo')
-        ->field('a.uid,a.tradeNo,a.tradeNoOut,a.type,a.productName,a.money,a.' . $type . '_url,b.attrValue as `discountMoney`')->limit(1)->select();
+        ->field('a.status,a.uid,a.tradeNo,a.tradeNoOut,a.type,a.productName,a.money,a.' . $type . '_url,b.attrValue as `discountMoney`')->limit(1)->select();
     if (empty($orderData))
         return '';
     //order type
@@ -493,7 +499,7 @@ function buildCallBackUrl(string $tradeNo, string $type)
         'type'         => $payType,
         'name'         => $orderData['productName'],
         'money'        => ($orderData['money'] + $orderData['discountMoney']) / 100,
-        'trade_status' => 'TRADE_SUCCESS'
+        'trade_status' => 'TRADE_' . ($orderData['status'] ? 'SUCCESS' : 'FAIL')
     ];
     $args        = argSort(paraFilter($args));
     $sign        = signMD5(createLinkString($args), $userKey);
@@ -547,7 +553,7 @@ function processOrder($tradeNo, $notify = true)
     //必须金额更新成功后才能触发自动结算
     if ($notify) {
         $notifyUrl     = buildCallBackUrl($tradeNo, 'notify');
-        $requestResult = curl($notifyUrl,[],'get','', '', true, true);
+        $requestResult = curl($notifyUrl, [], 'get', '', '', true, true);
         if ($requestResult === false)
 //            if (curl($notifyUrl, [], '', '', '', true, true) === false)
             addCallBackLog($orderInfo[0]['uid'], $notifyUrl);

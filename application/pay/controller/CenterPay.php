@@ -36,7 +36,7 @@ class CenterPay extends Controller
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
         if ($result[0]['status'])
-            return $this->fetch('/SystemMessage', ['msg' => '交易已经完成无法再次支付！']);
+            return redirect(buildCallBackUrl($tradeNo));
 
         $payName = PayModel::converPayName($result[0]['type'], true);
         if (empty($this->systemConfig[$payName]))

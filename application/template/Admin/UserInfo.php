@@ -338,6 +338,13 @@
                                 </div>
                             </div>
                         </div>
+                        <div>
+                            <label class="control-label">取消支付是否返回原页面（仅手机访问有效）</label>
+                            <select class="form-control" data-name="isCancelReturn">
+                                <option value="false">关闭</option>
+                                <option value="true">开启</option>
+                            </select>
+                        </div>
                     </div>
                 </form>
             </div>

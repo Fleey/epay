@@ -194,6 +194,7 @@ $(function () {
             });
             payConfigData[dom.attr('data-name')] = tempData;
         });
+        payConfigData['isCancelReturn'] = $('select[data-name="isCancelReturn"]').val() === 'true';
         requestData['payConfig'] = JSON.stringify(payConfigData);
 
         var discountsData = {};
@@ -332,6 +333,7 @@ $(function () {
         $('#setPayConfig [data-name="wxpay"] [data-value="isOpen"]').val(1);
         $('#setPayConfig [data-name="qqpay"] [data-value="isOpen"]').val(1);
         $('#setPayConfig [data-name="bankpay"] [data-value="isOpen"]').val(1);
+        $('select[data-name="isCancelReturn"]').val('false');
 
         $('#setPayConfig [data-value="payAisle"]').html('<option value="0" selected = "selected">没有更多选项</option>').attr('disabled', 'disabled');
     });
@@ -435,9 +437,9 @@ $(function () {
                             setDataNameInfo('orderDiscountsType', value['type']);
                             setDataNameInfo('orderDiscountsMinMoney', value['minMoney']);
                             $('.orderDiscountsMoneyList').html('');
-                            if (value['moneyList'].length === 0){
+                            if (value['moneyList'].length === 0) {
                                 addDiscountsMoneyList('');
-                            }else {
+                            } else {
                                 $.each(value['moneyList'], function (key1, value1) {
                                     addDiscountsMoneyList(value1);
                                 });
@@ -453,7 +455,6 @@ $(function () {
                             $('#setPayConfig [data-name="wxpay"] [data-value="isOpen"]').val(1);
                             $('#setPayConfig [data-name="qqpay"] [data-value="isOpen"]').val(1);
                             $('#setPayConfig [data-name="bankpay"] [data-value="isOpen"]').val(1);
-
                             $('#setPayConfig [data-value="payAisle"]').html('<option value="0" selected = "selected">没有更多选项</option>').attr('disabled', 'disabled');
                         } else {
                             $.each(value, function (key1, value1) {

@@ -363,6 +363,9 @@ class Index extends Controller
         $data['payConfig'] = getPayUserAttr($uid, 'payConfig');
         if ($data['payConfig'] != '')
             $data['payConfig'] = unserialize($data['payConfig']);
+        $data['isCancelReturn'] = getPayUserAttr($uid, 'isCancelReturn');
+        if ($data['isCancelReturn'] == '')
+            $data['isCancelReturn'] = 'false';
 
         if ($data['clearType'] == 5 || $data['clearType'] == 6)
             $data['qrFileID'] = getPayUserAttr($uid, 'qrFileID');
@@ -680,6 +683,8 @@ class Index extends Controller
             $data = json_decode($payConfig, true);
             if (empty($data))
                 return json(['status' => 1, 'msg' => '新增用户成功,但是支付配置功能异常']);
+            setPayUserAttr($result, 'isCancelReturn', $data['isCancelReturn'] ? 'true' : 'false');
+            unset($data['isCancelReturn']);
             setPayUserAttr($result, 'payConfig', serialize($data));
         }
 
@@ -816,6 +821,8 @@ class Index extends Controller
             $data = json_decode($payConfig, true);
             if (empty($data))
                 return json(['status' => 1, 'msg' => '新增用户成功,但是支付配置功能异常']);
+            setPayUserAttr($uid, 'isCancelReturn', $data['isCancelReturn'] ? 'true' : 'false');
+            unset($data['isCancelReturn']);
             setPayUserAttr($uid, 'payConfig', serialize($data));
         }
         return json(['status' => 1, 'msg' => '保存用户信息成功']);

@@ -259,12 +259,16 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '未付款']);
 
         if ($isMobile && $type == 1) {
-            $returnData = [
-                'status' => 1,
-                'msg'    => $result[0]['status'] ? '已付款' : '未付款',
-                'url'    => buildCallBackUrl($tradeNo, 'return')
-            ];
-            return json($returnData);
+            $isOpenCancelReturn = getPayUserAttr($result[0]['uid'], 'isCancelReturn');
+            $isOpenCancelReturn = $isOpenCancelReturn == 'true';
+            if ($isOpenCancelReturn) {
+                $returnData = [
+                    'status' => 1,
+                    'msg'    => $result[0]['status'] ? '已付款' : '未付款',
+                    'url'    => buildCallBackUrl($tradeNo, 'return')
+                ];
+                return json($returnData);
+            }
         }
 
         $returnData = ['status' => $result[0]['status'], 'msg' => $result[0]['status'] ? '已付款' : '未付款'];

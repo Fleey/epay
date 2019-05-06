@@ -41,7 +41,7 @@
 <script>
     var isSafari = navigator.userAgent.indexOf("Safari") > -1;
     var code_url = '<?php echo $codeUrl?>';
-    var tencentSeries = 'mqqapi://forward/url?src_type=web&style=default&=1&version=1&url_prefix=' + window.btoa(code_url);
+    var tencentSeries = 'mqqapi://forward/url?src_type=web&souce=qq.com&version=1&url_prefix=' + window.btoa(code_url);
     if (isSafari) {
         location.href = tencentSeries;
     } else {
@@ -82,8 +82,9 @@
             }
         });
     }
-
-    window.onload = getOrderStatus();
+    $(document).ready(function(){
+        getOrderStatus();
+    });
 </script>
 </body>
 </html>

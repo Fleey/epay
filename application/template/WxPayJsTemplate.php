@@ -80,7 +80,7 @@
                             layer.msg('支付成功，正在跳转中...', {icon: 16, shade: 0.01, time: 15000});
                             setTimeout(window.location.href = data['url'], 1000);
                         } else {
-                            setTimeout('getOrderStatus()', 4000);
+                            setTimeout('getOrderStatus()', 2000);
                         }
                     },
                     //Ajax请求超时，继续查询
@@ -88,7 +88,7 @@
                         if (textStatus === 'timeout') {
                             setTimeout('getOrderStatus()', 1000);
                         } else { //异常
-                            setTimeout('getOrderStatus()', 4000);
+                            setTimeout('getOrderStatus()', 2000);
                         }
                     }
                 });

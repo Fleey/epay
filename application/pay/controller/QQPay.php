@@ -47,7 +47,7 @@ class QQPay extends Controller
         if ($result[0]['type'] != 2)
             return $this->fetch('/SystemMessage', ['msg' => '支付方式有误！']);
         if ($result[0]['status'])
-            return redirect(buildCallBackUrl($tradeNo));
+            return redirect(buildCallBackUrl($tradeNo, 'return'));
 
         $apiType = 0;
         $userPayConfig = unserialize(getPayUserAttr($result[0]['uid'], 'payConfig'));

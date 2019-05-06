@@ -28,9 +28,10 @@ class SyncOrder extends Command
 //        $this->delFailOrder();
 //        $output->info('end delete fail order');
 
-        $output->info(' start call back order');
-        $this->supplyOrder(2);
-        $output->info('end call back order');
+//        $output->info(' start call back order');
+//        $this->supplyOrder(2);
+//        $output->info('end call back order');
+        //不再使用php自动补单了，太慢了
     }
 
     /**
@@ -93,7 +94,7 @@ class SyncOrder extends Command
 
     private function delFailOrder()
     {
-        Db::table('epay_order')->where('status', 0)->whereTime('createTime', '<=','-2 day')->delete();
+        Db::table('epay_order')->where('status', 0)->whereTime('createTime', '<=', '-2 day')->delete();
     }
 
     private function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlEncode = true, $isProxy = false)

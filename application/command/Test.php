@@ -4,6 +4,7 @@ namespace app\command;
 
 
 use app\pay\model\CenterPayModel;
+use app\pay\model\PayModel;
 use app\pay\model\WxPayModel;
 use think\console\Command;
 use think\console\Input;
@@ -21,7 +22,7 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-
+        dump(PayModel::setOrderAttr("2019050714555750439",'233','0'));
         // 指令输出
     }
 

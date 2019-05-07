@@ -193,10 +193,10 @@ class PayModel
      */
     public static function setOrderAttr(string $tradeNo, string $attrKey, string $attrValue)
     {
-        if (empty($tradeNo) || empty($attrKey) || empty($attrValue))
+        if (empty($tradeNo) || empty($attrKey))
             return false;
 
-        $selectResult = self::getOrderAttr($tradeNo, 'id');
+        $selectResult = self::getOrderAttr($tradeNo, $attrKey, 'id');
         if ($selectResult == '') {
             $insetID = Db::table('epay_order_attr')->insertGetId([
                 'tradeNo'    => $tradeNo,

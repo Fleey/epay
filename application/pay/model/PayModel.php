@@ -158,4 +158,62 @@ class PayModel
         return verifyMD5(createLinkString(argSort(paraFilter($data))), $key, $sign);
     }
 
+    /**
+     * @param string $tradeNo
+     * @param string $attrKey
+     * @param string $field
+     * @return string
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public static function getOrderAttr(string $tradeNo, string $attrKey, string $field = 'attrValue')
+    {
+        if (empty($tradeNo) || empty($attrKey))
+            return '';
+        $selectResult = Db::table('epay_order_attr')->where([
+            'tradeNo' => $tradeNo,
+            'attrKey' => $attrKey
+        ])->limit(1)->field($field)->select();
+        if (empty($selectResult))
+            return '';
+        return $selectResult[0][$field];
+    }
+
+    /**
+     * @param string $tradeNo
+     * @param string $attrKey
+     * @param string $attrValue
+     * @return bool|int|string
+     * @throws Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     * @throws \think\exception\PDOException
+     */
+    public static function setOrderAttr(string $tradeNo, string $attrKey, string $attrValue)
+    {
+        if (empty($tradeNo) || empty($attrKey) || empty($attrValue))
+            return false;
+
+        $selectResult = self::getOrderAttr($tradeNo, 'id');
+        if ($selectResult == '') {
+            $insetID = Db::table('epay_order_attr')->insertGetId([
+                'tradeNo'    => $tradeNo,
+                'attrKey'    => $attrKey,
+                'attrValue'  => $attrValue,
+                'createTime' => getDateTime()
+            ]);
+        } else {
+            $insertResult = Db::table('epay_order_attr')->where([
+                'tradeNo' => $tradeNo,
+                'attrKey' => $attrKey
+            ])->limit(1)->update([
+                'attrValue' => $attrValue
+            ]);
+            $insetID      = $insertResult ? $selectResult : 0;
+        }
+        return $insetID;
+    }
+
 }

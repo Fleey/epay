@@ -553,9 +553,8 @@ function processOrder($tradeNo, $notify = true)
     //必须金额更新成功后才能触发自动结算
     if ($notify) {
         $notifyUrl     = buildCallBackUrl($tradeNo, 'notify');
-        $requestResult = curl($notifyUrl, [], 'get', '', '', true, true);
+        $requestResult = curl($notifyUrl);
         if ($requestResult === false)
-//            if (curl($notifyUrl, [], '', '', '', true, true) === false)
             addCallBackLog($orderInfo[0]['uid'], $notifyUrl);
         //回调事件
 //        trace('日志信息: 请求结果 => '.$requestResult .' 请求url =>' .$notifyUrl,'info');

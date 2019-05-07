@@ -2,14 +2,42 @@
 
 namespace app\pay\model;
 
+use think\Exception;
+
 class WxPayModel
 {
     private $wxConfig;
     private $signType = 'MD5';
+    private $appID = '';
+    private $mchID = '';
+    private $key = '';
 
-    public function __construct(array $wxConfig)
+
+    /**
+     * WxPayModel constructor.
+     * @param array $wxConfig
+     * @param string $payType //h5 仅H5 jsapi 仅jsapi
+     * @throws Exception
+     */
+    public function __construct(array $wxConfig, $payType = 'h5')
     {
         $this->wxConfig = $wxConfig;
+        if ($payType == 'h5') {
+            $this->appID = $wxConfig['appid'];
+            $this->mchID = $wxConfig['mchid'];
+            $this->key   = $wxConfig['key'];
+        } else if ($payType == 'jsapi') {
+            $this->appID = $wxConfig['jsApiAppid'];
+            $this->mchID = $wxConfig['jsApiMchid'];
+            $this->key   = $wxConfig['jsApiKey'];
+        } else {
+            trace('参数异常没填');
+            throw new Exception('您丢的参数有误');
+        }
+
+        if (empty($this->appID) || empty($this->mchID) || empty($this->key))
+            throw new Exception('您丢的参数有误，1001');
+        //check data
     }
 
     /**
@@ -21,7 +49,7 @@ class WxPayModel
         $baseUrl = urlencode($returnUrl);
         //获取当前请求连接与参数
         $requestData = [
-            'appid'         => $this->wxConfig['appid'],
+            'appid'         => $this->wxConfig['jsApiAppSecret'],
             'redirect_uri'  => $baseUrl,
             'response_type' => 'code',
             'scope'         => 'snsapi_base',
@@ -40,8 +68,8 @@ class WxPayModel
     public function getWxOpenid($code)
     {
         $requestData   = [
-            'appid'      => $this->wxConfig['appid'],
-            'secret'     => $this->wxConfig['appSecret'],
+            'appid'      => $this->wxConfig['jsApiAppid'],
+            'secret'     => $this->wxConfig['jsApiAppSecret'],
             'code'       => $code,
             'grant_type' => 'authorization_code'
         ];
@@ -126,8 +154,8 @@ class WxPayModel
             return false;
         $requestUrl  = 'https://api.mch.weixin.qq.com/pay/orderquery';
         $requestData = [
-            'appid'     => $this->wxConfig['appid'],
-            'mch_id'    => $this->wxConfig['mchid'],
+            'appid'     => $this->appID,
+            'mch_id'    => $this->mchID,
             'nonce_str' => getRandChar(32),
         ];
         if ($type == 'out_trade_no')
@@ -155,8 +183,8 @@ class WxPayModel
     {
         $requestUrl  = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
         $requestData = [
-            'appid'            => $this->wxConfig['appid'],
-            'mch_id'           => $this->wxConfig['mchid'],
+            'appid'            => $this->appID,
+            'mch_id'           => $this->mchID,
             'body'             => '商品支付-' . md5($tradeData['productName']),
             'out_trade_no'     => $tradeData['tradeNo'],
             'total_fee'        => $tradeData['money'],
@@ -192,12 +220,12 @@ class WxPayModel
     {
         ksort($param);
         $stringA = $this->buildUrlParam($param);
-        $stringA .= '&key=' . $this->wxConfig['key'];
+        $stringA .= '&key=' . $this->key;
         //排序并组合字符串
         if ($this->signType == 'MD5') {
             $stringA = md5($stringA);
         } else {
-            $stringA = hash_hmac('sha256', $stringA, $this->wxConfig['key']);
+            $stringA = hash_hmac('sha256', $stringA, $this->key);
         }
         return strtoupper($stringA);
     }

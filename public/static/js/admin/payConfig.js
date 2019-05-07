@@ -16,6 +16,8 @@ $(function () {
     });
     $('div[data-config-name] select[data-name="apiType"]').change(function () {
         var parentDom = $(this).parent().parent();
+        if (!parentDom.is('.card-body'))
+            parentDom = parentDom.parent().parent();
         parentDom.find('[data-api-type]').hide();
         parentDom.find('[data-api-type="' + $(this).val() + '"]').show();
     });
@@ -27,7 +29,7 @@ $(function () {
             var dom = $(value);
             var keyName = dom.attr('data-name');
             var configValue = dom.val();
-            if (keyName !== 'apiType' && keyName !== 'epayCenterUid') {
+            if (keyName !== 'apiType' && keyName !== 'apiMode' && keyName !== 'epayCenterUid') {
                 if (configValue === '0' || configValue === '1') {
                     configValue = configValue !== '0';
                 }

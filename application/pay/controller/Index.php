@@ -187,7 +187,6 @@ class Index extends Controller
 
             if ($orderDiscountMoney != 0)
                 Db::table('epay_order_attr')->insert([
-                    'uid'        => $uid,
                     'tradeNo'    => $tradeNo,
                     'attrKey'    => 'discountMoney',
                     'attrValue'  => $orderDiscountMoney,

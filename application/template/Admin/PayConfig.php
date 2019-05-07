@@ -73,12 +73,27 @@
             <div class="card">
                 <div class="card-body" data-config-name="wxpay">
                     <h5 class="card-title">微信接口配置</h5>
-                    <div class="form-group">
-                        <label for="partner">接口类型</label>
-                        <select class="form-control" data-name="apiType">
-                            <option value="0">原生接口</option>
-                            <option value="1">易支付中央系统</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner">接口类型</label>
+                                <select class="form-control" data-name="apiType">
+                                    <option value="0">原生接口（H5支付）</option>
+                                    <option value="2">原生接口（JsAPI支付）</option>
+                                    <option value="1">易支付中央系统</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner">支付模式</label>
+                                <select class="form-control" data-name="apiMode">
+                                    <option value="0">H5支付与JsAPI支付共存</option>
+                                    <option value="1">仅H5支付</option>
+                                    <option value="2">仅JsAPI支付</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="partner">是否开启接口</label>
@@ -109,9 +124,28 @@
                                 设置地址：https://pay.weixin.qq.com/index.php/account/api_cert
                             </small>
                         </div>
+                    </div>
+                    <div data-api-type="2" style="display: none;">
+                        <div class="form-group">
+                            <label for="appid">APPID</label>
+                            <input type="text" class="form-control" data-name="jsApiAppid" placeholder="请输入应用ID">
+                            <small class="form-text text-muted">绑定支付的APPID（必须配置，开户邮件中可查看）</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="MCHID">MCHID</label>
+                            <input type="text" class="form-control" data-name="jsApiMchid" placeholder="请输入商户号">
+                            <small class="form-text text-muted">商户号（必须配置，开户邮件中可查看）</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="key">商户支付密钥</label>
+                            <input type="text" class="form-control" data-name="jsApiKey" placeholder="请输入商户支付密钥">
+                            <small class="form-text text-muted">商户支付密钥，参考开户邮件设置（必须配置，登录商户平台自行设置）
+                                设置地址：https://pay.weixin.qq.com/index.php/account/api_cert
+                            </small>
+                        </div>
                         <div class="form-group">
                             <label for="appSecret">AppSecret</label>
-                            <input type="text" class="form-control" data-name="appSecret" placeholder="公众帐号secert">
+                            <input type="text" class="form-control" data-name="jsApiAppSecret" placeholder="公众帐号secert">
                             <small class="form-text text-muted">公众帐号secert（仅JSAPI支付的时候需要配置， 登录公众平台，进入开发者中心可设置）
                                 获取地址：<a href="https://mp.weixin.qq.com/advanced/advanced?action=dev&t=advanced/dev&token=2005451881&lang=zh_CN"
                                         target="_blank">点击进入</a>

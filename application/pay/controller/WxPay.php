@@ -132,8 +132,9 @@ class WxPay extends Controller
                 $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
                 //init pay model
                 return $this->fetch('/WxPayJsTemplate', [
-                    'jsApiParam' => $wxPayModel->buildJsApiParam($requestResult),
-                    'tradeNo'    => $tradeNo
+                    'jsApiParam'     => $wxPayModel->buildJsApiParam($requestResult),
+                    'tradeNo'        => $tradeNo,
+                    'cancelCallback' => buildCallBackUrl($tradeNo, 'return')
                 ]);
             } else if ($this->request->isMobile()) {
                 if ($wxPayMode == 2)

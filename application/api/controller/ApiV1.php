@@ -264,7 +264,7 @@ class ApiV1 extends Controller
         }
         //解决用户交易号重复问题
         if ($type == 'wxpay') {
-            $wxPayModel    = new WxPayModel($this->systemConfig['wxpay']);
+            $wxPayModel    = new WxPayModel($this->systemConfig['wxpay'],'h5');
             $requestResult = $wxPayModel->sendPayRequest([
                 'money'       => ($money / 100),
                 'tradeNo'     => $tradeNo,

@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta charset="utf-8"/>
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-    <meta name="renderer" content="webkit" />
+    <meta name="renderer" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link href="https://cdn.staticfile.org/ionic/1.3.2/css/ionic.min.css" rel="stylesheet"/>
 </head>
@@ -31,8 +31,12 @@
                     function (res) {
                         if (res['err_msg'] === 'get_brand_wcpay_request:ok') {
                             getOrderStatus();
+                        } else if (res['err_msg'] === 'get_brand_wcpay_request:cancel' || res['err_msg'] === 'get_brand_wcpay_request:fail') {
+                            layer.msg('取消支付，正在转跳回商户页面...', {icon: 16, shade: 0.01, time: 15000});
+                            setTimeout(window.location.href = '<?php echo $cancelCallback; ?>', 1000);
+                        } else {
+                            WeixinJSBridge.log('您似乎遇到了错误,请截图本页面联系管理员 ' + res.err_msg);
                         }
-                        //WeixinJSBridge.log(res.err_msg);
                     }
                 );
             }
@@ -93,6 +97,7 @@
                     }
                 });
             }
+
             window.onload = callPay();
         </script>
     </div>

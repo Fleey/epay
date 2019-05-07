@@ -49,7 +49,7 @@ class WxPayModel
         $baseUrl = urlencode($returnUrl);
         //获取当前请求连接与参数
         $requestData = [
-            'appid'         => $this->wxConfig['jsApiAppSecret'],
+            'appid'         => $this->wxConfig['jsApiAppid'],
             'redirect_uri'  => $baseUrl,
             'response_type' => 'code',
             'scope'         => 'snsapi_base',

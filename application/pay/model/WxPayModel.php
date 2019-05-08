@@ -185,7 +185,7 @@ class WxPayModel
         $requestData = [
             'appid'            => $this->appID,
             'mch_id'           => $this->mchID,
-            'body'             => '商品支付-' . md5($tradeData['productName']),
+            'body'             => '商品支付-投诉联系->' . $tradeData['productName'],
             'out_trade_no'     => $tradeData['tradeNo'],
             'total_fee'        => $tradeData['money'],
             'spbill_create_ip' => getClientIp(),

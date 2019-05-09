@@ -97,6 +97,9 @@ class SearchTable
         foreach ($result as $item) {
             $data1 = [];
             foreach ($item as $key => $item1) {
+                if($this->searchTable == 'epay_user')
+                    if($key == 'balance')
+                        $item1 = intval($item1);
                 if ($key == 'tradeNo')
                     $data1[] = (string)$item1;
                 else

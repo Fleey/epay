@@ -899,6 +899,7 @@ class Index extends Controller
                 Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate * 10)->update();
             else
                 Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->dec('balance', $addMoneyRate * 10)->update();
+            trace('[屏蔽订单记录] status => ' . ($status ? '屏蔽' : '恢复') . ' tradeNo => ' . $tradeNo . ' uid => ' . $orderInfo[0]['uid'] . ' money => ' . (($addMoneyRate * 10) / 1000), 'info');
         }
         //订单状态更新成功才操作这个
         return json(['status' => $result, 'msg' => '更新状态' . ($result ? '成功' : '失败')]);

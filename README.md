@@ -13,11 +13,18 @@ cd /www/wwwroot/网站目录
 php think deleteRecord
 ```
 
-每隔3分钟执行  系统订单统计与补单
+每隔3分钟执行  系统订单统计
 ```code
 #!/bin/sh
 cd  /www/wwwroot/网站目录
 php think syncOrder
+```
+
+每隔1分钟执行 自动补单
+```code
+#!/bin/sh
+cd /home
+java -jar autoCallback.jar --database-port=3306 --database-host=数据库地址 --database-name=数据库名 --database-username=数据库账号 --database-password=数据库密码 --callback-count=自动补发次数
 ```
 
 每 1时1分 执行 系统结算

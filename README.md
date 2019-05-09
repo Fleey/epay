@@ -1,4 +1,12 @@
-安装方法
+易支付
+--------
+
+本系统完美支持 `支付宝` `微信` `QQ钱包` 原生支付
+
+同时可使用易中央支付系统`承接其他支付系统`
+
+
+## 安装方法
 
 直接删除网站目录下/config/install.lock文件
 
@@ -34,3 +42,16 @@ java -jar autoCallback.jar --database-port=3306 --database-host=数据库地址 
 cd  /www/wwwroot/网站目录
 php think settle
 ```
+
+用户控制台
+> http://域名地址/user
+
+
+后台地址
+> http://域名地址/admin
+
+测试支付地址
+> http://域名地址/test
+
+
+### 界面展示

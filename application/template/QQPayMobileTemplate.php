@@ -2,6 +2,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>QQ钱包支付</title>
     <link href="/static/css/qq/mqq_pay.css?v=1" rel="stylesheet" media="screen">
     <link href="/static/css/resource/bootstrap.min.css" rel="stylesheet"/>
@@ -36,6 +37,7 @@
         </div>
     </div>
 </div>
+<script src="/static/js/qq/qrcode.min.js"></script>
 <script src="/static/js/qq/qcloud_util.js"></script>
 <script src="/static/js/layer/layer.js"></script>
 <script>

@@ -11,7 +11,7 @@
  Target Server Version : 50553
  File Encoding         : 65001
 
- Date: 03/04/2019 09:52:25
+ Date: 09/05/2019 09:32:45
 */
 
 SET NAMES utf8mb4;
@@ -31,7 +31,7 @@ CREATE TABLE `epay_callback`  (
   `updateTime` datetime NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `status`(`status`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
+) ENGINE = InnoDB AUTO_INCREMENT = 80495 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
 -- ----------------------------
 -- Table structure for epay_config
@@ -43,7 +43,7 @@ CREATE TABLE `epay_config`  (
   `value` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '参数内容',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `key`(`key`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1339 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
 -- ----------------------------
 -- Table structure for epay_file_info
@@ -58,7 +58,7 @@ CREATE TABLE `epay_file_info`  (
   `createTime` datetime NOT NULL COMMENT 'createTime',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `hash`(`hash`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
 -- ----------------------------
 -- Table structure for epay_log
@@ -74,7 +74,7 @@ CREATE TABLE `epay_log`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `uid`(`uid`) USING BTREE,
   INDEX `type`(`uid`, `type`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1072 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
+) ENGINE = InnoDB AUTO_INCREMENT = 5171 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
 -- ----------------------------
 -- Table structure for epay_order
@@ -90,7 +90,7 @@ CREATE TABLE `epay_order`  (
   `money` bigint(20) NOT NULL COMMENT '支付金额\r\n默认两位小数\r\n1元 = 100',
   `type` int(2) UNSIGNED NOT NULL COMMENT '支付类型\r\n0 未知支付方式\r\n1 微信支付\r\n2 腾讯财付通支付\r\n3 支付宝支付',
   `productName` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '商品名称',
-  `ipv4` varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '客户访问ipv4地址',
+  `ipv4` varchar(46) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '客户访问ipv4 or ipv6地址',
   `status` int(1) NOT NULL DEFAULT 0 COMMENT '订单状态 0 未支付 1 已支付',
   `isShield` bit(1) NULL DEFAULT b'0' COMMENT '是否被屏蔽订单',
   `createTime` datetime NOT NULL COMMENT '订单创建时间',
@@ -100,12 +100,13 @@ CREATE TABLE `epay_order`  (
   INDEX `uid`(`uid`) USING BTREE,
   INDEX `endTime`(`endTime`) USING BTREE,
   INDEX `money`(`money`) USING BTREE,
-  INDEX `createTime`(`createTime`) USING BTREE,
-  INDEX `tradeNoOut`(`tradeNoOut`) USING BTREE,
+  INDEX `tradeNo`(`tradeNoOut`) USING BTREE,
   INDEX `查询用户未屏蔽金额`(`endTime`, `uid`, `status`) USING BTREE,
   INDEX `定时统计用户金额`(`isShield`, `uid`, `status`, `endTime`) USING BTREE,
-  INDEX `查询当日总金额`(`type`, `status`, `endTime`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 288426 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Compact;
+  INDEX `createTime`(`createTime`) USING BTREE,
+  INDEX `查询当日总金额`(`type`, `status`, `endTime`) USING BTREE,
+  INDEX `id`(`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11993103 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Compact;
 
 -- ----------------------------
 -- Table structure for epay_order_attr
@@ -113,16 +114,14 @@ CREATE TABLE `epay_order`  (
 DROP TABLE IF EXISTS `epay_order_attr`;
 CREATE TABLE `epay_order_attr`  (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `uid` int(10) UNSIGNED NOT NULL COMMENT 'uid',
   `tradeNo` bigint(22) UNSIGNED NOT NULL COMMENT '平台订单号',
   `attrKey` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '键名',
   `attrValue` text CHARACTER SET utf8 COLLATE utf8_bin NULL COMMENT '键值',
   `createTime` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `uid`(`uid`) USING BTREE,
-  INDEX `attrKey`(`attrKey`) USING BTREE,
-  INDEX `search1`(`tradeNo`, `attrKey`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
+  INDEX `search1`(`tradeNo`, `attrKey`) USING BTREE,
+  INDEX ` attrKey`(`attrKey`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 26072 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
 -- ----------------------------
 -- Table structure for epay_settle
@@ -145,7 +144,7 @@ CREATE TABLE `epay_settle`  (
   INDEX `pid`(`uid`) USING BTREE,
   INDEX `id`(`id`) USING BTREE,
   INDEX `createtime`(`createTime`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 8285 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
+) ENGINE = InnoDB AUTO_INCREMENT = 3132 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
 -- ----------------------------
 -- Table structure for epay_user
@@ -157,7 +156,7 @@ CREATE TABLE `epay_user`  (
   `rate` int(5) UNSIGNED NOT NULL COMMENT '用户费率 最高100默认两位小数',
   `account` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '结算账号',
   `username` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '结算名称',
-  `balance` bigint(20) NOT NULL COMMENT '用户余额默认两位小数',
+  `balance` bigint(20) NOT NULL DEFAULT 0 COMMENT '用户余额默认两位小数',
   `email` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '用户邮箱账号',
   `phone` bigint(15) UNSIGNED NULL DEFAULT NULL COMMENT '用户手机号码',
   `qq` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '用户QQ号码',
@@ -171,7 +170,7 @@ CREATE TABLE `epay_user`  (
   INDEX `id`(`id`) USING BTREE,
   INDEX `email`(`email`) USING BTREE,
   INDEX `phone`(`phone`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1223 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
+) ENGINE = InnoDB AUTO_INCREMENT = 1001 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
 -- ----------------------------
 -- Table structure for epay_user_attr
@@ -184,7 +183,7 @@ CREATE TABLE `epay_user_attr`  (
   `value` text CHARACTER SET utf8 COLLATE utf8_bin NULL COMMENT '值内容',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `key`(`uid`, `key`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 187 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
+) ENGINE = InnoDB AUTO_INCREMENT = 752 CHARACTER SET = utf8 COLLATE = utf8_bin ROW_FORMAT = Compact;
 
 -- ----------------------------
 -- Table structure for epay_verify_code

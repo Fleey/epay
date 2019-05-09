@@ -54,4 +54,19 @@ php think settle
 > http://域名地址/test
 
 
-### 界面展示
+## 界面展示
+
+后台界面
+![后台界面](https://raw.githubusercontent.com/Fleey/epay/master/exampleImage/adminCtrl.png)
+
+开户界面
+![开户界面](https://raw.githubusercontent.com/Fleey/epay/master/exampleImage/adminUserInfo.png)
+
+登录界面
+![登录界面](https://raw.githubusercontent.com/Fleey/epay/master/exampleImage/loginMenu.png)
+
+测试支付界面
+![测试支付](https://raw.githubusercontent.com/Fleey/epay/master/exampleImage/testPay.png)
+
+用户界面
+![用户界面](https://raw.githubusercontent.com/Fleey/epay/master/exampleImage/userCtrl.png)

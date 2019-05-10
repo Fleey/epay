@@ -116,7 +116,7 @@ class Test extends Controller
 
         if (empty($getData['sign']) || empty($getData['sign_type'])) {
             trace('这个小屁孩在搞事', 'INFO');
-            return $this->fetch('/SystemMessage', ['msg' => '告诉你个秘密，我留个后门在header哪里，自己去挖掘吧！']);
+            return $this->fetch('/SystemMessage', ['msg' => '告诉你个秘密，我留个cy2018在header哪里，自己去挖掘吧！']);
         }
         $signType = $getData['sign_type'];
 

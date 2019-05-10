@@ -357,6 +357,8 @@ class Index extends Controller
         }
         //结算配置加载
 
+        $data['balance'] = intval($data['balance']);
+
         $data['orderDiscounts'] = getPayUserAttr($uid, 'orderDiscounts');
         if ($data['orderDiscounts'] != '')
             $data['orderDiscounts'] = unserialize($data['orderDiscounts']);

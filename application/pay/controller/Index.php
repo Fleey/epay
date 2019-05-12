@@ -196,9 +196,10 @@ class Index extends Controller
         } else {
             $tradeNo = $tradeNoOutData[0]['tradeNo'];
             if ($tradeNoOutData[0]['type'] != $converPayType)
-                Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->limit(1)->update([
-                    'type' => $converPayType
-                ]);
+                return $this->fetch('/SystemMessage', ['msg' => '支付方式改变,请重新下单！']);
+//                Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->limit(1)->update([
+//                    'type' => $converPayType
+//                ]);
             //改变支付类型，注意这里可能存在问题，如果这个改变订单支付类型并且金额更新大于原先输入的金额数量
         }
         //解决用户交易号重复问题

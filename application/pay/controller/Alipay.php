@@ -64,6 +64,8 @@ class Alipay extends Controller
             $productName = $result[0]['productName'];
         }
 
+        $productName = '商品支付-' . md5($productName);
+
         $isMobile = $this->request->isMobile();
         $param    = [
             'service'        => $isMobile ? 'alipay.wap.create.direct.pay.by.user' : 'create_direct_pay_by_user',

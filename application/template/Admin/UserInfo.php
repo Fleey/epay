@@ -222,11 +222,38 @@
                 <button type="button" class="btn btn-danger" data-type="reloadKey">重置密匙</button>
                 <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#setPayConfig">支付配置
                 </button>
+                <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#userMoneyLog">金额操作记录
+                </button>
                 <button type="button" class="btn btn-info" data-toggle="modal" data-target="#setOrderDiscounts">
                     设置下单减免
                 </button>
                 <button type="button" class="btn btn-primary" data-type="save">保存</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="userMoneyLog" role="dialog" aria-labelledby="userMoneyLog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">用户金额操作记录</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table id="userMoneyLogTable" class="table no-wrap user-table mb-0 table-hover">
+                        <thead>
+                        <tr>
+                            <th>金额</th>
+                            <th>备注</th>
+                            <th>操作时间</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

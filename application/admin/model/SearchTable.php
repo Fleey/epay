@@ -47,7 +47,8 @@ class SearchTable
         $tableList = [
             'epay_order',
             'epay_user',
-            'epay_settle'
+            'epay_settle',
+            'epay_user_money_log'
         ];
         if (!in_array($searchTable, $tableList)) {
             throw new Exception('该表不存在', 404);
@@ -97,8 +98,8 @@ class SearchTable
         foreach ($result as $item) {
             $data1 = [];
             foreach ($item as $key => $item1) {
-                if($this->searchTable == 'epay_user')
-                    if($key == 'balance')
+                if ($this->searchTable == 'epay_user')
+                    if ($key == 'balance')
                         $item1 = intval($item1);
                 if ($key == 'tradeNo')
                     $data1[] = (string)$item1;
@@ -176,6 +177,9 @@ class SearchTable
                 $queryResult = $queryResult->where('money', '<=', decimalsToInt($this->args['maxMoney'], 2));
             if (isset($this->args['status']))
                 $queryResult = $queryResult->where('status', $this->args['status']);
+        } else if ($this->searchTable == 'epay_user_money_log') {
+            if (isset($this->args['uid']))
+                $queryResult = $queryResult->where('uid', $this->args['uid']);
         }
         return $queryResult;
     }
@@ -212,6 +216,8 @@ class SearchTable
             $searchOrderList = ['id', 'key', 'balance', 'account', 'username', 'isBan'];
         } else if ($this->searchTable == 'epay_settle') {
             $searchOrderList = ['id', 'uid', 'clearType', 'account', 'username', 'money', 'fee', 'status', 'createTime'];
+        } else if ($this->searchTable == 'epay_user_money_log') {
+            $searchOrderList = ['money', 'desc', 'createTime'];
         }
         $field = '';
         foreach ($searchOrderList as $item) {

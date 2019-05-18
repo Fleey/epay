@@ -46,6 +46,36 @@ $(function () {
             //渲染完成事件
         }
     };
+    var dataUserMonetLogTableConfig = {
+        'language': {url: '/static/zh_CN.txt'},
+        'serverSide': true,
+        'info': true,
+        'autoWidth': false,
+        'searching': false,
+        'aLengthMenu': [15, 25, 50],
+        'deferRender': true,
+        "order": [[2, 'desc']],
+        'ajax': {
+            url: baseUrl + 'cy2018/api/SearchTable',
+            type: 'post',
+            data: {
+                searchTable: 'epay_user_money_log'
+            }
+        },
+        destroy: true,
+        retrieve: true,
+        "bRetrieve": true,
+        'columns': [
+            {
+                'render': function (data) {
+                    return data / 1000;
+                }
+            }, {}, {}
+        ],
+        'fnDrawCallback': function (obj) {
+            //渲染完成事件
+        }
+    };
     $('#orderList1').DataTable(dataTableConfig);
 
     $('button[data-type="reloadNotify"]').off("click").on('click', function () {
@@ -317,6 +347,7 @@ $(function () {
         $('input[data-name="key"]').parent().hide();
         $('button[data-type="delete"]').hide();
         $('button[data-type="reloadKey"]').hide();
+        $('button[data-target="#userMoneyLog"]').hide();
         $('button[data-type="save"]').text('新增用户');
         $('input[data-name]').val('');
         $('#userInfo').modal('show').attr('data-status', 'add');
@@ -385,6 +416,23 @@ $(function () {
             readFileHash(value, readHashEvent);
             //为减少图片缓存做准备
         });
+    });
+    $('button[data-target="#userMoneyLog"]').click(function () {
+        var uid = $('input[data-name="id"]').val();
+
+        $('#userMoneyLogTable').dataTable().fnDestroy();
+        dataUserMonetLogTableConfig['ajax'] = {
+            url: baseUrl + 'cy2018/api/searchTable',
+            type: 'post',
+            data: {
+                searchTable: 'epay_user_money_log',
+                type: 'post',
+                args: {
+                    'uid': uid
+                }
+            }
+        };
+        $('#userMoneyLogTable').DataTable(dataUserMonetLogTableConfig);
     });
     $('#orderList1>tbody').on('click', 'td>div.btn-group [data-type]', function () {
         var clickDom = $(this);
@@ -475,6 +523,7 @@ $(function () {
                 $('input[data-name="balance"]').parent().show();
                 $('button[data-type="delete"]').show();
                 $('button[data-type="reloadKey"]').show();
+                $('button[data-target="#userMoneyLog"]').show();
                 $('button[data-type="save"]').text('保存');
                 $('span.QrCodeImgPreview').hide();
                 if (fileID !== undefined) {

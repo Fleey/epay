@@ -788,11 +788,19 @@ class Index extends Controller
             'account'   => $account
         ]);
         //更新用户数据
-        if (!empty($setUserBalance))
+        if (!empty($setUserBalance)) {
             if ($isAdd)
-                Db::table('epay_user')->where('id', $uid)->limit(1)->inc('balance', decimalsToInt($setUserBalance, 3))->update();
+                $updateResult = Db::table('epay_user')->where('id', $uid)->limit(1)->inc('balance', decimalsToInt($setUserBalance, 3))->update();
             else
-                Db::table('epay_user')->where('id', $uid)->limit(1)->dec('balance', decimalsToInt($setUserBalance, 3))->update();
+                $updateResult = Db::table('epay_user')->where('id', $uid)->limit(1)->dec('balance', decimalsToInt($setUserBalance, 3))->update();
+            if ($updateResult)
+                Db::table('epay_user_money_log')->insert([
+                    'uid'        => $uid,
+                    'money'      => ($isAdd ? '+' : '-') . decimalsToInt($setUserBalance, 3),
+                    'desc'       => '',
+                    'createTime' => getDateTime()
+                ]);
+        }
         //更新用户余额
         {
             $settleConfig = getPayUserAttr($uid, 'settleConfig');
@@ -997,7 +1005,6 @@ class Index extends Controller
         $searchValue = input('post.search/a');
 
         $args = input('post.args/a');
-
         $SearchTable = new SearchTable($searchTable, $startSite, $getLength, $order, $searchValue, $args);
         return json($SearchTable->getData());
     }

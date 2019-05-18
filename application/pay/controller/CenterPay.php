@@ -75,7 +75,8 @@ class CenterPay extends Controller
 //                return $this->fetch('/CenterPayTemplate', ['url' => $requestResult['html']]);
 //            }
             if (!empty($requestResult['url']))
-                return $this->fetch('/CenterPayTemplate', ['url' => $requestResult['url'], 'tradeNo' => $tradeNo, 'payType' => $result[0]['type']]);
+//                return $this->fetch('/CenterPayTemplate', ['url' => $requestResult['url'], 'tradeNo' => $tradeNo, 'payType' => $result[0]['type']]);
+                return redirect($requestResult['url'], [], 302);
             if (!empty($requestResult['html']))
                 return $requestResult['html'];
         }

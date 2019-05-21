@@ -83,13 +83,13 @@ class PayModel
 
         if ($discountData['type'] == 0) {
             if (count($discountData['moneyList']) != 0)
-                $discountMoney = number_format($discountData['moneyList'][0], 2) * 100;
+                $discountMoney = number_format($discountData['moneyList'][0], 2,'.','') * 100;
             //固定减免
         } else if ($discountData['type'] == 1) {
             if (count($discountData['moneyList']) == 0)
                 return 0;
             $randNumber    = rand(0, count($discountData['moneyList']) - 1);
-            $discountMoney = number_format($discountData['moneyList'][$randNumber], 2) * 100;
+            $discountMoney = number_format($discountData['moneyList'][$randNumber], 2,'.','') * 100;
         }
 
         return $discountMoney;

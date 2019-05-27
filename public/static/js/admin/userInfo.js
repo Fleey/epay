@@ -390,6 +390,38 @@ $(function () {
 
         }
     });
+    $('#batchSetFee').off("click").on('click', function () {
+        swal({
+                title: '批量操作费率',
+                text: '例如（+1.15）（-1.25）',
+                type: 'input',
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "确定",
+                cancelButtonText: '取消',
+                closeOnConfirm: false
+            },
+            function (inputValue) {
+                if (inputValue === false) return false;
+
+                if (inputValue === '') {
+                    swal.showInputError("必须要输入操作费率");
+                    return false
+                }
+                swal({
+                    title: '请稍后...',
+                    text: '正在积极等待服务器响应',
+                    showConfirmButton: false
+                });
+                $.post('/cy2018/api/BatchSetFee', {fee: inputValue}, function (data) {
+                    if (data['status'] !== 1) {
+                        swal('请求失败', data['msg'], 'error');
+                        return true;
+                    }
+                    swal('请求成功', '已经批量更改费率', 'success');
+                }, 'json');
+            });
+    });
     $('.QrCodeImgPreview').off("click").on('click', function () {
         $('#QrCodeImg').click();
     });

@@ -532,6 +532,37 @@ class Index extends Controller
         return json(['status' => $result, 'msg' => '请求' . ($result ? '成功' : '失败')]);
     }
 
+    public function postBatchSetFee()
+    {
+        $username = session('username', '', 'admin');
+        if (empty($username))
+            return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
+
+        $fee = input('post.fee/s');
+        if (empty($fee))
+            return json(['status' => 0, 'msg' => '请求参数不能为空']);
+
+        $isAdd = substr($fee, 0, 1);
+        if ($isAdd != '+' && $isAdd != '-')
+            return json(['status' => 0, 'msg' => '余额操作符仅支持 + 或 -']);
+        $fee = substr($fee, 1, strlen($fee) - 1);
+        if (!is_IntOrDecimal($fee))
+            return json(['status' => 0, 'msg' => '用户金额格式有误']);
+
+        $isAdd = $isAdd == '+';
+
+        $result = Db::table('epay_user');
+
+        $fee = decimalsToInt($fee, 2);
+        if ($isAdd)
+            $result = $result->inc('rate', $fee);
+        else
+            $result = $result->dec('rate', $fee);
+
+        $result->where('id', '<>', 0)->update();
+        return json(['status' => 1, 'msg' => '批量更新用户费率成功']);
+    }
+
     public function postDeleteUser()
     {
         $username = session('username', '', 'admin');
@@ -1004,7 +1035,7 @@ class Index extends Controller
 
         $searchValue = input('post.search/a');
 
-        $args = input('post.args/a');
+        $args        = input('post.args/a');
         $SearchTable = new SearchTable($searchTable, $startSite, $getLength, $order, $searchValue, $args);
         return json($SearchTable->getData());
     }

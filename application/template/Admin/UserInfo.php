@@ -29,6 +29,10 @@
                             id="addUser">
                         新增商户
                     </button>
+                    <button class="btn w96 btn-outline-primary btn-sm float-right" style="margin-right: 15px;"
+                            id="batchSetFee">
+                        批量调整费率
+                    </button>
                     <div class="table-responsive">
                         <table id="orderList1" class="table no-wrap user-table mb-0 table-hover">
                             <thead>

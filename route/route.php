@@ -8,6 +8,7 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
+
 Route::rule('', 'admin/Index/index');
 Route::group('test', function () {
     Route::post('pay', 'user/Test/pay');

@@ -41,7 +41,6 @@ class CenterPay extends Controller
         $payName = PayModel::converPayName($result[0]['type'], true);
         if (empty($this->systemConfig[$payName]))
             return $this->fetch('/SystemMessage', ['msg' => '[EpayCenter] 系统异常请联系管理员处理！']);
-
         $userPayConfig   = unserialize(getPayUserAttr($result[0]['uid'], 'payConfig'));
         $systemPayConfig = $this->systemConfig[$payName];
         if (empty($userPayConfig)) {
@@ -67,7 +66,7 @@ class CenterPay extends Controller
         $config            = $systemPayConfig;
         $config['gateway'] = 'http://center.zmz999.com';
         $centerPayModel    = new CenterPayModel($config);
-        $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, $userPayConfig[$payName]['payAisle'], ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);
+        $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, $userPayConfig[$payName]['payAisle'], ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);;
         if ($requestResult['isSuccess']) {
 //            if (empty($requestResult['html'])) {
 //                return redirect($requestResult['url'], [], 302);

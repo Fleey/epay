@@ -221,6 +221,8 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     //header is not empty
     $result = curl_exec($ch);
 
+//    if($result === false)
+//        exit(dump(curl_error($ch)));
     curl_close($ch);
     return $result;
 }

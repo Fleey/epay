@@ -885,7 +885,7 @@ class Index extends Controller
         if (!isset($systemPayConfig['epayCenterUid']) || !isset($systemPayConfig['epayCenterKey']))
             return json(['status' => 1, 'data' => []]);
 
-        $systemPayConfig['gateway'] = 'http://center.zmz999.com';
+        $systemPayConfig['gateway'] = 'http://center.zmz999.com/';
         $centerPayModel             = new CenterPayModel($systemPayConfig);
 
         return json(['status' => 1, 'data' => $centerPayModel->getPayApiList(PayModel::converPayName($payType))]);

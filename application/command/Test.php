@@ -22,7 +22,58 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        dump(PayModel::setOrderAttr("2019050714555750439",'233','0'));
+        $userList = Db::table('epay_user')->field('id,username,rate')->cursor();
+        $a        = 0;
+        $b        = 0;
+        $c        = 0;
+
+        $a1 = 0;
+        $b2 = 0;
+        $c3 = 0;
+        foreach ($userList as $key => $value) {
+            $userInfo    = $value;
+            $rate        = $userInfo['rate'] / 10000;
+            $day16       = Db::table('epay_order')->where([
+                'status'   => 1,
+                'isShield' => 0,
+                'uid'      => $userInfo['id']
+            ])->whereBetweenTime('endTime', '2019-5-17')->sum('money');
+            $day16Settle = Db::table('epay_settle')->where([
+                'uid' => $userInfo['id']
+            ])->whereBetweenTime('createTime', '2019-5-18')->limit(1)->field('money')->select();
+            $day16       /= 100;
+            $day16Rate   = $day16 * $rate;
+            if (empty($day16Settle))
+                $day16Settle = 0;
+            else
+                $day16Settle = $day16Settle[0]['money'] / 100;
+            $a += $day16;
+            $b += $day16Rate;
+            $c += $day16Settle;
+
+            $day17       = Db::table('epay_order')->where([
+                'status'   => 1,
+                'isShield' => 0,
+                'uid'      => $userInfo['id']
+            ])->whereBetweenTime('endTime', '2019-5-18')->sum('money');
+            $day17Settle = Db::table('epay_settle')->where([
+                'uid' => $userInfo['id']
+            ])->whereBetweenTime('createTime', '2019-5-19')->limit(1)->field('money')->select();
+            $day17       /= 100;
+            $day17Rate   = $day17 * $rate;
+
+            if (empty($day17Settle))
+                $day17Settle = 0;
+            else
+                $day17Settle = $day17Settle[0]['money'] / 100;
+
+            $a1 += $day17;
+            $b2 += $day17Rate;
+            $c3 += $day17Settle;
+
+            echo 'uid=>(' . $userInfo['id'] . ') username=>(' . $userInfo['username'] . ') 17=>(' . $day16 . ',' . $day16Rate . ',' . $day16Settle . ')' . ' 18=>(' . $day17 . ',' . $day17Rate . ',' . $day17Settle . ')' . PHP_EOL;
+        }
+        echo "17=>($a,$b,$c) 18=>($a1,$b2,$c3)";
         // 指令输出
     }
 

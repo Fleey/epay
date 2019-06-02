@@ -37,10 +37,10 @@ class Test extends Command
                 'status'   => 1,
                 'isShield' => 0,
                 'uid'      => $userInfo['id']
-            ])->whereBetweenTime('endTime', '2019-5-17')->sum('money');
+            ])->whereBetweenTime('endTime', '2019-5-31')->sum('money');
             $day16Settle = Db::table('epay_settle')->where([
                 'uid' => $userInfo['id']
-            ])->whereBetweenTime('createTime', '2019-5-18')->limit(1)->field('money')->select();
+            ])->whereBetweenTime('createTime', '2019-6-1')->limit(1)->field('money')->select();
             $day16       /= 100;
             $day16Rate   = $day16 * $rate;
             if (empty($day16Settle))
@@ -55,10 +55,10 @@ class Test extends Command
                 'status'   => 1,
                 'isShield' => 0,
                 'uid'      => $userInfo['id']
-            ])->whereBetweenTime('endTime', '2019-5-18')->sum('money');
+            ])->whereBetweenTime('endTime', '2019-6-1')->sum('money');
             $day17Settle = Db::table('epay_settle')->where([
                 'uid' => $userInfo['id']
-            ])->whereBetweenTime('createTime', '2019-5-19')->limit(1)->field('money')->select();
+            ])->whereBetweenTime('createTime', '2019-6-2')->limit(1)->field('money')->select();
             $day17       /= 100;
             $day17Rate   = $day17 * $rate;
 
@@ -71,9 +71,9 @@ class Test extends Command
             $b2 += $day17Rate;
             $c3 += $day17Settle;
 
-            echo 'uid=>(' . $userInfo['id'] . ') username=>(' . $userInfo['username'] . ') 17=>(' . $day16 . ',' . $day16Rate . ',' . $day16Settle . ')' . ' 18=>(' . $day17 . ',' . $day17Rate . ',' . $day17Settle . ')' . PHP_EOL;
+            echo 'uid=>(' . $userInfo['id'] . ') username=>(' . $userInfo['username'] . ') 1=>(' . $day16 . ',' . $day16Rate . ',' . $day16Settle . ')' . ' 2=>(' . $day17 . ',' . $day17Rate . ',' . $day17Settle . ')' . PHP_EOL;
         }
-        echo "17=>($a,$b,$c) 18=>($a1,$b2,$c3)";
+        echo "1=>($a,$b,$c) 2=>($a1,$b2,$c3)";
         // 指令输出
     }
 

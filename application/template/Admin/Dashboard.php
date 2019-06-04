@@ -15,61 +15,65 @@
 </div>
 <div class="page-content container-fluid">
     <div class="row">
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-bottom border-info">
-                <div class="card-body">
-                    <div class="d-flex no-block align-items-center">
-                        <div>
-                            <h2><?php echo number_format($totalUser); ?></h2>
-                            <h6 class="text-info">商户数量</h6>
-                        </div>
-                        <div class="ml-auto">
-                            <span class="text-info display-6"><i class="ti-user"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-bottom border-cyan">
-                <div class="card-body">
-                    <div class="d-flex no-block align-items-center">
-                        <div>
-                            <h2><?php echo number_format($totalOrder); ?></h2>
-                            <h6 class="text-cyan">累计成功订单数</h6>
-                        </div>
-                        <div class="ml-auto">
-                            <span class="text-cyan display-6"><i class="ti-clipboard"></i></span>
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-bottom border-info">
+                        <div class="card-body">
+                            <div class="d-flex no-block align-items-center">
+                                <div>
+                                    <h2><?php echo number_format($totalUser); ?></h2>
+                                    <h6 class="text-info">商户数量</h6>
+                                </div>
+                                <div class="ml-auto">
+                                    <span class="text-info display-6"><i class="ti-user"></i></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-bottom border-danger">
-                <div class="card-body">
-                    <div class="d-flex no-block align-items-center">
-                        <div>
-                            <h2>￥<?php echo number_format($totalMoney / 100, 2); ?></h2>
-                            <h6 class="text-danger">今日交易金额（未扣手续费）</h6>
-                        </div>
-                        <div class="ml-auto">
-                            <span class="text-danger display-6"><i class="ti-wallet"></i></span>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-bottom border-cyan">
+                        <div class="card-body">
+                            <div class="d-flex no-block align-items-center">
+                                <div>
+                                    <h2><?php echo number_format($totalOrder); ?></h2>
+                                    <h6 class="text-cyan">累计成功订单数</h6>
+                                </div>
+                                <div class="ml-auto">
+                                    <span class="text-cyan display-6"><i class="ti-clipboard"></i></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-bottom border-orange">
-                <div class="card-body">
-                    <div class="d-flex no-block align-items-center">
-                        <div>
-                            <h2>￥<?php echo number_format($totalMoneyRate / 100, 3); ?></h2>
-                            <h6 class="text-orange">今日结算金额（已手续费）</h6>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-bottom border-danger">
+                        <div class="card-body">
+                            <div class="d-flex no-block align-items-center">
+                                <div>
+                                    <h2>￥<?php echo number_format($totalMoney / 100, 2); ?></h2>
+                                    <h6 class="text-danger">今日交易金额（未扣手续费）</h6>
+                                </div>
+                                <div class="ml-auto">
+                                    <span class="text-danger display-6"><i class="ti-wallet"></i></span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="ml-auto">
-                            <span class="text-orange display-6"><i class="ti-stats-up"></i></span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card border-bottom border-orange">
+                        <div class="card-body">
+                            <div class="d-flex no-block align-items-center">
+                                <div>
+                                    <h2>￥<?php echo number_format($totalMoneyRate / 100, 3); ?></h2>
+                                    <h6 class="text-orange">今日结算金额（已手续费）</h6>
+                                </div>
+                                <div class="ml-auto">
+                                    <span class="text-orange display-6"><i class="ti-stats-up"></i></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -121,36 +125,68 @@
                 </div>
             </div>
         </div>
-        <?php
-        $result       = curl('http://update.moxi666.cn/version.json');
-        $isNeedUpdate = false;
-        if ($result != false) {
-            $result = json_decode($result, true);
-            if (!empty($result['version'])) {
-                if (config('app_version') != $result['version'])
-                    $isNeedUpdate = true;
-            }
-        }
-        if ($isNeedUpdate) {
-            ?>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">检测到新版本发布</h5>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">近两天订单数据</h5>
+                    <?php
+                    foreach ($orderDataStatistics as $key=>$data) {
+                        ?>
                         <div class="row">
-                            <div class="col-md-5">
-                                <p><b>最新聚合支付程序</b>
-                                    <br><?php echo $result['version']; ?></p>
+                            <div class="col-md-12">
+                                <b style="margin-bottom: 12px;font-size: 16px;font-weight: 400;"><?php echo $key; ?></b>
                             </div>
-                            <div class="col-md-7">
-                                <button class="btn btn-primary float-right" data-update-program>立刻更新</button>
+                            <div class="col-md-4">
+                                <p><b>订单总数</b>
+                                    <br><?php echo $data['totalOrder']; ?></p>
                             </div>
+                            <div class="col-md-4">
+                                <p><b>成功总数</b> <br><?php echo $data['successOrder']; ?>
+                                </p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><b>成功率</b> <br><?php echo $data['ratio']; ?>%
+                                </p>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                    ?>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+    $result       = curl('http://update.zmz999.com/version.json');
+    $isNeedUpdate = false;
+    if ($result != false) {
+        $result = json_decode($result, true);
+        if (!empty($result['version'])) {
+            if (config('app_version') != $result['version'])
+                $isNeedUpdate = true;
+        }
+    }
+    if ($isNeedUpdate) {
+        ?>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">检测到新版本发布</h5>
+                    <div class="row">
+                        <div class="col-md-5">
+                            <p><b>最新聚合支付程序</b>
+                                <br><?php echo $result['version']; ?></p>
+                        </div>
+                        <div class="col-md-7">
+                            <button class="btn btn-primary float-right" data-update-program>立刻更新</button>
                         </div>
                     </div>
                 </div>
             </div>
-        <?php } ?>
-    </div>
+        </div>
+    <?php } ?>
+</div>
 </div>
 
 <script>

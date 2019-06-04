@@ -51,6 +51,26 @@ class Index extends Controller
             foreach ($data['settleRecord'] as $key => $value) {
                 $data['settleRecord'][$key]['money'] = Db::table('epay_settle')->whereBetweenTime('createTime', $value['createTime'])->sum('money');
             }
+            {
+                $buildOrderStatistics = function (string $date) {
+                    $totalOrder   = Db::table('epay_order')->whereBetweenTime('createTime', $date)->cache(60)->count();
+                    $successOrder = Db::table('epay_order')->whereBetweenTime('createTime', $date)->where('status', 1)->cache(60)->count();
+                    return [
+                        'totalOrder'   => $totalOrder,
+                        'successOrder' => $successOrder,
+                        'ratio'        => number_format($successOrder / $totalOrder * 100, 2)
+                    ];
+                };
+
+                $data['orderDataStatistics'] = [];
+                $createTimeList              = [
+                    date('Y-m-d', strtotime('- 1 day')),
+                    date('Y-m-d', strtotime('now'))
+                ];
+                foreach ($createTimeList as $time) {
+                    $data['orderDataStatistics'][$time] = $buildOrderStatistics($time);
+                }
+            }
             $data['statistics'] = [
                 'yesterday' => [
                     [
@@ -395,7 +415,7 @@ class Index extends Controller
         $username = session('username', '', 'admin');
         if (empty($username))
             return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
-        $result = curl('http://update.moxi666.cn/version.json');
+        $result = curl('http://update.zmz999.com/version.json');
         if ($result === false)
             return json(['status' => 0, 'msg' => '更新服务器异常，请联系管理员处理']);
         $result = json_decode($result, true);

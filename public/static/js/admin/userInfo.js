@@ -355,6 +355,7 @@ $(function () {
         $('select[data-name="clearType"]').val(1).change();
         $('select[data-name="productNameShowMode"]').val('0').change();
         $('input[data-name="balance"]').val(0);
+        $('.frozenMoney').hide();
 
         $('#setPayConfig [data-name="alipay"] [data-value="apiType"]').val(0);
         $('#setPayConfig [data-name="wxpay"] [data-value="apiType"]').val(0);
@@ -549,6 +550,7 @@ $(function () {
                 //基础信息置入
                 var fileID = data['qrFileID'];
                 setDataNameInfo('setUserBalance', '');
+                setDataNameInfo('setUserFrozenBalance', '');
                 $('select[data-name="clearType"]').val(data['clearType']).change();
                 $('input[data-name="id"]').parent().show();
                 $('input[data-name="key"]').parent().show();
@@ -558,6 +560,7 @@ $(function () {
                 $('button[data-target="#userMoneyLog"]').show();
                 $('button[data-type="save"]').text('保存');
                 $('span.QrCodeImgPreview').hide();
+                $('.frozenMoney').show();
                 if (fileID !== undefined) {
                     $('img.QrCodeImgPreview').attr({
                         'data-file-id': fileID === 0 ? 0 : fileID,

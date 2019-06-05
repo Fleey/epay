@@ -88,9 +88,9 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label>设置金额</label>
+                                <label>设置余额</label>
                                 <input type="text" class="form-control" data-name="setUserBalance" value=""
-                                       placeholder="设置用户余额 例如+50 -100">
+                                       placeholder="设置商户余额 例如+50 -100">
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -100,6 +100,21 @@
                                     <option value="0">正常</option>
                                     <option value="1">封禁</option>
                                 </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row frozenMoney">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>商户冻结金额</label>
+                                <input type="text" class="form-control" data-name="frozenBalance" value="" disabled>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>设置冻结金额</label>
+                                <input type="text" class="form-control" data-name="setUserFrozenBalance" value=""
+                                       placeholder="设置商户冻结金额 例如+50 -100">
                             </div>
                         </div>
                     </div>

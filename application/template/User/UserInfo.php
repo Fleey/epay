@@ -33,6 +33,10 @@
                         <label for="balance">商户余额</label>
                         <input type="text" class="form-control" id="balance" value="" disabled>
                     </div>
+                    <div>
+                        <label for="balance">冻结金额</label>
+                        <input type="text" class="form-control" id="frozenBalance" value="" disabled>
+                    </div>
                 </div>
             </div>
         </div>
@@ -115,10 +119,11 @@
                 $('#username').val(data['username']);
                 $('#email').val(data['email']);
                 $('#qq').val(data['qq']);
-                $('#domain').val(data['domain'])
+                $('#domain').val(data['domain']);
+                $('#frozenBalance').val(data['frozenBalance']);
             }
         });
-        $('button[data-save]').off("click").on('click',function () {
+        $('button[data-save]').off("click").on('click', function () {
             var type = $(this).attr('data-type');
             var data = {};
             if (type === 'connectInfo') {

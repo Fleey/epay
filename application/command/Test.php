@@ -3,9 +3,6 @@
 namespace app\command;
 
 
-use app\pay\model\CenterPayModel;
-use app\pay\model\PayModel;
-use app\pay\model\WxPayModel;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;

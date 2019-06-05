@@ -155,7 +155,7 @@ $(function () {
         var dataTable = $('#orderList').dataTable();
         dataTable.fnDestroy();
 
-        if (!uid && !tradeNo && !tradeNoOut && payType === 'all' && status === 'all' && !productMinPrice && !productMaxPrice && !productStartTime && !productEndTime) {
+        if (!uid && !tradeNo && !tradeNoOut && !productName && payType === 'all' && status === 'all' && !productMinPrice && !productMaxPrice && !productStartTime && !productEndTime) {
             dataTableConfig['ajax'] = {
                 url: baseUrl + 'cy2018/api/searchTable',
                 type: 'post',

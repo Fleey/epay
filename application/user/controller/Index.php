@@ -120,6 +120,10 @@ class Index extends Controller
 
         $data['settleFee'] = $settleFee;
 
+        $data['frozenBalance'] = getPayUserAttr($uid, 'frozenBalance');
+        if ($data['frozenBalance'] == '')
+            $data['frozenBalance'] = 0;
+
         return json(['status' => 1, 'data' => $data]);
     }
 

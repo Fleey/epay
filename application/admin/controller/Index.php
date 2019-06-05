@@ -55,10 +55,14 @@ class Index extends Controller
                 $buildOrderStatistics = function (string $date) {
                     $totalOrder   = Db::table('epay_order')->whereBetweenTime('createTime', $date)->cache(60)->count();
                     $successOrder = Db::table('epay_order')->whereBetweenTime('createTime', $date)->where('status', 1)->cache(60)->count();
+                    if ($successOrder == 0 || $totalOrder == 0)
+                        $ratio = '0';
+                    else
+                        $ratio = number_format($successOrder / $totalOrder * 100, 2);
                     return [
                         'totalOrder'   => $totalOrder,
                         'successOrder' => $successOrder,
-                        'ratio'        => number_format($successOrder / $totalOrder * 100, 2)
+                        'ratio'        => $ratio
                     ];
                 };
 
@@ -388,7 +392,9 @@ class Index extends Controller
         $data['isCancelReturn'] = getPayUserAttr($uid, 'isCancelReturn');
         if ($data['isCancelReturn'] == '')
             $data['isCancelReturn'] = 'false';
-
+        $data['frozenBalance'] = getPayUserAttr($uid, 'frozenBalance');
+        if ($data['frozenBalance'] == '')
+            $data['frozenBalance'] = '0';
         if ($data['clearType'] == 5 || $data['clearType'] == 6)
             $data['qrFileID'] = getPayUserAttr($uid, 'qrFileID');
         //获取二维码
@@ -756,45 +762,69 @@ class Index extends Controller
         $result = Db::table('epay_user')->where('id', $uid)->field('id')->limit(1)->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '用户不存在']);
-        $setUserBalance      = input('post.setUserBalance/s', 0);
-        $clearType           = input('post.clearType/s', 1);
-        $clearMode           = input('post.clearMode/d', 0);
-        $deposit             = input('post.deposit/s', 0);
-        $settleMoney         = input('post.settleMoney/s', 0);
-        $domain              = input('post.domain/s', '');
-        $email               = input('post.email/s', '');
-        $isBan               = input('post.isBan/d', 0);
-        $payDayMoneyMax      = input('post.payDayMoneyMax/s', 0);
-        $payMoneyMax         = input('post.payMoneyMax/s', 0);
-        $qq                  = input('post.qq/s', 0);
-        $rate                = input('post.rate/s', 0);
-        $username            = input('post.username/s', '');
-        $account             = input('post.account/s', '');
-        $productNameShowMode = input('post.productNameShowMode/d', 0);
-        $orderDiscounts      = input('post.orderDiscounts/s', '');
-        $payConfig           = input('post.payConfig/s', '');
-        $settleHour          = input('post.settleHour/d', 0);
-        $settleFee           = input('post.settleFee/s', 0);
+        $setUserBalance       = input('post.setUserBalance/s', 0);
+        $clearType            = input('post.clearType/s', 1);
+        $clearMode            = input('post.clearMode/d', 0);
+        $deposit              = input('post.deposit/s', 0);
+        $settleMoney          = input('post.settleMoney/s', 0);
+        $domain               = input('post.domain/s', '');
+        $email                = input('post.email/s', '');
+        $isBan                = input('post.isBan/d', 0);
+        $payDayMoneyMax       = input('post.payDayMoneyMax/s', 0);
+        $payMoneyMax          = input('post.payMoneyMax/s', 0);
+        $qq                   = input('post.qq/s', 0);
+        $rate                 = input('post.rate/s', 0);
+        $username             = input('post.username/s', '');
+        $account              = input('post.account/s', '');
+        $productNameShowMode  = input('post.productNameShowMode/d', 0);
+        $orderDiscounts       = input('post.orderDiscounts/s', '');
+        $payConfig            = input('post.payConfig/s', '');
+        $settleHour           = input('post.settleHour/d', 0);
+        $settleFee            = input('post.settleFee/s', 0);
+        $setUserFrozenBalance = input('post.setUserFrozenBalance/s', 0);
 
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
             $rate = 10000;
 
-        $isAdd = false;
+        $isAddUserBalance       = false;
+        $isAddUserFrozenBalance = false;
 
-        if (!empty($setUserBalance)) {
-            $setUserBalanceLength = strlen($setUserBalance);
-            if ($setUserBalanceLength == 1)
-                return json(['status' => 0, 'msg' => '更新用户金额格式不正确']);
-            $isAdd = substr($setUserBalance, 0, 1);
+        /**
+         * @param $setMoney
+         * @return array
+         */
+        $checkSetBalance = function ($setMoney) {
+            $strLen = strlen($setMoney);
+            if ($strLen == 1)
+                return [-1, ''];
+            $isAdd = substr($setMoney, 0, 1);
             if ($isAdd != '+' && $isAdd != '-')
-                return json(['status' => 0, 'msg' => '余额操作符仅支持 + 或 -']);
+                return [-1, ''];
             $isAdd = $isAdd == '+';
             //判断是否增加金额
-            $setUserBalance = substr($setUserBalance, 1, $setUserBalanceLength - 1);
+            $setUserBalance = substr($setMoney, 1, $strLen - 1);
             if (!is_IntOrDecimal($setUserBalance))
-                return json(['status' => 0, 'msg' => '用户金额格式有误']);
+                return [-1, ''];
             //判断金额格式 禁止那些E
+            $setMoney = substr($setMoney, 1, $strLen - 1);
+            return [$isAdd ? 1 : 2, $setMoney];
+        };
+
+        if (!empty($setUserBalance)) {
+            $isAddUserBalance = $checkSetBalance($setUserBalance);
+            if ($isAddUserBalance[0] == -1)
+                return json(['status' => 0, 'msg' => '更新用户金额格式不正确']);
+            $setUserBalance   = $isAddUserBalance[1];
+            $isAddUserBalance = $isAddUserBalance[0] == 1;
+        }
+        //设置增加余额不为空
+        if (!empty($setUserFrozenBalance)) {
+            $isAddUserFrozenBalance = $checkSetBalance($setUserFrozenBalance);
+            if ($isAddUserFrozenBalance[0] == -1)
+                return json(['status' => 0, 'msg' => '更新用户金额格式不正确']);
+            $setUserFrozenBalance   = $isAddUserFrozenBalance[1];
+            $isAddUserFrozenBalance = $isAddUserFrozenBalance[0] == 1;
         }
         //设置增加余额不为空
 
@@ -840,19 +870,45 @@ class Index extends Controller
         ]);
         //更新用户数据
         if (!empty($setUserBalance)) {
-            if ($isAdd)
+            if ($isAddUserBalance)
                 $updateResult = Db::table('epay_user')->where('id', $uid)->limit(1)->inc('balance', decimalsToInt($setUserBalance, 3))->update();
             else
                 $updateResult = Db::table('epay_user')->where('id', $uid)->limit(1)->dec('balance', decimalsToInt($setUserBalance, 3))->update();
             if ($updateResult)
                 Db::table('epay_user_money_log')->insert([
                     'uid'        => $uid,
-                    'money'      => ($isAdd ? '+' : '-') . decimalsToInt($setUserBalance, 3),
+                    'money'      => ($isAddUserBalance ? '+' : '-') . decimalsToInt($setUserBalance, 3),
                     'desc'       => '',
                     'createTime' => getDateTime()
                 ]);
         }
         //更新用户余额
+        {
+            if (!empty($setUserFrozenBalance)) {
+                if ($isAddUserFrozenBalance) {
+                    $updateResult = Db::table('epay_user')->where('id', $uid)->limit(1)->dec('balance', decimalsToInt($setUserFrozenBalance, 3))->update();
+                } else {
+                    $updateResult = Db::table('epay_user')->where('id', $uid)->limit(1)->inc('balance', decimalsToInt($setUserFrozenBalance, 3))->update();
+                }
+                if (!$updateResult) {
+                    trace('冻结用户金额异常 uid => ' . $uid, 'error');
+                    return json(['status' => 0, 'msg' => '冻结用户金额异常 请重试']);
+                }
+                $userFrozenBalance = getPayUserAttr($uid, 'frozenBalance');
+                if ($userFrozenBalance == '')
+                    $userFrozenBalance = 0;
+                else
+                    $userFrozenBalance = floatval($userFrozenBalance);
+                $userFrozenBalance += floatval((!$isAddUserFrozenBalance ? '+' : '-') . $setUserFrozenBalance);
+                $userFrozenBalance = number_format($userFrozenBalance, 2, '.', '');
+                $updateResult      = setPayUserAttr($uid, 'frozenBalance', $userFrozenBalance);
+                if (!$updateResult) {
+                    trace('更新冻结金额异常 uid => ' . $uid . ' frozenBalance=> ' . $userFrozenBalance, 'error');
+                    return json(['status' => 0, 'msg' => '更新冻结金额异常，请联系管理员处理']);
+                }
+            }
+        }
+        //更新冻结金额
         {
             $settleConfig = getPayUserAttr($uid, 'settleConfig');
             if (empty($settleConfig))

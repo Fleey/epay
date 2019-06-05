@@ -97,6 +97,7 @@ class Index extends Controller
         try {
             PayModel::checkBadWord($this->systemConfig, $productName);
         } catch (Exception $exception) {
+            trace('触发违禁词 uid => ' . $uid . ' productName => ' . $productName . ' money => ' . $this->getData['money'], 'info');
             return $this->fetch('/SystemMessage', ['msg' => $exception->getMessage()]);
         }
         //检测违禁词

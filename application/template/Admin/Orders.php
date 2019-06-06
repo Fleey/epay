@@ -123,6 +123,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-order-id="" data-type="setShield">屏蔽订单</button>
+                <button type="button" class="btn btn-danger" data-order-id="" data-type="setFrozen">冻结订单</button>
                 <button type="button" class="btn btn-primary" data-order-id="" data-type="reloadNotify">重新回调</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             </div>
@@ -223,6 +224,7 @@
                                     <option value="all">所有</option>
                                     <option value="1">已支付</option>
                                     <option value="0">未支付</option>
+                                    <option value="2">冻结中</option>
                                 </select>
                             </div>
                         </div>
@@ -257,7 +259,9 @@
                             <div class="col-md-4">
                                 <input type="text" class="form-control" id="productEndTime" placeholder="结束时间">
                             </div>
-                            <small class="form-text text-muted" style="position: relative;left: 140px;">时间格式 2019-2-30 23:59:59</small>
+                            <small class="form-text text-muted" style="position: relative;left: 140px;">时间格式 2019-2-30
+                                23:59:59
+                            </small>
                         </div>
                     </div>
                 </form>

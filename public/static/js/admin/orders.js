@@ -39,7 +39,13 @@ $(function () {
                 }
             }, {
                 'render': function (data) {
-                    return data ? '<span class="text-success">已付款</span>' : '<span class="text-danger">未付款</span>';
+                    if (data === 1)
+                        return '<span class="text-success">已付款</span>';
+                    else if (data === 0)
+                        return '<span class="text-danger">未付款</span>';
+                    else if (data === 2)
+                        return '<span class="text-danger">已冻结</span>';
+                    return '<span class="text-danger">未付款</span>';
                 }
             }, {}
         ],
@@ -85,6 +91,35 @@ $(function () {
                 window.open(data['url']);
             }
         });
+    });
+
+    $('button[data-type="setFrozen"]').off("click").on('click', function () {
+        var tradeNo = $('span[data-name="tradeNo"]').text();
+        var status = $('span[data-name="status"]').text() === '已付款' ? 1 : 0;
+        var buttonDom = $(this);
+        swal({
+            title: '请稍后...',
+            text: '正在积极等待服务器响应',
+            showConfirmButton: false
+        });
+        $.post('/cy2018/api/SetFrozen', {
+            tradeNo: tradeNo,
+            status: status
+        }, function (data) {
+            if (data['status'] !== 1) {
+                swal('请求失败', '更改状态失败,请重试', 'error');
+                return;
+            }
+            swal({
+                title: '',
+                text: '更改状态成功',
+                showConfirmButton: false,
+                timer: 1500,
+                type: 'success'
+            });
+            $('span[data-name="status"]').text(data['status'] ? '已付款' : '冻结中');
+            buttonDom.text(status ? '取消冻结' : '冻结订单');
+        }, 'json');
     });
 
     $('button[data-type="setShield"]').off("click").on('click', function () {
@@ -264,15 +299,26 @@ $(function () {
                         else if (value === 4)
                             value = '银联';
                     } else if (key === 'status') {
-                        value = value ? '已付款' : '未付款';
+                        if (value === 1)
+                            value = '已付款';
+                        else if (value === 2)
+                            value = '冻结中';
+                        else
+                            value = '未付款';
                     } else if (key === 'isShield') {
                         value = value ? '已屏蔽' : '未屏蔽';
                     }
                     setDataNameInfo(key, value);
-                    var status = $('span[data-name="isShield"]').text() !== '未屏蔽' ? 1 : 0;
-                    $('button[data-type="setShield"]').text(status ? '恢复订单' : '屏蔽订单');
                 });
                 //基础信息置入
+                var orderStatus = $('span[data-name="status"]').text();
+                if (orderStatus === '冻结中') {
+                    $('button[data-type="setFrozen"]').text('取消冻结');
+                } else {
+                    $('button[data-type="setFrozen"]').text('冻结订单');
+                }
+                var status = $('span[data-name="isShield"]').text() !== '未屏蔽' ? 1 : 0;
+                $('button[data-type="setShield"]').text(status ? '恢复订单' : '屏蔽订单');
                 $('#orderInfo').modal('show');
             });
         } else if (clickType === 'status') {

@@ -50,10 +50,12 @@ $(function () {
                     var tempHtml = value["createTime"] + "<br>" + (value["endTime"] ? value["endTime"] : "");
                     var tdDom6 = $(document.createElement("td")).html(tempHtml);
                     var tdDom7;
-                    if (value["status"]) {
+                    if (value["status"] === 1) {
                         tdDom7 = $(document.createElement("td")).text("已支付").addClass("text-success")
-                    } else {
+                    } else if(value['status'] === 0){
                         tdDom7 = $(document.createElement("td")).text("未支付").addClass("text-danger")
+                    }else if(value['status'] === 2){
+                        tdDom7 = $(document.createElement("td")).text("已冻结").addClass("text-danger")
                     }
                     trDom.append(tdDom1).append(tdDom2).append(tdDom3).append(tdDom4).append(tdDom5).append(tdDom6).append(tdDom7).append('<td><button data-type="Notified" class="btn btn-outline-primary btn-sm">重新通知</button></td>');
                     $("#orderList>tbody").append(trDom)

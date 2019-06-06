@@ -460,6 +460,12 @@ class Index extends Controller
         if (empty($tradeNo))
             return json(['status' => 0, 'msg' => '订单号码不能为空']);
 
+        $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('status')->limit(1)->select();
+        if (empty($result))
+            return json(['status' => 0, 'msg' => '订单不存在']);
+        if ($result[0]['status'] == 2)
+            return json(['status' => 0, 'msg' => '订单已经被冻结,请取消冻结后修改状态']);
+
         $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
             'status'  => $status,
             'endTime' => getDateTime()
@@ -885,27 +891,8 @@ class Index extends Controller
         //更新用户余额
         {
             if (!empty($setUserFrozenBalance)) {
-                if ($isAddUserFrozenBalance) {
-                    $updateResult = Db::table('epay_user')->where('id', $uid)->limit(1)->dec('balance', decimalsToInt($setUserFrozenBalance, 3))->update();
-                } else {
-                    $updateResult = Db::table('epay_user')->where('id', $uid)->limit(1)->inc('balance', decimalsToInt($setUserFrozenBalance, 3))->update();
-                }
-                if (!$updateResult) {
-                    trace('冻结用户金额异常 uid => ' . $uid, 'error');
+                if (!$this->frozenMoney($uid, $setUserFrozenBalance, $isAddUserFrozenBalance))
                     return json(['status' => 0, 'msg' => '冻结用户金额异常 请重试']);
-                }
-                $userFrozenBalance = getPayUserAttr($uid, 'frozenBalance');
-                if ($userFrozenBalance == '')
-                    $userFrozenBalance = 0;
-                else
-                    $userFrozenBalance = floatval($userFrozenBalance);
-                $userFrozenBalance += floatval((!$isAddUserFrozenBalance ? '+' : '-') . $setUserFrozenBalance);
-                $userFrozenBalance = number_format($userFrozenBalance, 2, '.', '');
-                $updateResult      = setPayUserAttr($uid, 'frozenBalance', $userFrozenBalance);
-                if (!$updateResult) {
-                    trace('更新冻结金额异常 uid => ' . $uid . ' frozenBalance=> ' . $userFrozenBalance, 'error');
-                    return json(['status' => 0, 'msg' => '更新冻结金额异常，请联系管理员处理']);
-                }
             }
         }
         //更新冻结金额
@@ -983,6 +970,32 @@ class Index extends Controller
         if (!$result)
             return json(['status' => 0, 'msg' => '刷新密匙失败']);
         return json(['status' => 1, 'msg' => '刷新密匙成功', 'key' => $key]);
+    }
+
+    public function postSetFrozen()
+    {
+        $username = session('username', '', 'admin');
+        if (empty($username))
+            return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
+
+
+        $tradeNo = input('post.tradeNo/s');
+        $status  = input('post.status/d', 0);
+        if (empty($tradeNo))
+            return json(['status' => 0, 'msg' => '订单号码无效']);
+        if ($status != 0 && $status != 1)
+            return json(['status' => 0, 'msg' => '请求状态有误']);
+        $orderInfo = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->field('money,uid,status')->select();
+        if (empty($orderInfo))
+            return json(['status' => 0, 'msg' => '订单不存在无法冻结订单']);
+        if ($orderInfo[0]['status'] != 2 && $orderInfo[0]['status'] != 1)
+            return json(['status' => 0, 'msg' => '订单尚未支付,无法进行冻结订单']);
+        $frozenMoney = ($orderInfo[0]['money'] / 100) * 20;
+        $isSuccess   = $this->frozenMoney($orderInfo[0]['uid'], $frozenMoney, $status == 1);
+        if (!$isSuccess)
+            return json(['status' => 0, '冻结订单失败,请重试']);
+        Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update(['status' => $status == 1 ? 2 : 1]);
+        return json(['status' => 1, 'msg' => '冻结订单成功']);
     }
 
     public function postSetShield()
@@ -1114,6 +1127,41 @@ class Index extends Controller
         $args        = input('post.args/a');
         $SearchTable = new SearchTable($searchTable, $startSite, $getLength, $order, $searchValue, $args);
         return json($SearchTable->getData());
+    }
+
+    /**
+     * 冻结用户金额
+     * @param int $uid
+     * @param string $setUserFrozenBalance
+     * @param bool $isAddUserFrozenBalance
+     * @return bool
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
+     */
+    private function frozenMoney(int $uid, string $setUserFrozenBalance, bool $isAddUserFrozenBalance)
+    {
+        if ($isAddUserFrozenBalance) {
+            $updateResult = Db::table('epay_user')->where('id', $uid)->limit(1)->dec('balance', decimalsToInt($setUserFrozenBalance, 3))->update();
+        } else {
+            $updateResult = Db::table('epay_user')->where('id', $uid)->limit(1)->inc('balance', decimalsToInt($setUserFrozenBalance, 3))->update();
+        }
+        if (!$updateResult) {
+            trace('冻结用户金额异常 uid => ' . $uid, 'error');
+            return false;
+        }
+        $userFrozenBalance = getPayUserAttr($uid, 'frozenBalance');
+        if ($userFrozenBalance == '')
+            $userFrozenBalance = 0;
+        else
+            $userFrozenBalance = floatval($userFrozenBalance);
+        $userFrozenBalance += floatval((!$isAddUserFrozenBalance ? '+' : '-') . $setUserFrozenBalance);
+        $userFrozenBalance = number_format($userFrozenBalance, 2, '.', '');
+        $updateResult      = setPayUserAttr($uid, 'frozenBalance', $userFrozenBalance);
+        if (!$updateResult) {
+            trace('更新冻结金额异常 uid => ' . $uid . ' frozenBalance=> ' . $userFrozenBalance, 'error');
+            return false;
+        }
+        return true;
     }
 
     private function confirmSettle($settleID, $remark = '暂无转账备注')

@@ -3,6 +3,8 @@
 namespace app\command;
 
 
+use app\pay\model\QQPayModel;
+use app\pay\model\WxPayModel;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -18,6 +20,45 @@ class Test extends Command
     }
 
     protected function execute(Input $input, Output $output)
+    {
+        $orderList = Db::table('epay_order')->where('createTime', '>=', '2019-6-6 9:00:00')
+            ->where('createTime', '<=', '2019-6-6 11:00:00')->where([
+                'status' => 0,
+                'type'   => 2
+            ])->field('tradeNo')->select();
+
+//        $qqModel   = new QQPayModel([
+//            'mchid'  => 0,
+//            'mchkey' => ''
+//        ]);
+        $wxModel = new WxPayModel([
+            'appid' => '',
+            'mchid' => '',
+            'key'   => ''
+        ], 'h5');
+        $i       = 0;
+        foreach ($orderList as $value) {
+            $value        = $value['tradeNo'];
+            $selectResult = $wxModel->selectWxPayRecord($value);
+            if ($selectResult['return_code'] != 'SUCCESS')
+                continue;
+            if ($selectResult['result_code'] != 'SUCCESS')
+                continue;
+            if ($selectResult['trade_state'] == 'SUCCESS') {
+                $i++;
+                Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $value])->limit(1)->update([
+                    'status'  => 1,
+                    'endTime' => getDateTime()
+                ]);
+                //更新订单状态
+                processOrder($value);
+                //统一处理订单
+                echo $i . ' 成功更新 => ' . $value . PHP_EOL;
+            }
+        }
+    }
+
+    private function dumpSettleResult()
     {
         $userList = Db::table('epay_user')->field('id,username,rate')->cursor();
         $a        = 0;

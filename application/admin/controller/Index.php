@@ -591,7 +591,7 @@ class Index extends Controller
         else
             $result = $result->dec('rate', $fee);
 
-        $result->where('id', '<>', 0)->update();
+        $result->where('rate', '>', 0)->update();
         return json(['status' => 1, 'msg' => '批量更新用户费率成功']);
     }
 

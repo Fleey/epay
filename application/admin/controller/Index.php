@@ -482,12 +482,14 @@ class Index extends Controller
 
             $rate         = $userInfo[0]['rate'] / 100;
             $addMoneyRate = $orderData['money'] * ($rate / 100);
+            $addMoneyRate = $addMoneyRate *10;
+            $addMoneyRate = number_format($addMoneyRate, 2, '.', '');
             //计算费率
 
             if ($status)
-                Db::table('epay_user')->where('id', $orderData['uid'])->limit(1)->inc('balance', $addMoneyRate * 10)->update();
+                Db::table('epay_user')->where('id', $orderData['uid'])->limit(1)->inc('balance', $addMoneyRate)->update();
             else
-                Db::table('epay_user')->where('id', $orderData['uid'])->limit(1)->dec('balance', $addMoneyRate * 10)->update();
+                Db::table('epay_user')->where('id', $orderData['uid'])->limit(1)->dec('balance', $addMoneyRate)->update();
         }
         //订单状态确实更新成功
         return json(['status' => $result, 'msg' => '更新订单状态' . ($result ? '成功' : '失败')]);
@@ -1018,6 +1020,8 @@ class Index extends Controller
 
         $rate         = $userInfo[0]['rate'] / 100;
         $addMoneyRate = $orderInfo[0]['money'] * ($rate / 100);
+        $addMoneyRate = $addMoneyRate *10;
+        $addMoneyRate = number_format($addMoneyRate, 2, '.', '');
         //计算费率
 
         $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
@@ -1025,9 +1029,9 @@ class Index extends Controller
         ]);
         if ($result) {
             if (!$status)
-                Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate * 10)->update();
+                Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate)->update();
             else
-                Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->dec('balance', $addMoneyRate * 10)->update();
+                Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->dec('balance', $addMoneyRate)->update();
             trace('[屏蔽订单记录] status => ' . ($status ? '屏蔽' : '恢复') . ' tradeNo => ' . $tradeNo . ' uid => ' . $orderInfo[0]['uid'] . ' money => ' . (($addMoneyRate * 10) / 1000), 'info');
         }
         //订单状态更新成功才操作这个

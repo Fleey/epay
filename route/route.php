@@ -57,6 +57,10 @@ Route::group('user', function () {
     Route::controller('api', 'user/Index');
     Route::rule('[:templateName]', 'user/Index/loadTemplate');
 });
+Route::group('selfHelp', function () {
+    Route::rule('searchOrder', 'user/SelfHelp/searchOrderTemplate');
+    Route::controller('api', 'user/SelfHelp');
+});
 Route::group('api', function () {
     Route::controller('v2', 'api/ApiV2');
 });

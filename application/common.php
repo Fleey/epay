@@ -540,8 +540,10 @@ function processOrder($tradeNo, $notify = true)
     $rate = $userInfo[0]['rate'] / 100;
 
     $addMoneyRate = $orderInfo[0]['money'] * ($rate / 100);
-    //累计金额方便统计
-    $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate * 10)->update();
+    $addMoneyRate = $addMoneyRate *10;
+    $addMoneyRate = number_format($addMoneyRate, 2, '.', '');
+    //累计金额方便统计 仅仅保留两位小数
+    $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance',$addMoneyRate)->update();
     //处理用户余额部分
     if (!$result) {
         trace('更新用户余额错误 uid =>' . $orderInfo[0]['uid'] . ' tradeNo =>' . $tradeNo . ' 订单金额 =>' . ($orderInfo[0]['money'] / 100), 'error');

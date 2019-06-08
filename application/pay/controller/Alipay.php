@@ -64,7 +64,7 @@ class Alipay extends Controller
             $productName = $result[0]['productName'];
         }
 
-        $productName = '商品支付-' . md5($productName);
+//        $productName = '商品支付-' . md5($productName);
 
         $isMobile = $this->request->isMobile();
         $param    = [
@@ -153,7 +153,7 @@ class Alipay extends Controller
             return json(['status' => 0, 'msg' => 'fail']);
         //订单状态已经被更新
         if ($tradeStatus == 'TRADE_SUCCESS') {
-            Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo'=>$tradeNoOut])->limit(1)->update([
+            Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNoOut])->limit(1)->update([
                 'status'  => 1,
                 'endTime' => getDateTime()
             ]);

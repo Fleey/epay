@@ -18,7 +18,7 @@ class QQPay extends Controller
     {
         parent::__construct($app);
         $this->systemConfig = getConfig();
-        $this->qqPayConfig = $this->systemConfig['qqpay'];
+        $this->qqPayConfig  = $this->systemConfig['qqpay'];
         if (empty($this->systemConfig['notifyDomain'])) {
             $this->notifyUrl = url('/Pay/QQPay/Notify', '', false, true);
         } else {
@@ -34,7 +34,7 @@ class QQPay extends Controller
      */
     public function getSubmit()
     {
-        $tradeNo = input('get.tradeNo/s');
+        $tradeNo  = input('get.tradeNo/s');
         $siteName = htmlentities(base64_decode(input('get.siteName')));
         if (empty($siteName))
             $siteName = '易支付';
@@ -49,7 +49,7 @@ class QQPay extends Controller
         if ($result[0]['status'])
             return redirect(buildCallBackUrl($tradeNo, 'return'));
 
-        $apiType = 0;
+        $apiType       = 0;
         $userPayConfig = unserialize(getPayUserAttr($result[0]['uid'], 'payConfig'));
         if (!empty($userPayConfig)) {
             $apiType = $userPayConfig['qqpay']['apiType'];
@@ -62,28 +62,28 @@ class QQPay extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '该订单尚不支持原生支付！']);
 
         $productNameShowMode = intval(getPayUserAttr($result[0]['uid'], 'productNameShowMode'));
-        $productName = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];
+        $productName         = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];
         if ($productNameShowMode == 1) {
-            $tempData = getPayUserAttr($result[0]['uid'], 'productName');
+            $tempData    = getPayUserAttr($result[0]['uid'], 'productName');
             $productName = empty($tempData) ? '商户尚未设置默认商品名称' : $tempData;
         } else if ($productNameShowMode == 2) {
             $productName = $result[0]['productName'];
         }
 
-        $param = [
-            'out_trade_no' => $tradeNo,
-            'body' => '商品支付-' . md5($productName),
-            'fee_type' => 'CNY',
-            'notify_url' => $this->notifyUrl,
+        $param         = [
+            'out_trade_no'     => $tradeNo,
+            'body'             => $productName,
+            'fee_type'         => 'CNY',
+            'notify_url'       => $this->notifyUrl,
             'spbill_create_ip' => getClientIp(),
-            'total_fee' => $result[0]['money'],
-            'trade_type' => 'NATIVE',
-            'time_start' => date('YmdHis', time()),
-            'time_expire' => date('YmdHis', time() + 360),
+            'total_fee'        => $result[0]['money'],
+            'trade_type'       => 'NATIVE',
+            'time_start'       => date('YmdHis', time()),
+            'time_expire'      => date('YmdHis', time() + 360),
         ];
-        $QQPayModel = new QQPayModel($this->qqPayConfig);
+        $QQPayModel    = new QQPayModel($this->qqPayConfig);
         $requestResult = $QQPayModel->sendPayRequest($param);
-        $codeUrl = '';
+        $codeUrl       = '';
         if ($requestResult['return_code'] == 'SUCCESS' && $requestResult['result_code'] == 'SUCCESS')
             $codeUrl = $requestResult['code_url'];
         else
@@ -100,12 +100,12 @@ class QQPay extends Controller
             return redirect($codeUrl, [], 302);
         //判断是否手机QQ
         return $this->fetch('/QQPay' . ($this->request->isMobile() ? 'Mobile' : 'Pc') . 'Template', [
-            'siteName' => $siteName,
+            'siteName'    => $siteName,
             'productName' => $result[0]['productName'],
-            'money' => $result[0]['money'] / 100,
-            'tradeNo' => $tradeNo,
-            'addTime' => $result[0]['createTime'],
-            'codeUrl' => $codeUrl
+            'money'       => $result[0]['money'] / 100,
+            'tradeNo'     => $tradeNo,
+            'addTime'     => $result[0]['createTime'],
+            'codeUrl'     => $codeUrl
         ]);
     }
 
@@ -122,7 +122,7 @@ class QQPay extends Controller
         //数据转换
         if (empty($requestData['sign']))
             return xml(['return_code' => 'FAIL', 'return_msg' => '签名不能为空']);
-        $sign = $requestData['sign'];
+        $sign       = $requestData['sign'];
         $QQPayModel = new QQPayModel($this->qqPayConfig);
         if ($sign != $QQPayModel->signParam($requestData))
             return xml(['return_code' => 'FAIL', 'return_msg' => '签名失败']);
@@ -146,7 +146,7 @@ class QQPay extends Controller
 
         if ($requestData['trade_state'] == 'SUCCESS') {
             Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNoOut])->limit(1)->update([
-                'status' => 1,
+                'status'  => 1,
                 'endTime' => getDateTime()
             ]);
             //更新订单状态

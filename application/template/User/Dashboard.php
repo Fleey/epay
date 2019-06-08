@@ -57,8 +57,8 @@
                                 <i class="ti-image"></i>
                             </h2>
                             <div class="ml-4">
-                                <h2 class="font-normal"><?php echo number_format($totalOrder); ?></h2>
-                                <h4>交易成功订单数量</h4>
+                                <h2 class="font-normal"><?php echo number_format($todayTotalOrder); ?></h2>
+                                <h4>当日总订单数量</h4>
                             </div>
                         </div>
                     </div>
@@ -69,8 +69,8 @@
                             </h2>
                             <div class="ml-4">
                                 <h2 class="font-normal">
-                                    ￥<?php echo number_format($yesterdayOrderTotalMoney / 100, 2) ?></h2>
-                                <h4>昨日交易额（未扣手续费）</h4>
+                                    <?php echo $todaySuccessOrder; ?></h2>
+                                <h4>当日付款成功量</h4>
                             </div>
                         </div>
                     </div>
@@ -103,14 +103,14 @@
         <div class="col-md-12 col-lg-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title text-uppercase">昨天支付类型统计</h5>
+                    <h5 class="card-title text-uppercase">今天支付类型统计</h5>
                     <div class="mt-3">
                         <div id="chartMap2" style="height: 360px;"></div>
                     </div>
                     <div class="d-flex align-items-center mt-4">
                         <div>
                             <h3 class="font-medium text-uppercase">交易金额统计</h3>
-                            <h5 class="text-muted">仅统计昨天交易类型金额（未扣费率）</h5>
+                            <h5 class="text-muted">仅统计今天交易类型金额（未扣费率）</h5>
                         </div>
                     </div>
                 </div>
@@ -218,10 +218,10 @@
                         }
                     },
                     data: [
-                        {value: <?php echo $yesterdayOrderTypeCount['qq'] / 100;?>, name: '财付通'},
-                        {value: <?php echo $yesterdayOrderTypeCount['wx'] / 100;?>, name: '微信'},
-                        {value: <?php echo $yesterdayOrderTypeCount['ali'] / 100;?>, name: '支付宝'},
-                        {value:<?php echo $yesterdayOrderTypeCount['bank'] / 100;?>, name: '银联'}
+                        {value: <?php echo $todayOrderTypeCount['qq'] / 100;?>, name: '财付通'},
+                        {value: <?php echo $todayOrderTypeCount['wx'] / 100;?>, name: '微信'},
+                        {value: <?php echo $todayOrderTypeCount['ali'] / 100;?>, name: '支付宝'},
+                        {value:<?php echo $todayOrderTypeCount['bank'] / 100;?>, name: '银联'}
                     ]
                 }
             ]

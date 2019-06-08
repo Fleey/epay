@@ -9,6 +9,7 @@ $(function () {
         'deferRender': true,
         "order": [[0, 'desc']],
         "bRetrieve": true,
+        'processing': true,
         'ajax': {
             url: baseUrl + 'cy2018/api/SearchTable',
             type: 'post',
@@ -111,8 +112,8 @@ $(function () {
                 return;
             }
             swal({
-                title: '',
-                text: '更改状态成功',
+                title: '更改状态成功',
+                text: data['msg'],
                 showConfirmButton: false,
                 timer: 1500,
                 type: 'success'
@@ -140,8 +141,8 @@ $(function () {
                 return;
             }
             swal({
-                title: '',
-                text: '更改状态成功',
+                title: '更改状态成功',
+                text: data['msg'],
                 showConfirmButton: false,
                 timer: 1500,
                 type: 'success'
@@ -167,6 +168,7 @@ $(function () {
         $('#tradeNoOut').val('');
         $('#orderStatus').val('all');
         $('#payType').val('all');
+        $('#orderIsShield').val('all');
         $('#productMinPrice').val('');
         $('#productMaxPrice').val('');
         $('#productStartTime').val('');
@@ -186,11 +188,12 @@ $(function () {
         var productStartTime = $('#productStartTime').val();
         var productEndTime = $('#productEndTime').val();
         var productName = $('#productName').val();
+        var isShield = $('#orderIsShield').val();
 
         var dataTable = $('#orderList').dataTable();
         dataTable.fnDestroy();
 
-        if (!uid && !tradeNo && !tradeNoOut && !productName && payType === 'all' && status === 'all' && !productMinPrice && !productMaxPrice && !productStartTime && !productEndTime) {
+        if (!uid && !tradeNo && !tradeNoOut && !productName && isShield === 'all' && payType === 'all' && status === 'all' && !productMinPrice && !productMaxPrice && !productStartTime && !productEndTime) {
             dataTableConfig['ajax'] = {
                 url: baseUrl + 'cy2018/api/searchTable',
                 type: 'post',
@@ -240,6 +243,8 @@ $(function () {
             data['args']['type'] = payType;
         if (status !== 'all')
             data['args']['status'] = status;
+        if (isShield !== 'all')
+            data['args']['isShield'] = isShield;
         if (productMinPrice)
             data['args']['productMinPrice'] = productMinPrice;
         if (productMaxPrice)

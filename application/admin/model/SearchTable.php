@@ -135,6 +135,8 @@ class SearchTable
                 $queryResult = $queryResult->where('type', $this->args['type']);
             if (isset($this->args['status']))
                 $queryResult = $queryResult->where('status', $this->args['status']);
+            if (isset($this->args['isShield']))
+                $queryResult = $queryResult->where('isShield', $this->args['isShield']);
             if (isset($this->args['productMinPrice']))
                 $queryResult = $queryResult->where('money', '>=', decimalsToInt($this->args['productMinPrice'], 2));
             if (isset($this->args['productMaxPrice']))

@@ -978,7 +978,6 @@ class Index extends Controller
         if (empty($username))
             return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
 
-
         $tradeNo = input('post.tradeNo/s');
         $status  = input('post.status/d', 0);
         if (empty($tradeNo))
@@ -995,7 +994,7 @@ class Index extends Controller
         if (!$isSuccess)
             return json(['status' => 0, '冻结订单失败,请重试']);
         Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update(['status' => $status == 1 ? 2 : 1]);
-        return json(['status' => 1, 'msg' => '冻结订单成功']);
+        return json(['status' => 1, 'msg' => ($status?'':'取消').'冻结订单成功']);
     }
 
     public function postSetShield()

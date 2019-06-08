@@ -27,11 +27,17 @@ class Index extends Controller
             $data['isGeetest'] = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);
         }
         if ($templateName == 'Dashboard') {
-            $data['balance']    = $userInfo[0]['balance'] / 1000;
-            $data['key']        = $userInfo[0]['key'];
-            $data['uid']        = $uid;
-            $data['rate']       = $userInfo[0]['rate'] / 100;
-            $data['totalOrder'] = Db::table('epay_order')->where('uid', $uid)->cache(120)->count('id');
+            $data['balance']         = $userInfo[0]['balance'] / 1000;
+            $data['key']             = $userInfo[0]['key'];
+            $data['uid']             = $uid;
+            $data['rate']            = $userInfo[0]['rate'] / 100;
+            $data['todayTotalOrder'] = Db::table('epay_order')->where('uid', $uid)->whereTime('createTime', 'today')->cache(120)->count('id');
+
+            $data['todaySuccessOrder'] = Db::table('epay_order')->where([
+                'uid'      => $uid,
+                'status'   => 1,
+                'isShield' => 0
+            ])->whereTime('createTime', 'today')->cache(120)->count('id');
 
             $data['todayOrderTotalMoney'] = Db::table('epay_order')->whereTime('endTime', 'today')->where([
                 'uid'      => $uid,
@@ -39,38 +45,32 @@ class Index extends Controller
                 'isShield' => 0
             ])->cache(120)->sum('money');
 
-            $data['yesterdayOrderTypeCount'] = [
-                'wx'   => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
+            $data['todayOrderTypeCount'] = [
+                'wx'   => Db::table('epay_order')->whereTime('endTime', 'today')->cache(600)->where([
                     'uid'      => $uid,
                     'status'   => 1,
                     'type'     => 1,
                     'isShield' => 0
                 ])->sum('money'),
-                'qq'   => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
+                'qq'   => Db::table('epay_order')->whereTime('endTime', 'today')->cache(600)->where([
                     'uid'      => $uid,
                     'status'   => 1,
                     'type'     => 2,
                     'isShield' => 0
                 ])->sum('money'),
-                'ali'  => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
+                'ali'  => Db::table('epay_order')->whereTime('endTime', 'today')->cache(600)->where([
                     'uid'      => $uid,
                     'status'   => 1,
                     'type'     => 3,
                     'isShield' => 0
                 ])->sum('money'),
-                'bank' => Db::table('epay_order')->whereTime('endTime', 'yesterday')->cache(600)->where([
+                'bank' => Db::table('epay_order')->whereTime('endTime', 'today')->cache(600)->where([
                     'uid'      => $uid,
                     'status'   => 1,
                     'type'     => 4,
                     'isShield' => 0
                 ])->sum('money')
             ];
-
-            $data['yesterdayOrderTotalMoney'] =
-                $data['yesterdayOrderTypeCount']['wx'] +
-                $data['yesterdayOrderTypeCount']['qq'] +
-                $data['yesterdayOrderTypeCount']['ali'] +
-                $data['yesterdayOrderTypeCount']['bank'];
 
             $data['settleRecord'] = [];
             for ($i = 6; $i >= 1; $i--) {

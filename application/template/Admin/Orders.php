@@ -218,6 +218,16 @@
                             </div>
                         </div>
                         <div class="form-group row">
+                            <label for="orderIsShield" class="col-md-3 control-label">订单屏蔽状态</label>
+                            <div class="col-md-8">
+                                <select class="form-control" id="orderIsShield" style="width: 100%;">
+                                    <option value="all">所有</option>
+                                    <option value="1">已屏蔽</option>
+                                    <option value="0">未屏蔽</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
                             <label for="orderStatus" class="col-md-3 control-label">订单状态</label>
                             <div class="col-md-8">
                                 <select class="form-control" id="orderStatus" style="width: 100%;">

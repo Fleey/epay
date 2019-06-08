@@ -9,7 +9,7 @@ $(function ($) {
         var url = $(this).attr('data-href');
         route(url, false);
     });
-    $('.exit').off("click").on('click',function () {
+    $('.exit').off("click").on('click', function () {
         $.getJSON('/auth/admin/exit', function (data) {
             swal(data['msg'], {
                 buttons: false,
@@ -28,6 +28,7 @@ $(function ($) {
         }
     }
 });
+var isAwaitRoute = false;
 
 function route(url, isFirst, args, isGetPageData) {
     isGetPageData = isGetPageData !== undefined;
@@ -38,6 +39,10 @@ function route(url, isFirst, args, isGetPageData) {
         if (clickDom.parent().is('.selected') && !isFirst) {
             return;
         }
+        if (isAwaitRoute)
+            return;
+        isAwaitRoute = true;
+
         location.hash = url;
         sidebarDom.find('li.selected').removeClass('selected');
 
@@ -57,8 +62,10 @@ function route(url, isFirst, args, isGetPageData) {
             window.history.pushState(null, null, baseUrl + 'cy2018/Index#' + url);
             //增加历史地址
             $('.page-wrapper').html(data);
+            isAwaitRoute = false;
         },
         error: function (XMLHttpRequest, textStatus, errorThrown) {
+            isAwaitRoute = false;
             if (isGetPageData)
                 return undefined;
             switch (XMLHttpRequest['status']) {

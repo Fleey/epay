@@ -16,13 +16,14 @@
 <div class="container">
     <div class="search">
         <h2 class="text-center">自助订单查询</h2>
+        <p class="text-center">输入相应订单号即可查询业务购买网址跟售后客服联系方式</p>
         <input class="form-control form-control-lg" type="text" id="searchValue" placeholder="平台订单或商户订单号"/>
         <div id="checkUser"></div>
         <button type="button" class="btn btn-primary btn-lg btn-block" id="searchBtn">点击查询</button>
     </div>
-    <div class="ad">
-        <h2 class="tips text-center">这里是广告投放区域</h2>
-    </div>
+<!--    <div class="ad">-->
+<!--        <h2 class="tips text-center">这里是广告投放区域</h2>-->
+<!--    </div>-->
 </div>
 <script src="/static/js/resource/jquery.min.js"></script>
 <script src="/static/js/user/gt.js"></script>

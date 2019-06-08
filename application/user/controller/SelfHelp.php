@@ -13,6 +13,13 @@ class SelfHelp extends Controller
         return $this->fetch('/SelfHelp/SearchOrder');
     }
 
+    /**
+     * @return \think\response\Json
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function postOrderInfo()
     {
         $tradeNo = input('post.tradeNo/s');
@@ -34,11 +41,22 @@ class SelfHelp extends Controller
             return json(['status' => 0, 'msg' => '还没有通过人机验证']);
 
         //防止cc
-        $searchResult = Db::table('epay_order')->where('tradeNo=:tradeNo or tradeNoOut=:tradeNo1')->bind(['tradeNo' => $tradeNo, 'tradeNo1' => $tradeNo])->limit(1)->select();
+        $connectMysql = [
+            'mysql://root:root@127.0.0.1:3306/epay#utf8mb4'
+        ];
+        $connectStr   = null;
+        $searchResult = null;
+        foreach ($connectMysql as $value) {
+
+            $connectStr   = $value;
+            $searchResult = Db::connect($value)->table('epay_order')->where('tradeNo=:tradeNo or tradeNoOut=:tradeNo1')->bind(['tradeNo' => $tradeNo, 'tradeNo1' => $tradeNo])->limit(1)->select();
+            if (!empty($searchResult))
+                break;
+        }
         if (empty($searchResult))
             return json(['status' => 0, 'msg' => '订单不存在,请重试']);
         $uid      = $searchResult[0]['uid'];
-        $userInfo = Db::table('epay_user')->where('id', $uid)->field('qq,domain')->limit(1)->select();
+        $userInfo = Db::connect($connectStr)->table('epay_user')->where('id', $uid)->field('qq,domain')->limit(1)->select();
         if (empty($userInfo))
             $userInfo[] = ['qq' => '商户不存在', 'doamin' => '商户不存在'];
         unset($searchResult[0]['isShield']);

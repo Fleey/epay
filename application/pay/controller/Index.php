@@ -95,9 +95,8 @@ class Index extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '商品名称(name)长度不能超过64个字符']);
 
         try {
-            PayModel::checkBadWord($this->systemConfig, $productName);
+            PayModel::checkBadWord($this->systemConfig, $productName, $uid);
         } catch (Exception $exception) {
-            trace('触发违禁词 uid => ' . $uid . ' productName => ' . $productName . ' money => ' . $this->getData['money'], 'info');
             return $this->fetch('/SystemMessage', ['msg' => $exception->getMessage()]);
         }
         //检测违禁词

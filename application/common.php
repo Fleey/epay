@@ -140,7 +140,7 @@ function is_email($text)
     return filter_var($text, FILTER_VALIDATE_EMAIL) === false ? false : true;
 }
 
-function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlencode = true, $isProxy = false)
+function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlencode = true, $isProxy = false, $isAdv = false)
 {
     if (empty($url))
         return '';
@@ -221,6 +221,11 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     //header is not empty
     $result = curl_exec($ch);
 
+    if ($isAdv) {
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($httpCode != 200)
+            $result = false;
+    }
 //    if($result === false)
 //        exit(dump(curl_error($ch)));
     curl_close($ch);
@@ -540,10 +545,10 @@ function processOrder($tradeNo, $notify = true)
     $rate = $userInfo[0]['rate'] / 100;
 
     $addMoneyRate = $orderInfo[0]['money'] * ($rate / 100);
-    $addMoneyRate = $addMoneyRate *10;
+    $addMoneyRate = $addMoneyRate * 10;
     $addMoneyRate = number_format($addMoneyRate, 2, '.', '');
     //累计金额方便统计 仅仅保留两位小数
-    $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance',$addMoneyRate)->update();
+    $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate)->update();
     //处理用户余额部分
     if (!$result) {
         trace('更新用户余额错误 uid =>' . $orderInfo[0]['uid'] . ' tradeNo =>' . $tradeNo . ' 订单金额 =>' . ($orderInfo[0]['money'] / 100), 'error');
@@ -557,7 +562,8 @@ function processOrder($tradeNo, $notify = true)
     //必须金额更新成功后才能触发自动结算
     if ($notify) {
         $notifyUrl     = buildCallBackUrl($tradeNo, 'notify');
-        $requestResult = curl($notifyUrl);
+        $requestResult = curl($notifyUrl, [], 'get', '', '', true, false, true);
+        //开启高级模式 不为200 直接走重发
         if ($requestResult === false)
             addCallBackLog($orderInfo[0]['uid'], $notifyUrl);
         //回调事件

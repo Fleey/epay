@@ -12,17 +12,26 @@ class PayModel
      * 判断违禁词 如果出现违禁词则会抛出异常
      * @param array $systemConfig
      * @param string $name
+     * @param int $uid
      * @throws Exception
      */
-    public static function checkBadWord(array $systemConfig, string $name)
+    public static function checkBadWord(array $systemConfig, string $name, int $uid)
     {
         $badWordList = str_replace('，', ',', $systemConfig['goodsFilter']['keyWord']);
         $badWordList = str_replace('、', ',', $badWordList);
         $badWordList = explode(',', $badWordList);
         if (!empty($badWordList)) {
             $blackReg = '/' . implode('|', $badWordList) . '/i';
-            if (preg_match($blackReg, $name, $matches))
+            if (preg_match($blackReg, $name, $matches)) {
+                Db::table('epay_log')->insert([
+                    'uid'        => $uid,
+                    'type'       => 2,
+                    'ipv4'       => getClientIp(),
+                    'data'       => '触发违禁词 ' . json_encode($matches),
+                    'createTime' => getDateTime()
+                ]);
                 throw new Exception($systemConfig['goodsFilter']['tips']);
+            }
         }
     }
 
@@ -83,13 +92,13 @@ class PayModel
 
         if ($discountData['type'] == 0) {
             if (count($discountData['moneyList']) != 0)
-                $discountMoney = number_format($discountData['moneyList'][0], 2,'.','') * 100;
+                $discountMoney = number_format($discountData['moneyList'][0], 2, '.', '') * 100;
             //固定减免
         } else if ($discountData['type'] == 1) {
             if (count($discountData['moneyList']) == 0)
                 return 0;
             $randNumber    = rand(0, count($discountData['moneyList']) - 1);
-            $discountMoney = number_format($discountData['moneyList'][$randNumber], 2,'.','') * 100;
+            $discountMoney = number_format($discountData['moneyList'][$randNumber], 2, '.', '') * 100;
         }
 
         return $discountMoney;

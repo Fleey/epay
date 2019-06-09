@@ -59,5 +59,8 @@ return [
     // 是否需要断线重连
     'break_reconnect' => true,
     // 断线标识字符串
-    'break_match_str' => [],
+    'break_match_str' => [
+        'MySQL server has gone away',
+        'Connection refused'
+    ],
 ];

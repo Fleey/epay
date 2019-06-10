@@ -13,6 +13,10 @@
         line-height: 7.5rem;
         cursor: pointer;
     }
+
+    .mr15 {
+        margin-right: 15px;
+    }
 </style>
 <div class="page-content container-fluid">
     <div class="row">
@@ -24,13 +28,11 @@
                             data-target="#searchFilter">
                         高级搜索
                     </button>
-                    <button class="btn w96 btn-outline-primary btn-sm float-right" style="margin-right: 15px;"
-                            data-toggle="modal"
+                    <button class="btn w96 mr15 btn-outline-primary btn-sm float-right" data-toggle="modal"
                             id="addUser">
                         新增商户
                     </button>
-                    <button class="btn w96 btn-outline-primary btn-sm float-right" style="margin-right: 15px;"
-                            id="batchSetFee">
+                    <button class="btn w96 mr15 btn-outline-primary btn-sm float-right" id="batchSetFee">
                         批量调整费率
                     </button>
                     <div class="table-responsive">
@@ -274,6 +276,18 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="tradeTotal" role="dialog" aria-labelledby="tradeTotal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">交易统计（延迟60秒）</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"></div>
         </div>
     </div>
 </div>

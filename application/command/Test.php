@@ -21,7 +21,7 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        $userData = Db::table('epay_user')->field('id,rate,clearMode')->cursor();
+        $userData = Db::table('epay_user')->field('id,rate,clearMode')->where('id', 1011)->cursor();
         foreach ($userData as $value) {
             $uid        = $value['id'];
             $rate       = $value['rate'] / 100;
@@ -35,9 +35,10 @@ class Test extends Command
                 $deleteMoney = Db::table('epay_user_money_log')->where('uid', $uid)->whereTime('createTime', 'today')->sum('money');
                 $deleteMoney /= 1000;
                 $balance     = ($totalMoney + $deleteMoney) * 1000;
-                Db::table('epay_user')->where('id', $uid)->limit(1)->update([
-                    'balance' => $balance
-                ]);
+                exit(dump($balance/1000));
+//                Db::table('epay_user')->where('id', $uid)->limit(1)->update([
+//                    'balance' => $balance
+//                ]);
             }
         }
 

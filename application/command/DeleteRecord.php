@@ -20,7 +20,7 @@ class DeleteRecord extends Command
     protected function execute(Input $input, Output $output)
     {
         // 指令输出
-        $deleteTime = '- 15 day';
+        $deleteTime = '- 10 day';
         //delete 15 day before data
         Db::table('epay_order')->whereTime('createTime', '<=', $deleteTime)->delete();
         Db::table('epay_order_attr')->whereTime('createTime', '<=', $deleteTime)->delete();

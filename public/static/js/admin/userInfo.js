@@ -36,6 +36,7 @@ $(function () {
                 'render': function (data, type, row) {
                     var html = '<div class="btn-group" role="group" aria-label="Button group with nested dropdown">';
                     html += '<button type="button" class="btn btn-sm btn-secondary" data-type="more">查看更多</button>';
+                    html += '<button type="button" class="btn btn-sm btn-secondary" data-type="tradeTotal">交易统计</button>';
                     html += '</div>';
                     return html;
                 },
@@ -571,6 +572,39 @@ $(function () {
                 }
                 $('#userInfo').modal('show').attr('data-status', 'save');
 
+            });
+        } else if (clickType === 'tradeTotal') {
+            swal({
+                title: '请稍后...',
+                text: '正在积极等待服务器响应',
+                showConfirmButton: false
+            });
+            $.getJSON(baseUrl + 'cy2018/api/UserTradeTotal', {
+                uid: uid
+            }, function (data) {
+                if (data['status'] !== 1) {
+                    swal('获取信息失败', '请稍后再试', 'error');
+                    return;
+                }
+                swal.close();
+                var dom = $('#tradeTotal');
+                var body = dom.find('.modal-body');
+                var html = '';
+
+                $.each(data['data'], function (key, value) {
+                    html += '<div class="row">';
+                    html += '<div class="col-md-12"><b style="margin-bottom: 12px;font-size: 16px;font-weight: 400;">' + key + '</b></div>';
+                    html += '<div class="col-md-2"><p><b>订单总数</b><br>' + value['totalOrder'] + '</p></div>';
+                    html += '<div class="col-md-2"><p><b>成功总数</b><br>' + value['successOrder'] + '</p></div>';
+                    html += '<div class="col-md-2"><p><b>交易金额</b><br>￥' + value['tradeMoney'] + '</p></div>';
+                    html += '<div class="col-md-2"><p><b>扣除金额</b><br>￥' + value['tradeMoneyRate'] + '</p></div>';
+                    html += '<div class="col-md-2"><p><b>操作余额</b><br>￥' + value['updateMoney'] + '</p></div>';
+                    html += '<div class="col-md-2"><p><b>成功率</b><br>' + (value['successOrder'] / value['totalOrder'] * 100).toFixed(2) + '%</p></div>';
+                    html += '</div>';
+                });
+                body.html(html);
+                dom.modal('show');
+                console.log(data);
             });
         }
     });

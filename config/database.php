@@ -61,6 +61,7 @@ return [
     // 断线标识字符串
     'break_match_str' => [
         'MySQL server has gone away',
-        'Connection refused'
+        'Connection refused',
+        'Connection timed out'
     ],
 ];

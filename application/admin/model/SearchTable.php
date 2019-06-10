@@ -48,7 +48,8 @@ class SearchTable
             'epay_order',
             'epay_user',
             'epay_settle',
-            'epay_user_money_log'
+            'epay_user_money_log',
+            'epay_log'
         ];
         if (!in_array($searchTable, $tableList)) {
             throw new Exception('该表不存在', 404);
@@ -182,6 +183,15 @@ class SearchTable
         } else if ($this->searchTable == 'epay_user_money_log') {
             if (isset($this->args['uid']))
                 $queryResult = $queryResult->where('uid', $this->args['uid']);
+        } else if ($this->searchTable == 'epay_log') {
+            if (isset($this->args['uid']))
+                $queryResult = $queryResult->where('uid', $this->args['uid']);
+            if (isset($this->args['type']))
+                $queryResult = $queryResult->where('type', $this->args['type']);
+            if (isset($this->args['ipv4']))
+                $queryResult = $queryResult->where('ipv4=:ip', ['ip' => $this->args['ipv4']]);
+            if (isset($this->args['data']))
+                $queryResult = $queryResult->where('data', 'like', '%' . $this->args['data'] . '%');
         }
         return $queryResult;
     }
@@ -220,6 +230,8 @@ class SearchTable
             $searchOrderList = ['id', 'uid', 'clearType', 'account', 'username', 'money', 'fee', 'status', 'createTime'];
         } else if ($this->searchTable == 'epay_user_money_log') {
             $searchOrderList = ['money', 'desc', 'createTime'];
+        } else if ($this->searchTable == 'epay_log') {
+            $searchOrderList = ['id', 'uid', 'type', 'ipv4', 'createTime', 'data'];
         }
         $field = '';
         foreach ($searchOrderList as $item) {

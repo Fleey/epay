@@ -52,6 +52,13 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link waves-effect waves-dark sidebar-link" data-href="SystemLog"
+                       aria-expanded="false">
+                        <i class="mdi mdi-comment-alert-outline"></i>
+                        <span class="hide-menu">系统日志</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link waves-effect waves-dark sidebar-link exit" href="javascript:void(0);"
                        aria-expanded="false">
                         <i class="fa fa-power-off"></i>

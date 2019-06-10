@@ -482,7 +482,7 @@ class Index extends Controller
 
             $rate         = $userInfo[0]['rate'] / 100;
             $addMoneyRate = $orderData['money'] * ($rate / 100);
-            $addMoneyRate = $addMoneyRate *10;
+            $addMoneyRate = $addMoneyRate * 10;
             $addMoneyRate = number_format($addMoneyRate, 2, '.', '');
             //计算费率
 
@@ -934,6 +934,65 @@ class Index extends Controller
         return json(['status' => 1, 'msg' => '保存用户信息成功']);
     }
 
+    public function getUserTradeTotal()
+    {
+        $username = session('username', '', 'admin');
+        if (empty($username))
+            return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
+
+        $uid = input('get.uid/d');
+        if (empty($uid))
+            return json(['status' => 0, 'msg' => '用户id无效']);
+
+
+        $buildOrderStatistics = function (string $date, int $uid) {
+            $userData = Db::table('epay_user')->field('rate')->where('id', $uid)->limit(1)->select();
+            if (empty($userData))
+                return [
+                    'totalOrder'     => 0,
+                    'successOrder'   => 0,
+                    'updateMoney'    => 0,
+                    'tradeMoney'     => 0,
+                    'tradeMoneyRate' => 0
+                ];
+            //获取费率
+            $rate = $userData[0]['rate'] / 100;
+            //用户费率
+            $totalOrder = Db::table('epay_order')->where('uid', $uid)->whereBetweenTime('createTime', $date)->cache(60)->count();
+            //总共订单
+            $successOrder = Db::table('epay_order')->where('uid', $uid)->whereBetweenTime('endTime', $date)->where('status', 1)->cache(60)->count();
+            //成功订单
+            $updateMoney = Db::table('epay_user_money_log')->where('uid', $uid)->whereBetweenTime('createTime', $date)->cache(60)->sum('money');
+            $updateMoney /= 1000;
+            //增减金额总共
+            $tradeMoney = Db::table('epay_order')->where([
+                'uid'      => $uid,
+                'status'   => 1,
+                'isShield' => 0
+            ])->whereBetweenTime('endTime', $date)->cache(60)->sum('money');
+            //没计算费率的交易金额
+            $tradeMoneyRate = $tradeMoney * ($rate / 100) / 100;
+            return [
+                'totalOrder'     => $totalOrder,
+                'successOrder'   => $successOrder,
+                'updateMoney'    => $updateMoney,
+                'tradeMoney'     => number_format($tradeMoney / 100, 2, '.', ''),
+                'tradeMoneyRate' => number_format($tradeMoneyRate, 2, '.', '')
+            ];
+        };
+
+        $data           = [];
+        $createTimeList = [
+            date('Y-m-d', strtotime('- 2 day')),
+            date('Y-m-d', strtotime('- 1 day')),
+            date('Y-m-d', strtotime('now'))
+        ];
+        foreach ($createTimeList as $time) {
+            $data[$time] = $buildOrderStatistics($time, $uid);
+        }
+        return json(['status' => 1, 'data' => $data]);
+    }
+
     /**
      * @return \think\response\Json
      */
@@ -996,7 +1055,7 @@ class Index extends Controller
         if (!$isSuccess)
             return json(['status' => 0, '冻结订单失败,请重试']);
         Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update(['status' => $status == 1 ? 2 : 1]);
-        return json(['status' => 1, 'msg' => ($status?'':'取消').'冻结订单成功']);
+        return json(['status' => 1, 'msg' => ($status ? '' : '取消') . '冻结订单成功']);
     }
 
     public function postSetShield()
@@ -1020,7 +1079,7 @@ class Index extends Controller
 
         $rate         = $userInfo[0]['rate'] / 100;
         $addMoneyRate = $orderInfo[0]['money'] * ($rate / 100);
-        $addMoneyRate = $addMoneyRate *10;
+        $addMoneyRate = $addMoneyRate * 10;
         $addMoneyRate = number_format($addMoneyRate, 2, '.', '');
         //计算费率
 

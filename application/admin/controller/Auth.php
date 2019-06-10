@@ -92,13 +92,6 @@ class Auth extends Controller
             session('CheckAdminLoginAuthCode', null);
             return json(['status' => -1, 'msg' => '账号或密码不正确']);
         }
-        Db::table('epay_log')->insert([
-            'uid'        => 1,
-            'type'       => 1,
-            'ipv4'       => getClientIp(),
-            'createTime' => getDateTime(),
-            'data'       => 'login admin system'
-        ]);
         session('username', $username, 'admin');
         $clientIp = getClientIp();
         Db::table('epay_log')->insert([

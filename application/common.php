@@ -663,13 +663,14 @@ function getServerConfig(string $key)
 
 function getIpSite(String $ip)
 {
-    $content = curl("http://api.map.baidu.com/location/ip?ak=2TGbi6zzFm5rjYKqPPomh9GBwcgLW5sS&ip={$ip}&coor=bd09ll");
+    $content = curl("http://ip.taobao.com/service/getIpInfo.php?ip={$ip}");
     if ($content === false)
         return '未知登陆地区';
     $json = json_decode($content, true);
-    if (empty($json['content']['address']))
+    if ($json['code'] != 0)
         return '未知登陆地区';
-    return $json['content']['address'];
+    $json = $json['data'];
+    return $json['country'] . '-' . $json['region'] . '-' . $json['city'] . '   ' . $json['isp'];
 }
 
 function getClientIp()

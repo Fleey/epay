@@ -29,8 +29,41 @@ class Settle extends Command
             $output->info('start optimize mysql');
             $this->optimizeDatabase();
             $output->info('end optimize mysql');
+        } else if ($nowHour == 0) {
+            $output->info('start add settle data');
+            $this->addSettleData();
+            $output->info('end add settle data');
         }
-        //凌晨4点执行本任务
+        //凌晨4点执行本任务优化数据库
+
+    }
+
+    private function addSettleData()
+    {
+        $userData       = Db::table('epay_user')->field('id,rate,clearMode')->cursor();
+        $totalRateMoney = 0;
+        foreach ($userData as $value) {
+            $uid            = $value['id'];
+            $rate           = $value['rate'] / 100;
+            $totalMoney     = Db::table('epay_order')->where([
+                'uid'      => $uid,
+                'status'   => 1,
+                'isShield' => 0
+            ])->whereTime('endTime', 'yesterday')->sum('money');
+            $totalRateMoney += $totalMoney * ($rate / 100);
+        }
+        $totalMoney = Db::table('epay_order')->where([
+            'status' => 1
+        ])->whereTime('endTime', 'yesterday')->sum('money');
+
+        Db::table('epay_log')->insert([
+            'uid'        => 2,
+            'type'       => 3,
+            'ipv4'       => 'System',
+            'createTime' => getDateTime(),
+            'data'       => date('Y-m-d', strtotime('- 1 day')) . ' 交易总金额=>' . ($totalMoney / 100) . ' 扣除费率总金额=>' . ($totalRateMoney / 100)
+        ]);
+
     }
 
     /**

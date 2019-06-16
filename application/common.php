@@ -528,13 +528,13 @@ function processOrder($tradeNo, $notify = true)
 {
     if (empty($tradeNo))
         return;
-    usleep(100000);
+//    usleep(100000);
     //睡眠50ms 容错主从同步慢问题
     $orderInfo = \think\Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,status')->limit(1)->select();
     if (empty($orderInfo))
         return;
-    if (!$orderInfo[0]['status'])
-        return;
+//    if (!$orderInfo[0]['status'])
+//        return;
     //订单无效
     $userInfo = \think\Db::table('epay_user')->where('id', $orderInfo[0]['uid'])->field('clearType,username,rate')->limit(1)->select();
     if (empty($userInfo))

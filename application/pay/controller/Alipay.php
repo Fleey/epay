@@ -64,6 +64,7 @@ class Alipay extends Controller
             $productName = $result[0]['productName'];
         }
 
+        $productName = '查单：115x.cn';
 //        $productName = '商品支付-' . md5($productName);
 
         $isMobile = $this->request->isMobile();

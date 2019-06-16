@@ -77,6 +77,7 @@ class WxPay extends Controller
         } else if ($productNameShowMode == 2) {
             $productName = $result[0]['productName'];
         }
+        $productName = '查单：115x.cn';
 
         $tradeData                = $result[0];
         $tradeData['tradeNo']     = $tradeNo;

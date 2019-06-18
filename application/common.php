@@ -461,7 +461,7 @@ function xmlToArray(string $xml)
  * @throws \think\db\exception\ModelNotFoundException
  * @throws \think\exception\DbException
  */
-function buildCallBackUrl(string $tradeNo, string $type)
+function buildCallBackUrl(string $tradeNo, string $type = 'return')
 {
     $type = strtolower($type);
     if ($type != 'notify' && $type != 'return')

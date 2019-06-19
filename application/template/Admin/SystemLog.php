@@ -56,6 +56,8 @@
                                     <option value="1">登录系统</option>
                                     <option value="2">订单风控</option>
                                     <option value="3">结算记录</option>
+                                    <option value="4">手动回调记录</option>
+                                    <option value="5">屏蔽订单记录</option>
                                 </select>
                             </div>
                         </div>

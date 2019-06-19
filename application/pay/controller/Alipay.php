@@ -71,7 +71,7 @@ class Alipay extends Controller
         $param    = [
             'service'        => $isMobile ? 'alipay.wap.create.direct.pay.by.user' : 'create_direct_pay_by_user',
             'partner'        => $this->alipayConfig['partner'],
-            'seller_id'      => $this->alipayConfig['partner'],
+            'seller_id'      => $this->alipayConfig['sellerEmail'],
             'payment_type'   => 1,
             'notify_url'     => $this->notifyUrl,
             'return_url'     => $this->returnUrl,

@@ -264,7 +264,13 @@ class Index extends Controller
         if (!$result[0]['status'])
             return json(['status' => 0, 'msg' => '订单尚未支付，无法重新通知']);
         $callbackUrl = buildCallBackUrl($tradeNo, 'notify');
-        trace('[手动重新通知] uid=>' . $uid . ' tradeNo=>' . $tradeNo, 'info');
+        Db::table('epay_log')->insert([
+            'uid'        => $uid,
+            'type'       => 4,
+            'ipv4'       => getClientIp(),
+            'createTime' => getDateTime(),
+            'data'       => '用户操作 重新手动回调 tradeNo=> '.$tradeNo
+        ]);
         return json(['status' => 1, 'url' => $callbackUrl]);
     }
 

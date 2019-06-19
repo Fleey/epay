@@ -1091,7 +1091,14 @@ class Index extends Controller
                 Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate)->update();
             else
                 Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->dec('balance', $addMoneyRate)->update();
-            trace('[屏蔽订单记录] status => ' . ($status ? '屏蔽' : '恢复') . ' tradeNo => ' . $tradeNo . ' uid => ' . $orderInfo[0]['uid'] . ' money => ' . (($addMoneyRate * 10) / 1000), 'info');
+
+            Db::table('epay_log')->insert([
+                'uid'        => 1,
+                'type'       => 5,
+                'ipv4'       => getClientIp(),
+                'createTime' => getDateTime(),
+                'data'       => ($status ? '屏蔽' : '恢复').'订单 tradeNo=> '.$tradeNo.' uid => ' . $orderInfo[0]['uid'] . ' money => ' . (($addMoneyRate * 10) / 1000)
+            ]);
         }
         //订单状态更新成功才操作这个
         return json(['status' => $result, 'msg' => '更新状态' . ($result ? '成功' : '失败')]);
@@ -1127,7 +1134,14 @@ class Index extends Controller
         if (!$result[0]['status'])
             return json(['status' => 0, 'msg' => '订单尚未支付，无法重新通知']);
         $callbackUrl = buildCallBackUrl($tradeNo, 'notify');
-        trace('[手动重新通知] 管理员操作 tradeNo=>' . $tradeNo, 'info');
+
+        Db::table('epay_log')->insert([
+            'uid'        => 1,
+            'type'       => 4,
+            'ipv4'       => 'System',
+            'createTime' => getDateTime(),
+            'data'       => '管理员操作 重新手动回调 tradeNo=> '.$tradeNo
+        ]);
         return json(['status' => 1, 'url' => $callbackUrl]);
     }
 

@@ -21,13 +21,14 @@
         <div id="checkUser"></div>
         <button type="button" class="btn btn-primary btn-lg btn-block" id="searchBtn">点击查询</button>
     </div>
-<!--    <div class="ad">-->
-<!--        <h2 class="tips text-center">这里是广告投放区域</h2>-->
-<!--    </div>-->
+    <!--    <div class="ad">-->
+    <!--        <h2 class="tips text-center">这里是广告投放区域</h2>-->
+    <!--    </div>-->
 </div>
 <script src="/static/js/resource/jquery.min.js"></script>
 <script src="/static/js/user/gt.js"></script>
 <script src="/static/js/layer/layer.js"></script>
 <script src="/static/js/selfHelp/SearchOrder.js"></script>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1277692594'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s96.cnzz.com/z_stat.php%3Fid%3D1277692594%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
 </body>
 </html>

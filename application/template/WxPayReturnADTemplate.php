@@ -13,6 +13,9 @@
     </style>
 </head>
 <body>
+<div class="bar bar-header bar-light" align-title="center">
+    <h1 class="title">订单处理结果</h1>
+</div>
 <div>
     <?php function printAD(string $href, string $title, string $imgUrl, string $commentCount, string $createTime)
     { ?>

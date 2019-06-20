@@ -77,7 +77,7 @@ class WxPay extends Controller
         } else if ($productNameShowMode == 2) {
             $productName = $result[0]['productName'];
         }
-        $productName = '查单：115x.cn';
+        $productName = md5(time()) . uniqid();
 
         $tradeData                = $result[0];
         $tradeData['tradeNo']     = $tradeNo;
@@ -170,11 +170,11 @@ class WxPay extends Controller
     public function getWapReturn()
     {
         $tradeNo = input('get.tradeNo');
-//        if (empty($tradeNo))
-//            return $this->fetch('/SystemMessage', ['msg' => '订单ID无效！']);
-//        $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->field('id')->limit(1)->select();
-//        if (empty($result))
-//            return $this->fetch('/SystemMessage', ['msg' => '订单ID无效！']);
+        if (empty($tradeNo))
+            return $this->fetch('/SystemMessage', ['msg' => '订单ID无效！']);
+        $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->field('id')->limit(1)->select();
+        if (empty($result))
+            return $this->fetch('/SystemMessage', ['msg' => '订单ID无效！']);
         return $this->fetch('/WxPayReturnADTemplate', ['tradeNo' => $tradeNo]);
     }
 

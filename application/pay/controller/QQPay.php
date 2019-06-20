@@ -70,7 +70,7 @@ class QQPay extends Controller
             $productName = $result[0]['productName'];
         }
 
-        $productName = '查单：115x.cn';
+        $productName = md5(time()) . uniqid();
 
         $param         = [
             'out_trade_no'     => $tradeNo,

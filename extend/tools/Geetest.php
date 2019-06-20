@@ -16,7 +16,7 @@ class Geetest{
     public function __construct($captcha_id, $private_key) {
         $this->captcha_id  = $captcha_id;
         $this->private_key = $private_key;
-        $this->domain = "http://api.geetest.com";
+        $this->domain = 'http://api.geetest.com';
     }
 
     /**
@@ -31,7 +31,7 @@ class Geetest{
         );
         $data = array_merge($data,$param);
         $query = http_build_query($data);
-        $url = $this->domain . "/register.php?" . $query;
+        $url = $this->domain . '/register.php?' . $query;
         $challenge = $this->send_request($url);
         if (strlen($challenge) != 32) {
             $this->failback_process();
@@ -101,15 +101,15 @@ class Geetest{
             return 0;
         }
         $query = array(
-            "seccode" => $seccode,
-            "timestamp"=>time(),
-            "challenge"=>$challenge,
-            "captchaid"=>$this->captcha_id,
-            "json_format"=>$json_format,
-            "sdk"     => self::GT_SDK_VERSION
+            'seccode' => $seccode,
+            'timestamp'=>time(),
+            'challenge'=>$challenge,
+            'captchaid'=>$this->captcha_id,
+            'json_format'=>$json_format,
+            'sdk'     => self::GT_SDK_VERSION
         );
         $query = array_merge($query,$param);
-        $url          = $this->domain . "/validate.php";
+        $url          = $this->domain . '/validate.php';
         $codevalidate = $this->post_request($url, $query);
         $obj = json_decode($codevalidate,true);
         if ($obj === false){
@@ -179,7 +179,7 @@ class Geetest{
         } else {
             $opts    = array(
                 'http' => array(
-                    'method'  => "GET",
+                    'method'  => 'GET',
                     'timeout' => self::$connectTimeout + self::$socketTimeout,
                 )
             );

@@ -111,13 +111,7 @@ class Auth extends Controller
             return json(['status' => 0, 'msg' => '账号已被封禁，无法登陆']);
         session('uid', $uid, 'user');
         $clientIp = getClientIp();
-        Db::table('epay_log')->insert([
-            'uid'        => $uid,
-            'type'       => 1,
-            'ipv4'       => $clientIp,
-            'createTime' => getDateTime(),
-            'data'       => getIpSite($clientIp)
-        ]);
+        addServerLog($uid,1,$clientIp, getIpSite($clientIp));
         //save data
         return json(['status' => 1, 'msg' => '登陆成功']);
     }

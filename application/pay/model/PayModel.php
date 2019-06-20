@@ -23,13 +23,7 @@ class PayModel
         if (!empty($badWordList)) {
             $blackReg = '/' . implode('|', $badWordList) . '/i';
             if (preg_match($blackReg, $name, $matches)) {
-                Db::table('epay_log')->insert([
-                    'uid'        => $uid,
-                    'type'       => 2,
-                    'ipv4'       => getClientIp(),
-                    'data'       => '触发违禁词 ' . json_encode($matches),
-                    'createTime' => getDateTime()
-                ]);
+                addServerLog($uid,2,getClientIp(), '触发违禁词 ' . json_encode($matches));
                 throw new Exception($systemConfig['goodsFilter']['tips']);
             }
         }

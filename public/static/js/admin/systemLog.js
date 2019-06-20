@@ -26,18 +26,11 @@ $(function () {
         'columns': [
             {}, {}, {
                 'render': function (data) {
-                    if (data === '1') {
-                        return '登录系统';
-                    } else if (data === '2') {
-                        return '订单风控';
-                    } else if (data === '3') {
-                        return '结算记录';
-                    } else if (data === '4') {
-                        return '手动回调记录';
-                    } else if (data === '5') {
-                        return '屏蔽订单记录';
+                    try{
+                        return filterList[data];
+                    }catch (e) {
+                        return '未知类型';
                     }
-                    return '未知类型';
                 }
             }, {}, {}, {
                 'render': function (data) {

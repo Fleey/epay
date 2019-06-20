@@ -21,9 +21,12 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        $userData = Db::table('epay_user')->field('id,rate,clearMode')->where('id', 1011)->cursor();
-        foreach ($userData as $value) {
-            $uid        = $value['id'];
+        $config = getConfig();
+        $config = $config['alipay'];
+        dump($config);
+//        $userData = Db::table('epay_user')->field('id,rate,clearMode')->cursor();
+//        foreach ($userData as $value) {
+//            $uid        = $value['id'];
 //            $rate       = $value['rate'] / 100;
 //            $totalMoney = Db::table('epay_order')->where([
 //                'uid'      => $uid,
@@ -35,12 +38,11 @@ class Test extends Command
 //                $deleteMoney = Db::table('epay_user_money_log')->where('uid', $uid)->whereTime('createTime', 'today')->sum('money');
 //                $deleteMoney /= 1000;
 //                $balance     = ($totalMoney + $deleteMoney) * 1000;
-//                exit(dump($balance/1000));
-////                Db::table('epay_user')->where('id', $uid)->limit(1)->update([
-////                    'balance' => $balance
-////                ]);
+//                Db::table('epay_user')->where('id', $uid)->limit(1)->update([
+//                    'balance' => $balance
+//                ]);
 //            }
-        }
+//        }
 
 //        $orderList = Db::table('epay_order')->where('createTime', '>=', '2019-6-6 9:00:00')
 //            ->where('createTime', '<=', '2019-6-6 11:00:00')->where([
@@ -137,8 +139,7 @@ class Test extends Command
         // 指令输出
     }
 
-    private
-    function buildCallBackUrlA(string $tradeNo, string $type)
+    private function buildCallBackUrlA(string $tradeNo, string $type)
     {
         $type = strtolower($type);
         if ($type != 'notify' && $type != 'return')

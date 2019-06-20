@@ -94,13 +94,7 @@ class Auth extends Controller
         }
         session('username', $username, 'admin');
         $clientIp = getClientIp();
-        Db::table('epay_log')->insert([
-            'uid'        => 1,
-            'type'       => 1,
-            'ipv4'       => $clientIp,
-            'createTime' => getDateTime(),
-            'data'       => getIpSite($clientIp)
-        ]);
+        addServerLog(1,1,$clientIp,getIpSite($clientIp));
         //save data
         return json(['status' => 1, 'msg' => '登陆成功']);
     }

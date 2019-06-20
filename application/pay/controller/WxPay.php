@@ -175,7 +175,7 @@ class WxPay extends Controller
         $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->field('id')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '订单ID无效！']);
-        return $this->fetch('/WxPayReturnTemplate', ['tradeNo' => $tradeNo]);
+        return $this->fetch('/WxPayReturnADTemplate', ['tradeNo' => $tradeNo]);
     }
 
     /**

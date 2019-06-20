@@ -1,3 +1,14 @@
+<?php
+$filterList = [
+        'all',
+        '登录系统',
+        '订单风控',
+        '结算记录',
+        '手动回调记录',
+        '屏蔽订单记录',
+        '配置文件修改'
+];
+?>
 <style>
     #orderInfo .item>span[data-name],#orderInfo .item>img[data-name]{display:block}#orderInfo .item>span.title{font-weight:600}#orderInfo{margin-top:6rem}#orderInfo p.header{font-weight:600;font-size:16px}
 </style>
@@ -53,11 +64,13 @@
                             <div class="col-md-8">
                                 <select class="form-control" id="infoType" style="width: 100%;">
                                     <option value="all">所有</option>
-                                    <option value="1">登录系统</option>
-                                    <option value="2">订单风控</option>
-                                    <option value="3">结算记录</option>
-                                    <option value="4">手动回调记录</option>
-                                    <option value="5">屏蔽订单记录</option>
+                                    <?php
+                                    foreach ($filterList as $key=>$value){
+                                        if($value == 'all')
+                                            continue;
+                                        echo ' <option value="'.$key.'">'.$value.'</option>';
+                                    }
+                                    ?>
                                 </select>
                             </div>
                         </div>
@@ -84,4 +97,14 @@
         </div>
     </div>
 </div>
+<script>
+    <?php
+    $temp = '';
+    foreach ($filterList as $value){
+        $temp.= '"'.$value.'",';
+    }
+    $temp = substr($temp,0,strlen($temp)-1);
+    ?>
+    var filterList = [<?php echo $temp; ?>];
+</script>
 <script src="/static/js/admin/systemLog.js"></script>

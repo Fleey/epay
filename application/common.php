@@ -314,9 +314,28 @@ function getConfig()
 function putConfig(array $data)
 {
     $configFilePath = env('CONFIG_PATH') . 'config.txt';
+    addServerLog(1,6,getClientIp(),'更新配置文件事件');
     return file_put_contents($configFilePath, serialize($data));
 }
 
+
+/**
+ * @param int $uid
+ * @param string $type
+ * @param string $ipv4
+ * @param string $data
+ * @return int|string
+ */
+function addServerLog(int $uid, string $type, string $ipv4, string $data){
+    $insertResult = \think\Db::table('epay_log')->insert([
+        'uid'        => $uid,
+        'type'       => $type,
+        'ipv4'       => $ipv4,
+        'createTime' => getDateTime(),
+        'data'       => $data
+    ]);
+    return $insertResult;
+}
 /**
  * 签名数据 MD5
  * 这个上个世纪的产品要兼容

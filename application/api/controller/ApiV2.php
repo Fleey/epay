@@ -42,16 +42,57 @@ class ApiV2 extends Controller
             $this->returnJson(['status' => 0, 'msg' => '[10001]签名效验失败，仅支持MD5签名']);
         if ($this->requestData['sign_type'] != 'MD5')
             $this->returnJson(['status' => 0, 'msg' => '[10002]签名效验失败，仅支持MD5签名']);
-        $userKey = Db::table('epay_user')->where('id', $this->requestData['uid'])->field('key')->limit(1)->select();
+        $userKey = Db::table('epay_user')->where('id', $this->requestData['uid'])->field('key,isBan')->limit(1)->select();
         if (empty($userKey))
             $this->returnJson(['status' => 0, 'msg' => '[10003]签名效验失败，仅支持MD5签名']);
         $userKey = $userKey[0]['key'];
         if (!$this->checkSign($this->requestData, $userKey, $this->requestData['sign']))
             $this->returnJson(['status' => 0, 'msg' => '[10004]签名效验失败，仅支持MD5签名']);
         //check sign
+        if ($userKey['isBan'])
+            $this->returnJson(['status' => 0, 'msg' => '[10005]账户封禁，详细请联系客服人员']);
         $this->uid         = $this->requestData['uid'];
         $this->requestData = json_decode(urldecode($this->requestData['data']), true);
         $this->userKey     = $userKey;
+    }
+
+    public function postPay()
+    {
+        if (empty($this->requestData['tradeNoOut']))
+            $this->returnJson(['status' => 0, 'msg' => '商户订单号不能为空']);
+        if (!preg_match('/^[a-zA-Z0-9.\_\-|]{1,64}+$/', $this->requestData['tradeNoOut']))
+            $this->returnJson(['status' => 0, 'msg' => '商户订单号格式不正确 最小订单号位一位 最大为64位']);
+        if (empty($this->requestData['money']))
+            $this->returnJson(['status' => 0, 'msg' => '订单金额不能为空']);
+        if (empty($this->requestData['payType']))
+            $this->returnJson(['status' => 0, 'msg' => '支付类型不能为空']);
+        if (empty($this->requestData['productName']))
+            $this->returnJson(['status' => 0, 'msg' => '商品名称不能为空']);
+        if (empty($this->requestData['notifyUrl']))
+            $this->returnJson(['status' => 0, 'msg' => '异步回调地址不能为空']);
+        if (empty($this->requestData['returnUrl']))
+            $this->returnJson(['status' => 0, 'msg' => '同步回调地址不能为空']);
+        if (!is_IntOrDecimal($this->requestData['money']))
+            $this->returnJson(['status' => 0, 'msg' => '订单金额格式不正确']);
+        //判断金额格式 禁止那些E
+        $requestParam              = [
+            'pid'          => $this->uid,
+            'type'         => $this->requestData['payType'],
+            'out_trade_no' => $this->requestData['tradeNoOut'],
+            'notify_url'   => $this->requestData['notifyUrl'],
+            'return_url'   => $this->requestData['returnUrl'],
+            'name'         => $this->requestData['productName'],
+            'money'        => $this->requestData['money'],
+            'sitename'     => empty($this->requestData['siteName']) ? '聚合支付平台' : $this->requestData['siteName']
+        ];
+        $sign                      = signMD5(createLinkString(argSort(paraFilter($requestParam))), $this->userKey);
+        $requestParam['sign']      = $sign;
+        $requestParam['sign_type'] = 'MD5';
+        $buildUrl                  = $this->request->root(true);
+        $buildUrl                  .= '/submit.php?' . createLinkStringUrlEncode($requestParam);
+        $this->returnJson(['status' => 1, 'msg' => '生成支付链接成功', 'data' => json_encode([
+            'url' => $buildUrl
+        ])]);
     }
 
     /**

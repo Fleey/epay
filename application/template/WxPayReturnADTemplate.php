@@ -16,6 +16,10 @@
 <div class="bar bar-header bar-light" align-title="center">
     <h1 class="title">订单处理结果</h1>
 </div>
+<div class="text-center" style="color: #a09ee5;color: #a09ee5;margin-top: 44px;padding-top: 8%;padding-bottom: 10%;">
+    <i class="icon ion-information-circled" style="font-size: 80px;"></i><br>
+    <span>正在检测付款结果...</span>
+</div>
 <div>
     <?php function printAD(string $href, string $title, string $imgUrl, string $commentCount, string $createTime)
     { ?>

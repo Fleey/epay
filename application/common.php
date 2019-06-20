@@ -314,7 +314,7 @@ function getConfig()
 function putConfig(array $data)
 {
     $configFilePath = env('CONFIG_PATH') . 'config.txt';
-    addServerLog(1,6,getClientIp(),'更新配置文件事件');
+    addServerLog(1, 6, getClientIp(), '更新配置文件事件');
     return file_put_contents($configFilePath, serialize($data));
 }
 
@@ -326,7 +326,8 @@ function putConfig(array $data)
  * @param string $data
  * @return int|string
  */
-function addServerLog(int $uid, string $type, string $ipv4, string $data){
+function addServerLog(int $uid, string $type, string $ipv4, string $data)
+{
     $insertResult = \think\Db::table('epay_log')->insert([
         'uid'        => $uid,
         'type'       => $type,
@@ -336,6 +337,7 @@ function addServerLog(int $uid, string $type, string $ipv4, string $data){
     ]);
     return $insertResult;
 }
+
 /**
  * 签名数据 MD5
  * 这个上个世纪的产品要兼容
@@ -531,6 +533,18 @@ function buildCallBackUrl(string $tradeNo, string $type = 'return')
     $sign        = signMD5(createLinkString($args), $userKey);
     $callBackUrl = $orderData[$type . '_url'] . (strpos($orderData[$type . '_url'], '?') ? '&' : '?') . createLinkStringUrlEncode($args) . '&sign=' . $sign . '&sign_type=MD5';
     return $callBackUrl;
+}
+
+function buildRequestForm(string $requestUrl, array $param, string $method, string $button_name = '')
+{
+    //待请求参数数组
+    $sHtml = '<form id=\'alipaysubmit\' name=\'alipaysubmit\' action=\'' . $requestUrl . '\' method=\'' . $method . '\'>';
+    foreach ($param as $key => $value) {
+        $sHtml .= '<input type=\'hidden\' name=\'' . $key . '\' value=\'' . $value . '\'/>';
+    }
+    $sHtml = $sHtml . "<input type='submit' value='" . $button_name . "'></form>";
+    $sHtml = $sHtml . "<script>document.forms['alipaysubmit'].submit();</script>";
+    return $sHtml;
 }
 
 /**

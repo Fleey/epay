@@ -4,6 +4,7 @@ namespace app\pay\controller;
 
 use app\pay\model\PayModel;
 use app\pay\model\WxPayModel;
+use function GuzzleHttp\Psr7\parse_query;
 use think\App;
 use think\Controller;
 use think\Db;
@@ -146,7 +147,13 @@ class WxPay extends Controller
                     ]);
 
                 $returnUrl = url('/Pay/WxPay/WapReturn?tradeNo=' . $tradeNo, '', false, true);
-                return '<script>window.location.replace(\'' . $requestResult['mweb_url'] . '&redirect_url=' . urlencode($returnUrl) . '\');</script>';
+
+                $requestUrl = $requestResult['mweb_url'] . '&redirect_url=' . urlencode($returnUrl);
+                $parseUrl   = parse_url($requestUrl);
+                $parseQuery = parse_query($parseUrl['query']);
+                $formHtml   = buildRequestForm($parseUrl['scheme'] . '://' . $parseUrl['host'] . $parseUrl['path'], $parseQuery, 'get');
+                //core code
+                return $formHtml;
             } else {
                 return $this->fetch('/WxPayPcTemplate', [
                     'siteName'    => $siteName,

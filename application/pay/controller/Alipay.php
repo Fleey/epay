@@ -64,7 +64,7 @@ class Alipay extends Controller
             $productName = $result[0]['productName'];
         }
 
-        $productName = md5(time()) . uniqid();
+        $productName = '自助购物-' . uniqid();
 
         $isMobile = $this->request->isMobile();
         $param    = [

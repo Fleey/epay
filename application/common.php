@@ -566,8 +566,8 @@ function processOrder($tradeNo, $notify = true)
     $orderInfo = \think\Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,status')->limit(1)->select();
     if (empty($orderInfo))
         return;
-//    if (!$orderInfo[0]['status'])
-//        return;
+    if (!$orderInfo[0]['status'])
+        return;
     //订单无效
     $userInfo = \think\Db::table('epay_user')->where('id', $orderInfo[0]['uid'])->field('clearType,username,rate')->limit(1)->select();
     if (empty($userInfo))

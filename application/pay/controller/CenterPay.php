@@ -110,9 +110,9 @@ class CenterPay extends Controller
         if ($centerPayModel->buildSignMD5($requestData) != $requestData['sign'])
             return json(['status' => 0, 'msg' => '[10002]sign error']);
         //签名确实错了
-        if ((time() - $callBackTime) > 120)
-            return json(['status' => 0, 'msg' => 'sign time out']);
-        //签名2分钟超时
+        //if ((time() - $callBackTime) > 300)
+        //   return json(['status' => 0, 'msg' => 'sign time out']);
+        //签名5分钟超时
         $tradeData = Db::table('epay_order')->where([
             'tradeNo' => $tradeNoOut
         ])->limit(1)->field('status,money')->select();

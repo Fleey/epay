@@ -5,7 +5,6 @@ namespace app\command;
 
 use app\pay\model\QQPayModel;
 use app\pay\model\WxPayModel;
-use function GuzzleHttp\Psr7\parse_query;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -22,9 +21,9 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        $url = 'http://baidu.com/2333?test=a&te2st=b';
-        dump(parse_url($url));
-        dump(parse_query(parse_url($url)['query']));
+        $config = getConfig();
+        $config = $config['alipay'];
+        dump($config);
 //        $userData = Db::table('epay_user')->field('id,rate,clearMode')->cursor();
 //        foreach ($userData as $value) {
 //            $uid        = $value['id'];

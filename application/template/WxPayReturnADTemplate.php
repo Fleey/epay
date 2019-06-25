@@ -1,54 +1,22 @@
 <?php
-
-function getNews(int $count = 0){
-    if($count == 0)
-        return [];
-    $data = curl('http://3g.163.com/touch/jsonp/sy/recommend/0-9.html?hasad=1&miss=48&refresh=B02&offset=0&size=10&callback=syrec4');
-    $data = trim($data);
-    $data = substr($data,7,strlen($data)-8);
-    $data = json_decode($data,true)['news'];
-    $returnData = [];
-    $i = 0;
-    foreach ($data as $value){
-        $returnData[] = [
-            'href'         => $value['link'],
-            'title'        => $value['digest'],
-            'img'          => $value['picInfo'][0]['url'],
-            'commentCount' => '99+',
-            'createTime'   => $value['ptime']
-        ];
-        $i++;
-        if($i == $count)
-            break;
-    }
-    return $returnData;
-
-}
-
 $newData = cache('newsData');
 if(empty($newData)){
-    $tempData = getNews(5);
+    $selectData = \think\Db::table('epay_ad_content')->where('status',1)->order('createTime desc')->limit(8)->select();
     $newData =[];
-    $newData[] = $tempData[0];
-    $newData[]=         [
-        'href'         => 'https://c19515.818tu.com/referral_link/tmp/wr2ysAZmAo',
-        'title'        => '那晚，他拼尽全力让我湿的歇斯底里，太爽了',
-        'img'          => 'https://cloud.zmz999.com/wl/?id=AhrxCrx2qebvdZM1GX3btjBntQ2QG6fY',
-        'commentCount' => '99+',
-        'createTime'   => '2019-6-20 16:36'
-    ];
-    $newData[] =[
-        'href'         => 'https://c19515.818tu.com/referral_link/tmp/AojgCKQBPN',
-        'title'        => '她被强拉入酒店，一夜七次被宠到全身酸痛...',
-        'img'          => 'http://cloud.zmz999.com/wl/?id=g7CAckSb0Ion3poDBjjDeTgIHSaspfQo',
-        'commentCount' => '99+',
-        'createTime'   => '2019-6-18 15:10'
-    ];
-    $newData[] = $tempData[1];
-    $newData[] = $tempData[2];
-    $newData[] = $tempData[3];
-    $newData[] = $tempData[4];
-    cache('newsData',json_encode($newData),3600);
+
+    if(!empty($selectData))
+    {
+        foreach ($selectData as $value){
+            $newData[] =[
+                    'id'=>$value['id'],
+                'img'=>htmlentities($value['imgUrl']),
+                'createTime'=>$value['createTime'],
+                'title'=>$value['title'],
+                'commentCount'=>'99+'
+            ];
+        }
+    }
+    cache('newsData',json_encode($newData),60);
 }else{
     $newData = json_decode($newData,true);
 }
@@ -80,7 +48,7 @@ if(empty($newData)){
     <?php function printAD(string $href, string $title, string $imgUrl, string $commentCount, string $createTime)
     { ?>
         <li>
-            <a href="<?php echo $href; ?>">
+            <a href="<?php echo '/AD/'.$href; ?>">
                 <p class="title"><?php echo $title; ?></p>
                 <div class="img">
                     <img src="<?php echo $imgUrl; ?>" alt="">
@@ -93,7 +61,7 @@ if(empty($newData)){
     <ul class="item">
         <?php
         foreach ($newData as $value) {
-            printAD($value['href'], $value['title'], $value['img'], $value['commentCount'], $value['createTime']);
+            printAD($value['id'], $value['title'], $value['img'], $value['commentCount'], $value['createTime']);
         }
         ?>
     </ul>

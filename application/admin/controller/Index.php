@@ -998,6 +998,10 @@ class Index extends Controller
      */
     public function getCenterPayApiList()
     {
+        $username = session('username', '', 'admin');
+        if (empty($username))
+            return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
+
         $payType = input('get.payType/s');
 
         $systemPayConfig = getConfig();
@@ -1135,6 +1139,10 @@ class Index extends Controller
 
     public function postBatchCallback()
     {
+        $username = session('username', '', 'admin');
+        if (empty($username))
+            return json(['status' => 0, 'msg' => '您需要登录后才能操作']);
+
         $uid       = input('post.uid/d');
         $payType   = input('post.payType/s');
         $startTime = input('post.startTime/s');

@@ -52,6 +52,13 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
+                    <a class="sidebar-link waves-effect waves-dark sidebar-link" data-href="ADList"
+                       aria-expanded="false">
+                        <i class="mdi mdi-puzzle"></i>
+                        <span class="hide-menu">广告管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
                     <a class="sidebar-link waves-effect waves-dark sidebar-link" data-href="SystemLog"
                        aria-expanded="false">
                         <i class="mdi mdi-comment-alert-outline"></i>

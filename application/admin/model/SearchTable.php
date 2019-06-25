@@ -49,7 +49,8 @@ class SearchTable
             'epay_user',
             'epay_settle',
             'epay_user_money_log',
-            'epay_log'
+            'epay_log',
+            'epay_ad_content'
         ];
         if (!in_array($searchTable, $tableList)) {
             throw new Exception('该表不存在', 404);
@@ -207,6 +208,9 @@ class SearchTable
 
         $keyName = '';
         switch ($this->searchTable) {
+            case 'epay_ad_content':
+                $keyName = 'title';
+                break;
             default:
                 return $queryResult;
                 break;
@@ -232,6 +236,8 @@ class SearchTable
             $searchOrderList = ['money', 'desc', 'createTime'];
         } else if ($this->searchTable == 'epay_log') {
             $searchOrderList = ['id', 'uid', 'type', 'ipv4', 'createTime', 'data'];
+        } else if ($this->searchTable == 'epay_ad_content') {
+            $searchOrderList = ['id','title','status','visitsCount','createTime'];
         }
         $field = '';
         foreach ($searchOrderList as $item) {

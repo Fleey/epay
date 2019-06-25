@@ -126,8 +126,10 @@ class Test extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '签名效验不正确！']);
 
         //下面做你想做的事情
+        if($getData['trade_status'] != 'TRADE_SUCCESS')
+            return '<h1 style="text-align: center;margin-top: 6rem;">您已经取消支付，这个是取消支付页面</h1>';
 
-        return '<h1 style="text-align: center;">您已经成功支付</h1>';
+        return '<h1 style="text-align: center;margin-top: 6rem;">您已经成功支付</h1>';
     }
 
     private function buildSign(array $param)

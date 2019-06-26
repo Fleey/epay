@@ -937,6 +937,12 @@ class Index extends Controller
             $data = json_decode($payConfig, true);
             if (empty($data))
                 return json(['status' => 1, 'msg' => '新增用户成功,但是支付配置功能异常']);
+
+            foreach ($data as $key => $value) {
+                if ($value['apiType'] == null || $value['payAisle'] == null || $value['isOpen'] == null)
+                    return json(['status' => 1, 'msg' => '更新用户信息成功,但是支付配置功能未能正常保存。']);
+            }
+
             setPayUserAttr($uid, 'isCancelReturn', $data['isCancelReturn'] ? 'true' : 'false');
             unset($data['isCancelReturn']);
             setPayUserAttr($uid, 'payConfig', serialize($data));

@@ -9,7 +9,14 @@
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
-Route::rule('', 'admin/Index/index');
+Route::domain([
+    'ceo.zmz999.com',
+    'pay.zmz999.com',
+    'qq.zmz999.com',
+    'vip.zmz999.com'
+],function (){
+    Route::rule('', 'admin/Index/index');
+});
 Route::group('test', function () {
     Route::post('pay', 'user/Test/pay');
     Route::get('return', 'user/Test/getReturn');

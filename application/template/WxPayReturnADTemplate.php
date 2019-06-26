@@ -61,6 +61,8 @@ if(empty($newData)){
     <ul class="item">
         <?php
         foreach ($newData as $value) {
+            if(empty($value['id']))
+                break;
             printAD($value['id'], $value['title'], $value['img'], $value['commentCount'], $value['createTime']);
         }
         ?>

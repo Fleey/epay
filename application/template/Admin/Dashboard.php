@@ -79,6 +79,13 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div id="chartMap2" style="height: 360px;"></div>
+                </div>
+            </div>
+        </div>
         <div class="col-md-7">
             <div class="card">
                 <div class="card-body">
@@ -130,7 +137,7 @@
                 <div class="card-body">
                     <h5 class="card-title">近两天订单数据</h5>
                     <?php
-                    foreach ($orderDataStatistics as $key=>$data) {
+                    foreach ($orderDataStatistics as $key => $data) {
                         ?>
                         <div class="row">
                             <div class="col-md-12">
@@ -272,19 +279,70 @@
             }
         ]
     };
+    var option2 = {
+        title: {
+            text: '交易金额对比',
+        },
+        color: ['#ea7070', '#2cabe3'],
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                crossStyle: {
+                    color: '#999'
+                }
+            }
+        },
+        toolbox: {
+            feature: {
+                dataView: {show: true, readOnly: false},
+                magicType: {show: true, type: ['bar', 'bar']},
+                restore: {show: true},
+                saveAsImage: {show: true}
+            }
+        },
+        xAxis: [
+            {
+                type: 'category',
+                boundaryGap: false,
+                data: ["00:00:00", "01:00:00", "02:00:00", "03:00:00", "04:00:00", "05:00:00", "06:00:00", "07:00:00", "08:00:00", "09:00:00", "10:00:00", "11:00:00", "12:00:00", "13:00:00", "14:00:00", "15:00:00", "16:00:00", "17:00:00", "18:00:00", "19:00:00", "20:00:00", "21:00:00", "22:00:00", "23:00:00"],
+            }
+        ],
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            <?php
+            foreach ($orderDataComparison as $key => $value) {
+                echo '{name:"'.$key.'",data: [';
 
+                $tempData = '';
+
+                foreach ($value as $value1){
+                    $tempData.='"'.($value1/100).'",';
+                }
+                echo $tempData;
+
+                echo '],type: \'line\',areaStyle: {}},';
+            }
+            ?>
+        ]
+    };
     $(function () {
         $.getScript('/static/js/resource/echarts.min.js', function () {
             var chartMap = echarts.init(document.getElementById('chartMap'));
             var chartMap1 = echarts.init(document.getElementById('chartMap1'));
+            var chartMap2 = echarts.init(document.getElementById('chartMap2'));
             $(window).resize(function () {
                 setTimeout(function () {
                     chartMap.resize();
                     chartMap1.resize();
+                    chartMap2.resize();
                 }, 200)
             });
             chartMap.setOption(option);
             chartMap1.setOption(option1);
+            chartMap2.setOption(option2);
         });
         $('button[data-update-program]').off("click").on('click', function () {
             swal({

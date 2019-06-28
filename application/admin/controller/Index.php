@@ -45,108 +45,7 @@ class Index extends Controller
         else
             $data['isGeetest'] = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);
         if ($templateName == 'Dashboard') {
-            $data['totalOrder'] = Db::table('epay_order')->cache(120)->count('id');
-            $data['totalUser']  = Db::table('epay_user')->cache(120)->count('id');
-            $data['totalMoney'] = getServerConfig('totalMoney');
-            if (empty($data['totalMoney']))
-                $data['totalMoney'] = 0;
-            $data['totalMoneyRate'] = getServerConfig('totalMoneyRate');
-            if (empty($data['totalMoneyRate']))
-                $data['totalMoneyRate'] = 0;
-            $data['settleRecord'] = [];
-            for ($i = 6; $i >= 1; $i--) {
-                $data['settleRecord'][] = ['createTime' => date('Y-m-d', strtotime('-' . $i . ' day'))];
-            }
-            $data['settleRecord'][] = ['createTime' => date('Y-m-d', strtotime('now'))];
-            foreach ($data['settleRecord'] as $key => $value) {
-                $data['settleRecord'][$key]['money'] = Db::table('epay_settle')->whereBetweenTime('createTime', $value['createTime'])->cache(120)->sum('money');
-            }
-            {
-                $buildOrderStatistics = function (string $date) {
-                    $totalOrder   = Db::table('epay_order')->whereBetweenTime('createTime', $date)->cache(120)->count();
-                    $successOrder = Db::table('epay_order')->whereBetweenTime('createTime', $date)->where('status', 1)->cache(120)->count();
-                    if ($successOrder == 0 || $totalOrder == 0)
-                        $ratio = '0';
-                    else
-                        $ratio = number_format($successOrder / $totalOrder * 100, 2);
-                    return [
-                        'totalOrder'   => $totalOrder,
-                        'successOrder' => $successOrder,
-                        'ratio'        => $ratio
-                    ];
-                };
-
-                $data['orderDataStatistics'] = [];
-                $createTimeList              = [
-                    date('Y-m-d', strtotime('- 1 day')),
-                    date('Y-m-d', strtotime('now'))
-                ];
-                foreach ($createTimeList as $time) {
-                    $data['orderDataStatistics'][$time] = $buildOrderStatistics($time);
-                }
-            }
-            $data['statistics'] = [
-                'yesterday' => [
-                    [
-                        'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 1,
-                            'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
-                    ],
-                    [
-                        'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 2,
-                            'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
-                    ],
-                    [
-                        'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 3,
-                            'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
-                    ],
-                    [
-                        'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 4,
-                            'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
-                    ]
-                ],
-                'today'     => [
-                    [
-                        'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 1,
-                            'status' => 1
-                        ])->whereTime('endTime', 'today')->cache(120)->sum('money')
-                    ],
-                    [
-                        'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 2,
-                            'status' => 1
-                        ])->whereTime('endTime', 'today')->cache(120)->sum('money')
-                    ],
-                    [
-                        'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 3,
-                            'status' => 1
-                        ])->whereTime('endTime', 'today')->cache(120)->sum('money')
-                    ],
-                    [
-                        'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 4,
-                            'status' => 1
-                        ])->whereTime('endTime', 'today')->cache(120)->sum('money')
-                    ]
-                ]
-            ];
+            $data = $this->getDashboardData();
         }
         return $this->fetch('/Admin/' . $templateName, $data);
     }
@@ -452,6 +351,8 @@ class Index extends Controller
             if ($result === true) {
                 $zip->extractTo('../');
                 $zip->close();
+                unlink('../epay-' . $latestVersion . '.zip');
+                //delete update file
             }
         }
         setServerConfig('isUpdateLoading', 'no');
@@ -1269,5 +1170,133 @@ class Index extends Controller
             'updateTime' => getDateTime()
         ]);
         return $result != 0;
+    }
+
+    private function getDashboardData()
+    {
+        $data['totalOrder'] = Db::table('epay_order')->cache(120)->count('id');
+        $data['totalUser']  = Db::table('epay_user')->cache(120)->count('id');
+        $data['totalMoney'] = getServerConfig('totalMoney');
+        if (empty($data['totalMoney']))
+            $data['totalMoney'] = 0;
+        $data['totalMoneyRate'] = getServerConfig('totalMoneyRate');
+        if (empty($data['totalMoneyRate']))
+            $data['totalMoneyRate'] = 0;
+        $data['settleRecord'] = [];
+        for ($i = 6; $i >= 1; $i--) {
+            $data['settleRecord'][] = ['createTime' => date('Y-m-d', strtotime('-' . $i . ' day'))];
+        }
+        $data['settleRecord'][] = ['createTime' => date('Y-m-d', strtotime('now'))];
+        foreach ($data['settleRecord'] as $key => $value) {
+            $data['settleRecord'][$key]['money'] = Db::table('epay_settle')->whereBetweenTime('createTime', $value['createTime'])->cache(120)->sum('money');
+        }
+        {
+            $buildOrderStatistics = function (string $date) {
+                $totalOrder   = Db::table('epay_order')->whereBetweenTime('createTime', $date)->cache(120)->count('id');
+                $successOrder = Db::table('epay_order')->whereBetweenTime('createTime', $date)->where('status', 1)->cache(120)->count('id');
+                if ($successOrder == 0 || $totalOrder == 0)
+                    $ratio = '0';
+                else
+                    $ratio = number_format($successOrder / $totalOrder * 100, 2);
+                return [
+                    'totalOrder'   => $totalOrder,
+                    'successOrder' => $successOrder,
+                    'ratio'        => $ratio
+                ];
+            };
+
+            $data['orderDataStatistics'] = [];
+            $createTimeList              = [
+                date('Y-m-d', strtotime('- 1 day')),
+                date('Y-m-d', strtotime('now'))
+            ];
+            foreach ($createTimeList as $time) {
+                $data['orderDataStatistics'][$time] = $buildOrderStatistics($time);
+            }
+        }
+        $data['statistics'] = [
+            'yesterday' => [
+                [
+                    'type'       => 1,
+                    'totalMoney' => Db::table('epay_order')->where([
+                        'type'   => 1,
+                        'status' => 1
+                    ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
+                ],
+                [
+                    'type'       => 1,
+                    'totalMoney' => Db::table('epay_order')->where([
+                        'type'   => 2,
+                        'status' => 1
+                    ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
+                ],
+                [
+                    'type'       => 1,
+                    'totalMoney' => Db::table('epay_order')->where([
+                        'type'   => 3,
+                        'status' => 1
+                    ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
+                ],
+                [
+                    'type'       => 1,
+                    'totalMoney' => Db::table('epay_order')->where([
+                        'type'   => 4,
+                        'status' => 1
+                    ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
+                ]
+            ],
+            'today'     => [
+                [
+                    'type'       => 1,
+                    'totalMoney' => Db::table('epay_order')->where([
+                        'type'   => 1,
+                        'status' => 1
+                    ])->whereTime('endTime', 'today')->cache(300)->sum('money')
+                ],
+                [
+                    'type'       => 1,
+                    'totalMoney' => Db::table('epay_order')->where([
+                        'type'   => 2,
+                        'status' => 1
+                    ])->whereTime('endTime', 'today')->cache(300)->sum('money')
+                ],
+                [
+                    'type'       => 1,
+                    'totalMoney' => Db::table('epay_order')->where([
+                        'type'   => 3,
+                        'status' => 1
+                    ])->whereTime('endTime', 'today')->cache(300)->sum('money')
+                ],
+                [
+                    'type'       => 1,
+                    'totalMoney' => Db::table('epay_order')->where([
+                        'type'   => 4,
+                        'status' => 1
+                    ])->whereTime('endTime', 'today')->cache(300)->sum('money')
+                ]
+            ]
+        ];
+        {
+            $yesterday           = date('Y-m-d', strtotime('-1 day'));
+            $today               = date('Y-m-d', time());
+            $orderDataComparison = [
+                $yesterday => [],
+                $today     => []
+            ];
+            for ($i = 0; $i < 24; $i++) {
+                $o                                               = $i + 1;
+                $hoursStartStr                                   = ($i >= 10 ? $i . '' : '0' . $i) . ':00:00';
+                $hoursEndStr                                     = ($o >= 10 ? $o . '' : '0' . $o) . ':00:00';
+                $orderDataComparison[$yesterday][$hoursStartStr] = Db::table('epay_order')->cache(7200)->where('status',1)
+                    ->whereTime('endTime', '>=', $yesterday.' '.$hoursStartStr)
+                    ->whereTime('endTime', '<=', $yesterday.' '.$hoursEndStr)->sum('money');
+                $orderDataComparison[$today][$hoursStartStr]     = Db::table('epay_order')->cache(3600)->where('status',1)
+                    ->whereTime('endTime', '>=', $today.' '.$hoursStartStr)
+                    ->whereTime('endTime', '<=', $today.' '.$hoursEndStr)->sum('money');
+            }
+            $data['orderDataComparison'] = $orderDataComparison;
+        }
+        //获取分时订单
+        return $data;
     }
 }

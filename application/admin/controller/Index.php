@@ -45,8 +45,8 @@ class Index extends Controller
         else
             $data['isGeetest'] = !empty($config['geetestCaptchaID']) && !empty($config['geetestPrivateKey']);
         if ($templateName == 'Dashboard') {
-            $data['totalOrder'] = Db::table('epay_order')->cache(60)->count('id');
-            $data['totalUser']  = Db::table('epay_user')->cache(60)->count('id');
+            $data['totalOrder'] = Db::table('epay_order')->cache(120)->count('id');
+            $data['totalUser']  = Db::table('epay_user')->cache(120)->count('id');
             $data['totalMoney'] = getServerConfig('totalMoney');
             if (empty($data['totalMoney']))
                 $data['totalMoney'] = 0;
@@ -59,12 +59,12 @@ class Index extends Controller
             }
             $data['settleRecord'][] = ['createTime' => date('Y-m-d', strtotime('now'))];
             foreach ($data['settleRecord'] as $key => $value) {
-                $data['settleRecord'][$key]['money'] = Db::table('epay_settle')->whereBetweenTime('createTime', $value['createTime'])->sum('money');
+                $data['settleRecord'][$key]['money'] = Db::table('epay_settle')->whereBetweenTime('createTime', $value['createTime'])->cache(120)->sum('money');
             }
             {
                 $buildOrderStatistics = function (string $date) {
-                    $totalOrder   = Db::table('epay_order')->whereBetweenTime('createTime', $date)->cache(60)->count();
-                    $successOrder = Db::table('epay_order')->whereBetweenTime('createTime', $date)->where('status', 1)->cache(60)->count();
+                    $totalOrder   = Db::table('epay_order')->whereBetweenTime('createTime', $date)->cache(120)->count();
+                    $successOrder = Db::table('epay_order')->whereBetweenTime('createTime', $date)->where('status', 1)->cache(120)->count();
                     if ($successOrder == 0 || $totalOrder == 0)
                         $ratio = '0';
                     else
@@ -92,28 +92,28 @@ class Index extends Controller
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 1,
                             'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->sum('money')
+                        ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
                     ],
                     [
                         'type'       => 1,
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 2,
                             'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->sum('money')
+                        ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
                     ],
                     [
                         'type'       => 1,
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 3,
                             'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->sum('money')
+                        ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
                     ],
                     [
                         'type'       => 1,
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 4,
                             'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->sum('money')
+                        ])->whereTime('endTime', 'yesterday')->cache(600)->sum('money')
                     ]
                 ],
                 'today'     => [
@@ -122,28 +122,28 @@ class Index extends Controller
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 1,
                             'status' => 1
-                        ])->whereTime('endTime', 'today')->sum('money')
+                        ])->whereTime('endTime', 'today')->cache(120)->sum('money')
                     ],
                     [
                         'type'       => 1,
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 2,
                             'status' => 1
-                        ])->whereTime('endTime', 'today')->sum('money')
+                        ])->whereTime('endTime', 'today')->cache(120)->sum('money')
                     ],
                     [
                         'type'       => 1,
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 3,
                             'status' => 1
-                        ])->whereTime('endTime', 'today')->sum('money')
+                        ])->whereTime('endTime', 'today')->cache(120)->sum('money')
                     ],
                     [
                         'type'       => 1,
                         'totalMoney' => Db::table('epay_order')->where([
                             'type'   => 4,
                             'status' => 1
-                        ])->whereTime('endTime', 'today')->sum('money')
+                        ])->whereTime('endTime', 'today')->cache(120)->sum('money')
                     ]
                 ]
             ];
@@ -939,8 +939,9 @@ class Index extends Controller
                 return json(['status' => 1, 'msg' => '新增用户成功,但是支付配置功能异常']);
 
             foreach ($data as $key => $value) {
-                if ($value['apiType'] == null || $value['payAisle'] == null || $value['isOpen'] == null)
-                    return json(['status' => 1, 'msg' => '更新用户信息成功,但是支付配置功能未能正常保存。']);
+                if ($key != 'isCancelReturn')
+                    if ($value['apiType'] === null || $value['payAisle'] === null || $value['isOpen'] === null)
+                        return json(['status' => 1, 'msg' => '更新用户信息成功,但是支付配置功能未能正常保存。']);
             }
 
             setPayUserAttr($uid, 'isCancelReturn', $data['isCancelReturn'] ? 'true' : 'false');

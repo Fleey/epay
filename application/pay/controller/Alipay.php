@@ -55,16 +55,16 @@ class Alipay extends Controller
         if ($apiType == 1)
             return $this->fetch('/SystemMessage', ['msg' => '该订单尚不支持原生支付！']);
 
-        $productNameShowMode = intval(getPayUserAttr($result[0]['uid'], 'productNameShowMode'));
-        $productName         = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];
-        if ($productNameShowMode == 1) {
-            $tempData    = getPayUserAttr($result[0]['uid'], 'productName');
-            $productName = empty($tempData) ? '商户尚未设置默认商品名称' : $tempData;
-        } else if ($productNameShowMode == 2) {
-            $productName = $result[0]['productName'];
-        }
+//        $productNameShowMode = intval(getPayUserAttr($result[0]['uid'], 'productNameShowMode'));
+//        $productName         = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];
+//        if ($productNameShowMode == 1) {
+//            $tempData    = getPayUserAttr($result[0]['uid'], 'productName');
+//            $productName = empty($tempData) ? '商户尚未设置默认商品名称' : $tempData;
+//        } else if ($productNameShowMode == 2) {
+//            $productName = $result[0]['productName'];
+//        }
 
-        $productName = '自助购物-' . uniqid();
+        $productName = $this->systemConfig['defaultProductName'].'-' . uniqid();
 
         $isMobile = $this->request->isMobile();
         $param    = [

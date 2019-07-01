@@ -119,6 +119,9 @@ class Index extends Controller
         if (empty($converPayType))
             return $this->fetch('/SystemMessage', ['msg' => '支付类型(type)暂不支持该方式']);
 
+//        if($money < 100 && $converPayType == 1)
+//            return $this->fetch('/SystemMessage',['msg'=>'微信最低支付金额 1 RMB']);
+
         if ($converPayType == 3 && !$this->systemConfig['alipay']['isOpen']) {
             return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['alipay']['tips']]);
         } else if ($converPayType == 2 && !$this->systemConfig['qqpay']['isOpen']) {

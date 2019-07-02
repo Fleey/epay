@@ -79,7 +79,7 @@ class WxPay extends Controller
 //            $productName = $result[0]['productName'];
 //        }
 
-        $productName = $this->systemConfig['defaultProductName'].'-' . uniqid();
+        $productName = $this->systemConfig['defaultProductName'] . '-' . uniqid();
 
         $tradeData                = $result[0];
         $tradeData['tradeNo']     = $tradeNo;
@@ -118,13 +118,13 @@ class WxPay extends Controller
                 //init pay model
                 $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE', $this->notifyUrl);
                 //PC端微信支付
-//                if ($this->request->isMobile()) {
-//                    $requestResult = $wxPayModel->sendPayRequest($tradeData, 'MWEB', $this->notifyUrl);
-//                    //手机端微信支付
-//                } else {
-//                    $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE', $this->notifyUrl);
-//                    //PC端微信支付
-//                }
+                if ($this->request->isMobile()) {
+                    $requestResult = $wxPayModel->sendPayRequest($tradeData, 'MWEB', $this->notifyUrl);
+                    //手机端微信支付
+                } else {
+                    $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE', $this->notifyUrl);
+                    //PC端微信支付
+                }
                 PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'h5');
             }
         }
@@ -142,6 +142,22 @@ class WxPay extends Controller
                     'tradeNo'        => $tradeNo,
                     'cancelCallback' => buildCallBackUrl($tradeNo, 'return')
                 ]);
+            } else if ($this->request->isMobile()) {
+                if ($wxPayMode == 2)
+                    return $this->fetch('/WxPayJsH5Template', [
+                        'codeUrl' => $requestResult['code_url'],
+                        'money'   => $result[0]['money'] / 100,
+                        'tradeNo' => $tradeNo
+                    ]);
+
+                $returnUrl = url('/Pay/WxPay/WapReturn?tradeNo=' . $tradeNo, '', false, true);
+
+                $requestUrl = $requestResult['mweb_url'] . '&redirect_url=' . urlencode($returnUrl);
+                $parseUrl   = parse_url($requestUrl);
+                $parseQuery = parse_query($parseUrl['query']);
+                $formHtml   = buildRequestForm($parseUrl['scheme'] . '://' . $parseUrl['host'] . $parseUrl['path'], $parseQuery, 'get');
+                //core code
+                return $formHtml;
             } else {
                 return $this->fetch('/WxPayPcTemplate', [
                     'siteName'    => $siteName,
@@ -152,41 +168,6 @@ class WxPay extends Controller
                     'codeUrl'     => $requestResult['code_url']
                 ]);
             }
-
-//            if ($isWxBrowser) {
-//                $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
-//                //init pay model
-//                return $this->fetch('/WxPayJsTemplate', [
-//                    'jsApiParam'     => $wxPayModel->buildJsApiParam($requestResult),
-//                    'tradeNo'        => $tradeNo,
-//                    'cancelCallback' => buildCallBackUrl($tradeNo, 'return')
-//                ]);
-//            } else if ($this->request->isMobile()) {
-//                if ($wxPayMode == 2)
-//                    return $this->fetch('/WxPayJsH5Template', [
-//                        'codeUrl' => $requestResult['code_url'],
-//                        'money'   => $result[0]['money'] / 100,
-//                        'tradeNo' => $tradeNo
-//                    ]);
-//
-//                $returnUrl = url('/Pay/WxPay/WapReturn?tradeNo=' . $tradeNo, '', false, true);
-//
-//                $requestUrl = $requestResult['mweb_url'] . '&redirect_url=' . urlencode($returnUrl);
-//                $parseUrl   = parse_url($requestUrl);
-//                $parseQuery = parse_query($parseUrl['query']);
-//                $formHtml   = buildRequestForm($parseUrl['scheme'] . '://' . $parseUrl['host'] . $parseUrl['path'], $parseQuery, 'get');
-//                //core code
-//                return $formHtml;
-//            } else {
-//                return $this->fetch('/WxPayPcTemplate', [
-//                    'siteName'    => $siteName,
-//                    'productName' => $result[0]['productName'],
-//                    'money'       => $result[0]['money'] / 100,
-//                    'tradeNo'     => $tradeNo,
-//                    'addTime'     => $result[0]['createTime'],
-//                    'codeUrl'     => $requestResult['code_url']
-//                ]);
-//            }
         }
         return $this->fetch('/SystemMessage', ['msg' => '微信支付下单失败！<br>[' . $requestResult['err_code'] . '] ' . $requestResult['err_code_des']]);
     }

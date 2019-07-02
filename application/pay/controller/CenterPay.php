@@ -150,8 +150,8 @@ class CenterPay extends Controller
         if (empty($this->systemConfig[$payType]))
             return $this->fetch('/SystemMessage', ['msg' => '支付类型尚不支持回调，请联系站点管理员处理！']);
 
-        if (time() - strtotime($payTime) > 300)
-            return $this->fetch('/SystemMessage', ['msg' => '同步回调超时，可能已经支付成功了。。。但是超过5分钟了！']);
+        //if (time() - strtotime($payTime) > 300)
+        //    return $this->fetch('/SystemMessage', ['msg' => '同步回调超时，可能已经支付成功了。。。但是超过5分钟了！']);
 
         if (empty($this->systemConfig[$payType]['epayCenterKey']))
             return $this->fetch('/SystemMessage', ['msg' => '后台参数配置缺失，请联系站点管理员处理！']);

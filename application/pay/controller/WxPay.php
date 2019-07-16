@@ -8,6 +8,7 @@ use function GuzzleHttp\Psr7\parse_query;
 use think\App;
 use think\Controller;
 use think\Db;
+use think\Exception;
 
 class WxPay extends Controller
 {
@@ -30,8 +31,12 @@ class WxPay extends Controller
      */
     public function getWxOpenCode()
     {
+        $requestData = input('get.');
+
+        $this->systemConfig['wxpay'] = $this->getWxxPayConfig($requestData['tradeNo']);
+
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
-        $wxPayModel->getWxOpenCode(url('/Pay/WxPay/Submit?' . $wxPayModel->buildUrlParam(input('get.')), '', '', true));
+        $wxPayModel->getWxOpenCode(url('/Pay/WxPay/Submit?' . $wxPayModel->buildUrlParam($requestData), '', '', true));
     }
 
     /**
@@ -43,12 +48,16 @@ class WxPay extends Controller
      */
     public function getSubmit()
     {
-        $tradeNo  = input('get.tradeNo');
+        $tradeNo  = input('get.tradeNo/s');
         $siteName = htmlentities(base64_decode(input('get.siteName', '易支付')));
         if (empty($siteName))
             $siteName = '易支付';
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
+        if (strlen($tradeNo) != 19) {
+            $tradeNo = substr($tradeNo, 0, 19);
+        }
+        //这里负责纠正一些人错误复制访问链接导致失败
         $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])
             ->field('uid,money,productName,status,type,createTime')->limit(1)->select();
         if (empty($result))
@@ -58,17 +67,14 @@ class WxPay extends Controller
         if ($result[0]['status'])
             return redirect(buildCallBackUrl($tradeNo, 'return'));
 
-        $apiType       = 0;
-        $userPayConfig = unserialize(getPayUserAttr($result[0]['uid'], 'payConfig'));
-        if (!empty($userPayConfig)) {
-            $apiType = $userPayConfig['wxpay']['apiType'];
-        } else {
-            if (isset($this->systemConfig['wxpay']['apiType']))
-                $apiType = $this->systemConfig['wxpay']['apiType'];
+        if ($this->systemConfig['wxpay']['apiType'] == 1)
+            return $this->fetch('/SystemMessage', ['msg' => '该订单尚不支持原生支付！']);
+        else {
+            $this->systemConfig['wxpay'] = $this->getWxxPayConfig($tradeNo);
         }
 
-        if ($apiType == 1)
-            return $this->fetch('/SystemMessage', ['msg' => '该订单尚不支持原生支付！']);
+        if (empty($this->systemConfig['wxpay']['sub_mch_id']))
+            return $this->fetch('/SystemMessage', ['msg' => '微信支付下单失败！<br>[系统配置异常] 尚未进行用户身份审核，请发送相关个人资料到相关人员处理。']);
 
 //        $productNameShowMode = intval(getPayUserAttr($result[0]['uid'], 'productNameShowMode'));
 //        $productName         = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];
@@ -79,7 +85,7 @@ class WxPay extends Controller
 //            $productName = $result[0]['productName'];
 //        }
 
-        $productName = $this->systemConfig['defaultProductName'] . '-' . uniqid();
+        $productName = $this->systemConfig['defaultProductName'] . '-' . md5($tradeNo);
 
         $tradeData                = $result[0];
         $tradeData['tradeNo']     = $tradeNo;
@@ -103,29 +109,35 @@ class WxPay extends Controller
             }
             $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
             //init pay model
-            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'JSAPI', $this->notifyUrl, $wxOpenCode);
+            $requestResult = $wxPayModel->sendPayRequest($tradeData, 'JSAPI', $this->notifyUrl, $wxOpenCode, $this->systemConfig['wxpay']['sub_mch_id']);
             //手机微信内置浏览器支付 共存支付或 jsapi支付 拉起支付
             PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'jsapi');
         } else {
             if ($wxPayMode == 2) {
                 if (empty($this->systemConfig['wxpay']['jsApiAppSecret']))
                     return '<h1 style="margin-top: 50%;text-align: center;font-size: 18px;font-weight: 600;">支付配置参数有误,请联系站点管理员处理</h1>';
-                $requestResult['code_url']    = url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s'), '', false, true);
+                $requestResult['code_url']    = shortenUrl(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s'), '', false, true));
                 $requestResult['return_code'] = 'SUCCESS';
                 $requestResult['result_code'] = 'SUCCESS';
             } else {
-                $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'h5');
                 //init pay model
-                $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE', $this->notifyUrl);
-                //PC端微信支付
-                if ($this->request->isMobile()) {
-                    $requestResult = $wxPayModel->sendPayRequest($tradeData, 'MWEB', $this->notifyUrl);
-                    //手机端微信支付
+                if ($this->systemConfig['wxpay']['apiType'] != 3) {
+                    $wxPayModel    = new WxPayModel($this->systemConfig['wxpay'], 'h5');
+                    $requestResult = $wxPayModel->sendPayRequest($tradeData, $this->request->isMobile() ? 'MWEB' : 'NATIVE', $this->notifyUrl, '', $this->systemConfig['wxpay']['sub_mch_id']);
+                    PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'h5');
                 } else {
-                    $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE', $this->notifyUrl);
-                    //PC端微信支付
+                    if ($this->request->isMobile()) {
+                        $requestResult['code_url']    = shortenUrl(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s'), '', false, true));
+                        $requestResult['return_code'] = 'SUCCESS';
+                        $requestResult['result_code'] = 'SUCCESS';
+                        PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'jsapi');
+                    } else {
+                        $wxPayModel    = new WxPayModel($this->systemConfig['wxpay'], 'h5');
+                        $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE', $this->notifyUrl, '', $this->systemConfig['wxpay']['sub_mch_id']);
+                        //PC端微信支付
+                        PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'h5');
+                    }
                 }
-                PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'h5');
             }
         }
         if ($requestResult['return_code'] != 'SUCCESS')
@@ -133,7 +145,6 @@ class WxPay extends Controller
         if ($requestResult['result_code'] != 'SUCCESS')
             return $this->fetch('/SystemMessage', ['msg' => '微信支付下单失败！<br>[' . $requestResult['err_code'] . '] ' . $requestResult['err_code_des']]);
         if ($requestResult['return_code'] == 'SUCCESS') {
-
             if ($isWxBrowser) {
                 $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
                 //init pay model
@@ -143,21 +154,21 @@ class WxPay extends Controller
                     'cancelCallback' => buildCallBackUrl($tradeNo, 'return')
                 ]);
             } else if ($this->request->isMobile()) {
-                if ($wxPayMode == 2)
-                    return $this->fetch('/WxPayJsH5Template', [
-                        'codeUrl' => $requestResult['code_url'],
-                        'money'   => $result[0]['money'] / 100,
-                        'tradeNo' => $tradeNo
-                    ]);
+                if ($wxPayMode != 2) {
+                    $returnUrl  = url('/Pay/WxPay/WapReturn?tradeNo=' . $tradeNo, '', false, true);
+                    $requestUrl = $requestResult['mweb_url'] . '&redirect_url=' . urlencode($returnUrl);
+                    $parseUrl   = parse_url($requestUrl);
+                    $parseQuery = parse_query($parseUrl['query']);
+                    $formHtml   = buildRequestForm($parseUrl['scheme'] . '://' . $parseUrl['host'] . $parseUrl['path'], $parseQuery, 'get');
+                    //core code
+                    return $formHtml;
+                }
 
-                $returnUrl = url('/Pay/WxPay/WapReturn?tradeNo=' . $tradeNo, '', false, true);
-
-                $requestUrl = $requestResult['mweb_url'] . '&redirect_url=' . urlencode($returnUrl);
-                $parseUrl   = parse_url($requestUrl);
-                $parseQuery = parse_query($parseUrl['query']);
-                $formHtml   = buildRequestForm($parseUrl['scheme'] . '://' . $parseUrl['host'] . $parseUrl['path'], $parseQuery, 'get');
-                //core code
-                return $formHtml;
+                return $this->fetch('/WxPayJsH5Template', [
+                    'codeUrl' => $requestResult['code_url'],
+                    'money'   => $result[0]['money'] / 100,
+                    'tradeNo' => $tradeNo
+                ]);
             } else {
                 return $this->fetch('/WxPayPcTemplate', [
                     'siteName'    => $siteName,
@@ -213,12 +224,18 @@ class WxPay extends Controller
             return xml(['return_code' => 'FAIL', 'return_msg' => '签名不能为空']);
         $sign = $requestData['sign'];
 
+        if (empty($requestData['sub_mch_id']))
+            $requestData['sub_mch_id'] = '';
+
         $outTradeNo = $requestData['out_trade_no'];
 
         $wxPayMode = PayModel::getOrderAttr($outTradeNo, 'wxTradeMode');
         if ($wxPayMode == '')
             $wxPayMode = 'h5';
         //兼容老版本 承接新版本
+        if (!empty($requestData['sub_mch_id'])) {
+            $this->systemConfig['wxpay'] = $this->getWxxPayConfig($outTradeNo);
+        }
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], $wxPayMode);
         if ($wxPayModel->signParam($requestData) != $sign)
             return xml(['return_code' => 'FAIL', 'return_msg' => '签名效验有误']);
@@ -228,7 +245,7 @@ class WxPay extends Controller
         if ($requestData['return_code'] != 'SUCCESS' && $requestData['result_code'] != 'SUCCESS')
             return xml(['return_code' => 'FAIL', 'return_msg' => '订单状态无效']);
         //check order status
-        if (!$wxPayModel->checkWxPayStatus($requestData['transaction_id'], 'transaction_id'))
+        if (!$wxPayModel->checkWxPayStatus($requestData['transaction_id'], 'transaction_id', $requestData['sub_mch_id']))
             return xml(['return_code' => 'FAIL', 'return_msg' => '订单付款状态效验失败']);
         //check order pay status
 
@@ -251,4 +268,72 @@ class WxPay extends Controller
         return xml(['return_code' => 'SUCCESS', 'return_msg' => 'OK']);
     }
 
+    /**
+     * @param string $tradeNo
+     * @return mixed
+     * @throws Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     * @throws \think\exception\PDOException
+     */
+    private function getWxxPayConfig(string $tradeNo)
+    {
+        $orderInfo = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid')->limit(1)->select();
+        if (empty($orderInfo))
+            throw new Exception('数据库异常');
+        $getPayConfig = PayModel::getOrderAttr($tradeNo, 'payConfig');
+        if (!empty($getPayConfig)) {
+            $getPayConfig = json_decode($getPayConfig, true);
+            return $this->buildWxxPayConfig($getPayConfig['accountID'], $getPayConfig['subMchID']);
+        }
+        //存在预先配置
+        $uid             = $orderInfo[0]['uid'];
+        $userAccountList = Db::table('epay_wxx_apply_list')->alias('applyList')
+            ->where(['applyList.status' => 2])->limit(1)
+            ->leftJoin('epay_wxx_apply_info applyInfo', 'applyList.accountID = applyInfo.id AND applyInfo.uid = :uid and applyInfo.type = 2')
+            ->bind(['uid' => $uid])->field('applyList.accountID,applyList.subMchID')->order('applyList.rounds asc')->select();
+        if (!empty($userAccountList)) {
+            PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'],'configType'=>2]));
+            return $this->buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID']);
+            //独立号
+        } else {
+            $userAccountList = Db::table('epay_wxx_apply_list')->alias('applyList')
+                ->where(['applyList.status' => 2])->limit(1)
+                ->leftJoin('epay_wxx_apply_info applyInfo', 'applyList.accountID = applyInfo.id AND applyInfo.uid = :uid and applyInfo.type = 1')
+                ->field('applyList.accountID,applyList.subMchID')->order('applyList.rounds asc')->select();
+            //集体号
+            PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'],'configType'=>1]));
+            return $this->buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID']);
+        }
+    }
+
+    /**
+     * @param int $accountID
+     * @param int $subMchID
+     * @return mixed
+     * @throws Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    private function buildWxxPayConfig(int $accountID, int $subMchID)
+    {
+        $selectResult = Db::table('epay_wxx_account_list')->where('id', $accountID)->field('appID,mchID,appKey,appSecret')->limit(1)->select();
+        if (empty($selectResult))
+            throw new Exception('数据结构异常');
+        $returnData = $this->systemConfig['wxpay'];
+
+        $config['key']   = $selectResult[0]['appKey'];
+        $config['appid'] = $selectResult[0]['appID'];
+        $config['mchid'] = $selectResult[0]['mchID'];
+
+        $config['jsApiAppid']     = $selectResult[0]['appID'];
+        $config['jsApiMchid']     = $selectResult[0]['mchID'];
+        $config['jsApiKey']       = $selectResult[0]['appKey'];
+        $config['jsApiAppSecret'] = $selectResult[0]['appSecret'];
+
+        $config['sub_mch_id'] = $subMchID;
+        return $returnData;
+    }
 }

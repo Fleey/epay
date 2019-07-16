@@ -1,23 +1,3 @@
-<style>
-    #orderInfo .item > span[data-name] {
-        display: block;
-    }
-
-    .QrCodeImgPreview {
-        width: 128px;
-        height: 128px;
-        text-align: center;
-        display: block;
-        margin: 0 auto;
-        border: dashed 2px;
-        line-height: 7.5rem;
-        cursor: pointer;
-    }
-
-    .mr15 {
-        margin-right: 15px;
-    }
-</style>
 <div class="page-content container-fluid">
     <div class="row">
         <div class="col-md-12">
@@ -358,9 +338,11 @@
                                         <select class="form-control" data-value="apiType">
                                             <option value="0">原生支付接口</option>
                                             <option value="1">易支付中央系统</option>
+                                            <option value="2">小微商户</option>
                                         </select>
                                     </div>
                                     <div class="col-md-4">
+                                        <input type="text" class="form-control" data-value="wxxMeanMoney" placeholder="均分金额 只能整数" style="display: none;">
                                         <select class="form-control" data-value="payAisle" disabled>
                                             <option value="0">没有更多选项</option>
                                         </select>

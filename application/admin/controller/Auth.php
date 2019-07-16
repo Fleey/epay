@@ -80,6 +80,7 @@ class Auth extends Controller
         if (empty($password))
             return json(['status' => 0, 'msg' => '密码不能为空']);
         $result = unserialize(getServerConfig('adminAccount'));
+   
         if (empty($result)) {
             session('CheckAdminLoginAuthCode', null);
             return json(['status' => -1, 'msg' => '账号或密码不正确']);

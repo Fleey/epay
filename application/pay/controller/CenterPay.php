@@ -32,6 +32,10 @@ class CenterPay extends Controller
 //        $siteName = htmlentities(base64_decode(input('get.siteName')));
 //        if (empty($siteName))
 //            $siteName = '易支付';
+        if (strlen($tradeNo) != 19) {
+            $tradeNo = substr($tradeNo, 0, 19);
+        }
+        //这里负责纠正一些人错误复制访问链接导致失败
         $result = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,status,type')->limit(1)->select();
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);

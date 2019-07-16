@@ -50,7 +50,10 @@ class SearchTable
             'epay_settle',
             'epay_user_money_log',
             'epay_log',
-            'epay_ad_content'
+            'epay_ad_content',
+            'epay_wxx_account_list',
+            'epay_wxx_apply_info',
+            'epay_wxx_apply_list'
         ];
         if (!in_array($searchTable, $tableList)) {
             throw new Exception('该表不存在', 404);
@@ -193,6 +196,29 @@ class SearchTable
                 $queryResult = $queryResult->where('ipv4=:ip', ['ip' => $this->args['ipv4']]);
             if (isset($this->args['data']))
                 $queryResult = $queryResult->where('data', 'like', '%' . $this->args['data'] . '%');
+        } else if ($this->searchTable == 'epay_wxx_account_list') {
+            if (isset($this->args['appID']))
+                $queryResult = $queryResult->where('appID', $this->args['appID']);
+            if (isset($this->args['mchID']))
+                $queryResult = $queryResult->where('mchID', $this->args['mchID']);
+            if (isset($this->args['desc']))
+                $queryResult = $queryResult->where('desc', 'like', '%' . $this->args['desc'] . '%');
+        } else if ($this->searchTable == 'epay_wxx_apply_info') {
+            if (isset($this->args['idCardName']))
+                $queryResult = $queryResult->where('idCardName', 'like', '%' . $this->args['idCardName'] . '%');
+            if (isset($this->args['idCardNumber']))
+                $queryResult = $queryResult->where('idCardNumber', $this->args['idCardNumber']);
+            if (isset($this->args['type']))
+                $queryResult = $queryResult->where('type', $this->args['type']);
+        } else if ($this->searchTable == 'epay_wxx_apply_list') {
+            if (isset($this->args['accountID']))
+                $queryResult = $queryResult->where('accountID', $this->args['accountID']);
+            if (isset($this->args['subMchID']))
+                $queryResult = $queryResult->where('subMchID', $this->args['subMchID']);
+            if (isset($this->args['status']))
+                $queryResult = $queryResult->where('status', $this->args['status']);
+            if (isset($this->args['desc']))
+                $queryResult = $queryResult->where('desc', 'like', '%' . $this->args['desc'] . '%');
         }
         return $queryResult;
     }
@@ -237,7 +263,13 @@ class SearchTable
         } else if ($this->searchTable == 'epay_log') {
             $searchOrderList = ['id', 'uid', 'type', 'ipv4', 'createTime', 'data'];
         } else if ($this->searchTable == 'epay_ad_content') {
-            $searchOrderList = ['id','title','status','visitsCount','createTime'];
+            $searchOrderList = ['id', 'title', 'status', 'visitsCount', 'createTime'];
+        } else if ($this->searchTable == 'epay_wxx_account_list') {
+            $searchOrderList = ['id', 'appID', 'mchID', 'desc', 'createTime'];
+        } else if ($this->searchTable == 'epay_wxx_apply_info') {
+            $searchOrderList = ['id', 'idCardName', 'idCardNumber', 'type', 'createTime'];
+        } else if ($this->searchTable == 'epay_wxx_apply_list') {
+            $searchOrderList = ['id', 'accountID', 'status', 'createTime'];
         }
         $field = '';
         foreach ($searchOrderList as $item) {

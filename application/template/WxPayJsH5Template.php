@@ -6,40 +6,47 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
     <meta name="renderer" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="https://cdn.staticfile.org/ionic/1.3.2/css/ionic.min.css" rel="stylesheet"/>
-    <style>
-        .weui-btn {position: relative;display: block;margin-left: auto;margin-right: auto;padding-left: 14px;padding-right: 14px;box-sizing: border-box;font-size: 18px;text-align: center;text-decoration: none;color: #FFFFFF;line-height: 2.55555556;border-radius: 5px;-webkit-tap-highlight-color: rgba(0, 0, 0, 0);overflow: hidden;}
-        .div1{margin-top: 18%;font-weight: 600;font-size: 17px;text-align: center;}
-        .div2{width: 100%;padding: 0 20px;position: relative;top: 16%;}
-        .tips{position: relative;top: 90px;width: 230px;margin: 0 auto;}
-        #qrcode{display: block;position: relative;top: 80px;width: 230px;margin: 0 auto;}
-        .weui-btn_primary {background-color: #1AAD19;}
-        .text-center{text-align: center;}
-        html, body {overflow-x: scroll;}
-    </style>
 </head>
 <body style="height: 100%;">
-<div class="bar bar-header bar-light" align-title="center">
-    <h1 class="title">微信安全支付</h1>
-</div>
-<div class="qr-image" id="qrcode"></div>
-<div class="tips">
-    <p>订单号码：<?php echo $tradeNo; ?></p>
-    <p>支付金额：<?php echo $money; ?> RMB</p>
-    <div class="div1">
-        <p>长按保存二维码到相册</p>
-        <p>微信打开扫一扫</p>
-        <p>如长按无法保存 请截屏页面 到微信扫一扫即可</p>
+
+<div class="col-xs-12 col-sm-10 col-md-8 col-lg-6 center-block" style="float: none;">
+    <div class="panel panel-primary">
+        <div class="panel-heading" style="text-align: center;"><h3 class="panel-title">
+                微信支付手机版
+        </div>
+        <div class="list-group" style="text-align: center;">
+            <div class="list-group-item list-group-item-info">长按保存到相册使用扫码扫码完成支付</div>
+            <div class="list-group-item">
+                <div class="qr-image" id="qrcode"></div>
+            </div>
+            <div class="list-group-item list-group-item-info">或复制以下链接到微信打开：</div>
+            <div class="list-group-item">
+                <a href="<?php echo $codeUrl; ?>"><?php echo $codeUrl; ?></a><br/>
+                <button id="copy-btn" data-clipboard-text="<?php echo $codeUrl; ?>"
+                        class="btn btn-info btn-sm">一键复制
+                </button>
+            </div>
+            <div class="list-group-item">
+                <small>提示：你可以将以上链接发到自己微信的聊天框（在微信顶部搜索框可以搜到自己的微信），即可点击进入支付</small>
+            </div>
+            <div class="list-group-item">
+                <a href="#" target="_blank">
+                    <small>
+                        <marquee style="font-weight: bold;line-height: 20px;font-size: 20px;color: #FF0000;">
+                            投诉QQ：<?php echo htmlentities($qq); ?>-或进入网站首页进行投诉，有任何问题请联系我们.点我跳转
+                        </marquee>
+                    </small>
+                </a>
+            </div>
+            <div class="list-group-item">
+                <a href="weixin://" class="btn btn-primary">打开微信</a> <button style="margin-left:5px;" onclick="getOrderStatus()" class="btn btn-primary">检查订单状态</button>
+            </div>
+        </div>
     </div>
-    <a id="download" style="display: none;"></a>
 </div>
-<div class="div2">
-<!--    <a href="weixin://" style="width: 100%;" class="weui-btn weui-btn_primary">点击打开微信</a>-->
-    <a class="weui-btn weui-btn_primary" id="copy"  data-clipboard-text="<?php echo $codeUrl; ?>">点击复制链接</a>
-    <a download="qrcode.jpg" class="weui-btn_primary weui-btn" id="save" style="margin-top: 20px;">一键保存二维码</a>
-</div>
-</body>
-<script src="https://cdn.staticfile.org/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="//lib.baomitu.com/clipboard.js/1.7.1/clipboard.min.js"></script>
 <script src="/static/js/qq/qrcode.min.js"></script>
 <script src="/static/js/qq/qcloud_util.js"></script>
 <script src="/static/js/layer/layer.js"></script>
@@ -54,13 +61,12 @@
         correctLevel: QRCode.CorrectLevel.H
     });
 
-    var clipboard = new ClipboardJS('#copy');
-    clipboard.on('success', function (e) {
-        layer.msg('复制成功，请粘贴到微信打开链接。');
+    var clipboard = new Clipboard('#copy-btn');
+    clipboard.on('success', function(e) {
+        layer.msg('复制成功，请到微信里面粘贴');
     });
     clipboard.on('error', function(e) {
-        document.querySelector('#copy');
-        layer.msg('复制失败，请重试。');
+        layer.msg('复制失败，请长按链接后手动复制');
     });
     $("#save").click(function () {
         var canvas = $('#qrcode').find("canvas").get(0);
@@ -68,5 +74,38 @@
         $("#download").attr('href', url).attr('download', '二维码.png').get(0).click();
         return false;
     });
+
+    function getOrderStatus() {
+        $.ajax({
+            type: 'get',
+            dataType: 'json',
+            url: '<?php echo url('/Pay/Status', '', false, true); ?>',
+            timeout: 10000, //ajax请求超时时间10s
+            data: {
+                type: 1,
+                tradeNo: '<?php echo $tradeNo;?>'
+            },
+            success: function (data) {
+                //从服务器得到数据，显示数据并继续查询
+                if (data['status'] === 1) {
+                    layer.msg('支付成功，正在跳转中...', {icon: 16, shade: 0.01, time: 15000});
+                    setTimeout(window.location.href = data['url'], 1000);
+                } else {
+                    setTimeout('getOrderStatus()', 4000);
+                }
+            },
+            //Ajax请求超时，继续查询
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                if (textStatus === 'timeout') {
+                    setTimeout('getOrderStatus()', 1000);
+                } else { //异常
+                    setTimeout('getOrderStatus()', 4000);
+                }
+            }
+        });
+    }
+
+    window.onload = getOrderStatus;
 </script>
+</body>
 </html>

@@ -2,6 +2,7 @@
 
 namespace app\admin\controller;
 
+use app\admin\model\FileModel;
 use think\App;
 use think\Controller;
 use think\Db;
@@ -36,10 +37,10 @@ class File extends Controller
         $fileHash = input('get.hash');
         if (empty($fileHash))
             return json(['status' => 0, 'msg' => '文件不存在']);
-        $result = Db::table('epay_file_info')->where('hash', $fileHash)->limit(1)->field('id')->select();
-        if (empty($result))
+        $result = FileModel::getFileID($fileHash);
+        if ($result == 0)
             return json(['status' => 0, 'msg' => '文件不存在']);
-        return json(['status' => 1, 'fileID' => $result[0]['id']]);
+        return json(['status' => 1, 'fileID' => $result]);
     }
 
     /**

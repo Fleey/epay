@@ -40,6 +40,10 @@ class QQPay extends Controller
             $siteName = '易支付';
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
+        if (strlen($tradeNo) != 19) {
+            $tradeNo = substr($tradeNo, 0, 19);
+        }
+        //这里负责纠正一些人错误复制访问链接导致失败
         $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])
             ->field('uid,money,productName,status,type,createTime')->limit(1)->select();
         if (empty($result))
@@ -70,7 +74,7 @@ class QQPay extends Controller
 //            $productName = $result[0]['productName'];
 //        }
 
-        $productName = $this->systemConfig['defaultProductName'].'-' . uniqid();
+        $productName = $this->systemConfig['defaultProductName'] . '-' . uniqid();
 
         $param         = [
             'out_trade_no'     => $tradeNo,
@@ -86,6 +90,7 @@ class QQPay extends Controller
         $QQPayModel    = new QQPayModel($this->qqPayConfig);
         $requestResult = $QQPayModel->sendPayRequest($param);
         $codeUrl       = '';
+        $codeUrl1      = '';
         if ($requestResult['return_code'] == 'SUCCESS' && $requestResult['result_code'] == 'SUCCESS')
             $codeUrl = $requestResult['code_url'];
         else
@@ -94,7 +99,7 @@ class QQPay extends Controller
             else
                 return $this->fetch('/SystemMessage', ['msg' => 'QQ钱包支付下单失败！<br>[' . $requestResult['return_code'] . ']' . $requestResult['return_msg']]);
 
-
+        $codeUrl1 = $codeUrl;
         if ($this->request->isMobile())
             $codeUrl = 'https://myun.tenpay.com/mqq/pay/qrcode.html?_wv=1027&_bid=2183&t=' . $requestResult['prepay_id'];
 
@@ -107,7 +112,8 @@ class QQPay extends Controller
             'money'       => $result[0]['money'] / 100,
             'tradeNo'     => $tradeNo,
             'addTime'     => $result[0]['createTime'],
-            'codeUrl'     => $codeUrl
+            'codeUrl'     => $codeUrl,
+            'codeUrl1'    => $codeUrl1
         ]);
     }
 

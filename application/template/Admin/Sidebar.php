@@ -23,6 +23,32 @@
                         <span class="hide-menu">商户管理</span>
                     </a>
                 </li>
+                <li class="sidebar-item selected">
+                    <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                        <i class="mdi mdi-wechat"></i>
+                        <span class="hide-menu">小微商户管理</span>
+                    </a>
+                    <ul aria-expanded="false" class="collapse first-level">
+                        <li class="sidebar-item">
+                            <a data-href="WxxAccountList" class="sidebar-link">
+                                <i class="mdi mdi-adjust"></i>
+                                <span class="hide-menu">服务商号管理</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a data-href="WxxApplyInfo" class="sidebar-link">
+                                <i class="mdi mdi-adjust"></i>
+                                <span class="hide-menu">用户资料管理</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a data-href="WxxApplyList" class="sidebar-link">
+                                <i class="mdi mdi-adjust"></i>
+                                <span class="hide-menu">商户申请记录</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 <li class="sidebar-item">
                     <a class="sidebar-link waves-effect waves-dark sidebar-link" data-href="SettleList"
                        aria-expanded="false">
@@ -69,7 +95,7 @@
                     <a class="sidebar-link waves-effect waves-dark sidebar-link exit" href="javascript:void(0);"
                        aria-expanded="false">
                         <i class="fa fa-power-off"></i>
-                        <span class="hide-menu">注销账户</span>
+                        <span class="hide-menu">退出账户</span>
                     </a>
                 </li>
             </ul>

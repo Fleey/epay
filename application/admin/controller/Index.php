@@ -13,16 +13,6 @@ class Index extends Controller
 {
     public function index()
     {
-        $whiteDomain = [
-            'pay.cn',
-            'qq.zmz999.com',
-            'vip.zmz999.com',
-            'pay.zmz999.com',
-            'ceo.zmz999.com'
-        ];
-        if (!in_array($this->request->host(), $whiteDomain))
-            return '<h1 style="text-align: center;margin-top: 6rem;">Page Not Found</h1>';
-
         $config = getConfig();
         return $this->fetch('/IndexTemplate', [
             'webName' => $config['webName'],
@@ -889,13 +879,13 @@ class Index extends Controller
                 'isShield' => 0
             ])->whereBetweenTime('endTime', $date)->cache(60)->sum('money');
             //没计算费率的交易金额
-            $tradeMoneyRate = $tradeMoney * ($rate / 100) / 100;
+            $tradeMoneyRate = $tradeMoney * ($rate / 100);
             return [
-                'totalOrder'     => $totalOrder,
-                'successOrder'   => $successOrder,
-                'updateMoney'    => $updateMoney,
-                'tradeMoney'     => number_format($tradeMoney / 100, 2, '.', ''),
-                'tradeMoneyRate' => number_format($tradeMoneyRate, 2, '.', '')
+                'totalOrder'        => $totalOrder,
+                'successOrder'      => $successOrder,
+                'updateMoney'       => $updateMoney,
+                'tradeMoney'        => number_format($tradeMoney / 100, 2, '.', ''),
+                'tradeMoneyProfits' => number_format(($tradeMoney-$tradeMoneyRate)/100, 2, '.', ''),
             ];
         };
 
@@ -1287,12 +1277,12 @@ class Index extends Controller
                 $o                                               = $i + 1;
                 $hoursStartStr                                   = ($i >= 10 ? $i . '' : '0' . $i) . ':00:00';
                 $hoursEndStr                                     = ($o >= 10 ? $o . '' : '0' . $o) . ':00:00';
-                $orderDataComparison[$yesterday][$hoursStartStr] = Db::table('epay_order')->cache(7200)->where('status',1)
-                    ->whereTime('endTime', '>=', $yesterday.' '.$hoursStartStr)
-                    ->whereTime('endTime', '<=', $yesterday.' '.$hoursEndStr)->sum('money');
-                $orderDataComparison[$today][$hoursStartStr]     = Db::table('epay_order')->cache(3600)->where('status',1)
-                    ->whereTime('endTime', '>=', $today.' '.$hoursStartStr)
-                    ->whereTime('endTime', '<=', $today.' '.$hoursEndStr)->sum('money');
+                $orderDataComparison[$yesterday][$hoursStartStr] = Db::table('epay_order')->cache(7200)->where('status', 1)
+                    ->whereTime('endTime', '>=', $yesterday . ' ' . $hoursStartStr)
+                    ->whereTime('endTime', '<=', $yesterday . ' ' . $hoursEndStr)->sum('money');
+                $orderDataComparison[$today][$hoursStartStr]     = Db::table('epay_order')->cache(3600)->where('status', 1)
+                    ->whereTime('endTime', '>=', $today . ' ' . $hoursStartStr)
+                    ->whereTime('endTime', '<=', $today . ' ' . $hoursEndStr)->sum('money');
             }
             $data['orderDataComparison'] = $orderDataComparison;
         }

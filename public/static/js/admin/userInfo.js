@@ -375,9 +375,15 @@ $(function () {
         var configPayName = configDom.attr('data-name');
         var selectApiType = $(this).val();
 
-        if (selectApiType !== '1') {
+        if (configPayName === 'wxpay') {
+            $('#setPayConfig [data-value="payAisle"]').show();
+            $('#setPayConfig [data-value="wxxMeanMoney"]').hide();
+        }
+
+
+        if (selectApiType === '0') {
             configDom.find('select[data-value="payAisle"]').html('<option value="0" selected = "selected">没有更多选项</option>').attr('disabled', 'disabled');
-        } else {
+        } else if (selectApiType === '1') {
             var html = '';
             var payApiList = getCenterPayApiList(configPayName);
             if (payApiList['status'] !== 1 || payApiList['data'].length === 0) {
@@ -390,6 +396,12 @@ $(function () {
                 configDom.find('select[data-value="payAisle"]').html(html).removeAttr('disabled');
             }
 
+        } else if (selectApiType === '2') {
+            if (configPayName === 'wxpay') {
+                var parentDom = $(this).parent().parent().find('div.col-md-4:nth-child(2)');
+                parentDom.find('input[data-value="wxxMeanMoney"]').show();
+                parentDom.find('select[data-value="payAisle"]').hide();
+            }
         }
     });
     $('#batchSetFee').off("click").on('click', function () {
@@ -537,12 +549,14 @@ $(function () {
                             $('#setPayConfig [data-name="wxpay"] [data-value="isOpen"]').val(1);
                             $('#setPayConfig [data-name="qqpay"] [data-value="isOpen"]').val(1);
                             $('#setPayConfig [data-name="bankpay"] [data-value="isOpen"]').val(1);
+                            $('#setPayConfig [data-name="wxpay"] [data-value="wxxMeanMoney"]').val('');
                             $('#setPayConfig [data-value="payAisle"]').html('<option value="0" selected = "selected">没有更多选项</option>').attr('disabled', 'disabled');
                         } else {
                             $.each(value, function (key1, value1) {
                                 $('#setPayConfig [data-name="' + key1 + '"] [data-value="apiType"]').val(value1['apiType']).change();
                                 $('#setPayConfig [data-name="' + key1 + '"] [data-value="isOpen"]').val(value1['isOpen']);
                                 $('#setPayConfig [data-name="' + key1 + '"] [data-value="payAisle"]').val(value1['payAisle']);
+                                $('#setPayConfig [data-name="' + key1 + '"] [data-value="wxxMeanMoney"]').val(value1['wxxMeanMoney']);
                             });
                         }
                     }
@@ -571,7 +585,6 @@ $(function () {
                     }).show();
                 }
                 $('#userInfo').modal('show').attr('data-status', 'save');
-
             });
         } else if (clickType === 'tradeTotal') {
             swal({
@@ -597,7 +610,7 @@ $(function () {
                     html += '<div class="col-md-2"><p><b>订单总数</b><br>' + value['totalOrder'] + '</p></div>';
                     html += '<div class="col-md-2"><p><b>成功总数</b><br>' + value['successOrder'] + '</p></div>';
                     html += '<div class="col-md-2"><p><b>交易金额</b><br>￥' + value['tradeMoney'] + '</p></div>';
-                    html += '<div class="col-md-2"><p><b>扣除金额</b><br>￥' + value['tradeMoneyRate'] + '</p></div>';
+                    html += '<div class="col-md-2"><p><b>当日利润</b><br>￥' + value['tradeMoneyProfits'] + '</p></div>';
                     html += '<div class="col-md-2"><p><b>操作余额</b><br>￥' + value['updateMoney'] + '</p></div>';
                     html += '<div class="col-md-2"><p><b>成功率</b><br>' + (value['successOrder'] / value['totalOrder'] * 100).toFixed(2) + '%</p></div>';
                     html += '</div>';

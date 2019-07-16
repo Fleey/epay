@@ -56,7 +56,7 @@ class Settle extends Command
             'status' => 1
         ])->whereTime('endTime', 'yesterday')->sum('money');
 
-        addServerLog(2,3,'System',date('Y-m-d', strtotime('- 1 day')) . ' 交易总金额=>' . ($totalMoney / 100) . ' 扣除费率总金额=>' . ($totalRateMoney / 100));
+        addServerLog(2,3,'System',date('Y-m-d', strtotime('- 1 day')) . ' 交易总金额=>' . ($totalMoney / 100) . ' 当日利润金额=>' . (($totalMoney-$totalRateMoney) / 100));
     }
 
     /**

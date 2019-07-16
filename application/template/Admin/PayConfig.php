@@ -80,6 +80,7 @@
                                 <select class="form-control" data-name="apiType">
                                     <option value="0">原生接口（H5支付）</option>
                                     <option value="2">原生接口（JsAPI支付）</option>
+                                    <option value="3">原生接口（小微商户）</option>
                                     <option value="1">易支付中央系统</option>
                                 </select>
                             </div>
@@ -162,6 +163,14 @@
                             <label for="key">商户密匙</label>
                             <input type="text" class="form-control" data-name="epayCenterKey" placeholder="请输入商户支付密钥">
                             <small class="form-text text-muted">聚合支付中央系统商户号密匙 具体请联系相关人员</small>
+                        </div>
+                    </div>
+                    <div data-api-type="3" style="display: none">
+                        <div class="form-group">
+                            <label for="wxxMeanMoney">集体号满额均分金额</label>
+                            <input type="text" class="form-control" data-name="wxxMeanMoney"
+                                   placeholder="请输入满额均分金额，注意不能带小数 单位为元">
+                            <small class="form-text text-muted">小微商户专属参数</small>
                         </div>
                     </div>
                     <button type="button" class="btn btn-outline-primary float-right" data-save>保存</button>

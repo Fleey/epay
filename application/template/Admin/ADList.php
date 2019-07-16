@@ -1,25 +1,3 @@
-<style>
-    #orderInfo .item > span[data-name], #orderInfo .item > img[data-name] {
-        display: block;
-    }
-
-    #orderInfo .item > span.title {
-        font-weight: 600;
-    }
-
-    #orderInfo {
-        margin-top: 6rem;
-    }
-
-    #orderInfo p.header {
-        font-weight: 600;
-        font-size: 16px;
-    }
-
-    .ml-20 {
-        margin-left: 20px;
-    }
-</style>
 <div class="page-content container-fluid">
     <div class="row">
         <div class="col-md-12">

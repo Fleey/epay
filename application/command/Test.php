@@ -3,8 +3,10 @@
 namespace app\command;
 
 
+use app\pay\model\PayModel;
 use app\pay\model\QQPayModel;
 use app\pay\model\WxPayModel;
+use function GuzzleHttp\Psr7\parse_query;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -21,68 +23,49 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        $config = getConfig();
-        $config = $config['alipay'];
-        dump($config);
-//        $userData = Db::table('epay_user')->field('id,rate,clearMode')->cursor();
-//        foreach ($userData as $value) {
-//            $uid        = $value['id'];
-//            $rate       = $value['rate'] / 100;
-//            $totalMoney = Db::table('epay_order')->where([
-//                'uid'      => $uid,
-//                'status'   => 1,
-//                'isShield' => 0
-//            ])->whereTime('endTime', 'today')->sum('money');
-//            if ($value['clearMode'] == 0) {
-//                $totalMoney  = $totalMoney * ($rate / 100) / 100;
-//                $deleteMoney = Db::table('epay_user_money_log')->where('uid', $uid)->whereTime('createTime', 'today')->sum('money');
-//                $deleteMoney /= 1000;
-//                $balance     = ($totalMoney + $deleteMoney) * 1000;
-//                Db::table('epay_user')->where('id', $uid)->limit(1)->update([
-//                    'balance' => $balance
-//                ]);
-//            }
-//        }
-
-//        $orderList = Db::table('epay_order')->where('createTime', '>=', '2019-6-6 9:00:00')
-//            ->where('createTime', '<=', '2019-6-6 11:00:00')->where([
-//                'status' => 0,
-//                'type'   => 2
-//            ])->field('tradeNo')->select();
-//
-////        $qqModel   = new QQPayModel([
-////            'mchid'  => 0,
-////            'mchkey' => ''
-////        ]);
-//        $wxModel = new WxPayModel([
-//            'appid' => '',
-//            'mchid' => '',
-//            'key'   => ''
-//        ], 'h5');
-//        $i       = 0;
-//        foreach ($orderList as $value) {
-//            $value        = $value['tradeNo'];
-//            $selectResult = $wxModel->selectWxPayRecord($value);
-//            if ($selectResult['return_code'] != 'SUCCESS')
-//                continue;
-//            if ($selectResult['result_code'] != 'SUCCESS')
-//                continue;
-//            if ($selectResult['trade_state'] == 'SUCCESS') {
-//                $i++;
-//                Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $value])->limit(1)->update([
-//                    'status'  => 1,
-//                    'endTime' => getDateTime()
-//                ]);
-//                //更新订单状态
-//                processOrder($value);
-//                //统一处理订单
-//                echo $i . ' 成功更新 => ' . $value . PHP_EOL;
-//            }
+        $uid = 1000;
+        $userAccountList = Db::table('epay_wxx_apply_list')->alias('applyList')
+            ->where(['applyList.status' => 2])->limit(1)
+            ->leftJoin('epay_wxx_apply_info applyInfo', 'applyList.accountID = applyInfo.id AND applyInfo.uid = :uid')
+            ->bind(['uid' => $uid])->field('applyList.accountID,applyList.subMchID')->order('applyList.rounds asc')->select(false);
+        dump($userAccountList);
     }
 
+    private function rebuildImage(string $imagePath, string $tempImageSavePath)
+    {
+        $info = getimagesize($imagePath);
+        //get images info
+        $type = image_type_to_extension($info[2], false);
+        //get images ext
+        $fun   = 'imagecreatefrom' . $type;
+        $image = $fun($imagePath);
+        //动态执行函数
+        $col = imagecolorallocatealpha($image, 255, 255, 255, 50);
+        imagestring($image, 1, rand(0, $info[0]), rand(0, $info[1]), '.', $col);
+        $fun               = 'image' . $type;
+        $tempImageSavePath = $tempImageSavePath . '/' . uniqid('tempImage_', true) . '.' . $type;
+        $fun($image, $tempImageSavePath);
+        imagedestroy($image);
+        return $tempImageSavePath;
+    }
 
-    private
-    function dumpSettleResult()
+    /**
+     * 构建url请求参数
+     * @param array $data
+     * @return string
+     */
+    public function buildUrlParam(array $data)
+    {
+        $tempBuff = '';
+        foreach ($data as $key => $value) {
+            if ($key != 'sign')
+                $tempBuff .= $key . '=' . $value . '&';
+        }
+        $tempBuff = trim($tempBuff, '&');
+        return $tempBuff;
+    }
+
+    private function dumpSettleResult()
     {
         $userList = Db::table('epay_user')->field('id,username,rate')->cursor();
         $a        = 0;

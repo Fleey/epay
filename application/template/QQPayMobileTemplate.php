@@ -19,6 +19,9 @@
         </div>
         <div class="list-group" style="text-align: center;">
             <div class="list-group-item">
+                <div class="qr-image" id="qrcode"></div>
+            </div>
+            <div class="list-group-item">
                 <h1>￥<?php echo $money; ?><h1>
             </div>
             <div class="list-group-item" style="text-align: left;">
@@ -31,9 +34,6 @@
             <div class="list-group-item"><a href="" id="openUrl" class="btn btn-primary btn-block">跳转到QQ支付</a></div>
             <div class="list-group-item"><a href="#" onclick="getOrderStatus()"
                                             class="btn btn-success btn-block">检测支付状态</a></div>
-            <div class="list-group-item">
-                <a href="/Pay/QQPay/Submit?tradeNo=<?php echo $tradeNo; ?>&siteName=<?php echo $siteName; ?>"
-                   class="btn btn-default btn-sm btn-block">使用扫码支付</a></div>
         </div>
     </div>
 </div>
@@ -53,6 +53,16 @@
         document.body.appendChild(iframe);
     }
     document.getElementById("openUrl").href = tencentSeries;
+
+    var codeUrl = '<?php echo $codeUrl1; ?>';
+    var qrcode = new QRCode('qrcode', {
+        text: codeUrl,
+        width: 230,
+        height: 230,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
 
 
     function getOrderStatus() {
@@ -84,7 +94,8 @@
             }
         });
     }
-    $(document).ready(function(){
+
+    $(document).ready(function () {
         getOrderStatus();
     });
 </script>

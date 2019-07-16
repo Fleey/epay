@@ -3,14 +3,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="renderer" content="webkit" />
+    <meta name="renderer" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title><?php echo $webName . ' - 聚合支付后台'; ?></title>
     <link rel="stylesheet" href="/static/css/resource/style.css">
     <link rel="stylesheet" href="/static/css/resource/prism.css">
     <link rel="stylesheet" href="/static/css/resource/sweetalert.min.css">
     <link rel="stylesheet" href="/static/css/resource/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/select2/4.0.7-rc.0/css/select2.min.css">
     <link rel="stylesheet" href="/static/css/user/style.css">
+    <link rel="stylesheet" href="/static/css/admin/style.css">
 </head>
 <body>
 <div class="preloader">
@@ -72,7 +74,9 @@
 <script src="/static/js/resource/app.min.js"></script>
 <script src="/static/js/resource/app.init.js"></script>
 
-<script href="/static/js/resource/sweetalert.min.js"></script>
+<script src="/static/js/resource/sweetalert.min.js"></script>
+<script src="https://cdn.staticfile.org/select2/4.0.7-rc.0/js/select2.min.js"></script>
+<script src="https://cdn.staticfile.org/select2/4.0.7-rc.0/js/i18n/zh-CN.js"></script>
 <script src="/static/js/resource/perfect-scrollbar.jquery.min.js"></script>
 <script src="/static/js/resource/jquery.dataTables.min.js"></script>
 <script src="/static/js/resource/dataTables.bootstrap4.min.js"></script>

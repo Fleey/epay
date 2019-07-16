@@ -27,7 +27,9 @@
     "ext-openssl": "*",
     "ext-pdo": "*",
     "ext-zip": "*",
-    "sentry/sdk": "2.0.3"
+    "sentry/sdk": "2.0.3",
+    "ext-sodium": "*",
+    "ext-gd": "*"
   },
   "autoload": {
     "psr-4": {

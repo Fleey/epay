@@ -140,25 +140,27 @@ function is_email($text)
     return filter_var($text, FILTER_VALIDATE_EMAIL) === false ? false : true;
 }
 
-function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlencode = true, $isProxy = false, $isAdv = false)
+function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlencode = true, $isProxy = false, $certData = [])
 {
     if (empty($url))
         return '';
     //容错处理
     $headers  = [
-//        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
     ];
     $postType = strtolower($postType);
     if ($requestType == 'get' && is_array($requestData)) {
         $tempBuff = '';
         foreach ($requestData as $key => $value) {
-            $tempBuff .= $key . '=' . $value . '&';
+            if ($urlencode)
+                $tempBuff .= rawurlencode(rawurlencode($key)) . '=' . rawurlencode(rawurlencode($value)) . '&';
+            else
+                $tempBuff .= $key . '=' . $value . '&';
         }
         $tempBuff = trim($tempBuff, '&');
         $url      .= '?' . $tempBuff;
     }
     //手动build get请求参数
-
     if (!empty($addHeaders))
         $headers = array_merge($headers, $addHeaders);
 
@@ -166,24 +168,34 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 6);
 //    curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
     curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
     //设置允许302转跳
 
+//    $isProxy = true;
     if ($isProxy) {
         curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-        curl_setopt($ch, CURLOPT_PROXY, '43.248.187.89'); //代理服务器地址
-        curl_setopt($ch, CURLOPT_PROXYPORT, 8118); //代理服务器端口
+        curl_setopt($ch, CURLOPT_PROXY, '127.0.0.1'); //代理服务器地址
+        curl_setopt($ch, CURLOPT_PROXYPORT, 1080); //代理服务器端口
         //set proxy
     }
-//    curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
+    curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
     //gzip
 
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    if (!empty($certData)) {
+        if (empty($certData['sslCertPath']) || empty($certData['sslKeyPath']))
+            return '证书路径尚未配置，请求失败';
+        curl_setopt($ch, CURLOPT_SSLCERTTYPE, 'PEM');
+        curl_setopt($ch, CURLOPT_SSLKEYTYPE, 'PEM');
+        curl_setopt($ch, CURLOPT_SSLCERT, $certData['sslCertPath']);
+        curl_setopt($ch, CURLOPT_SSLKEY, $certData['sslKeyPath']);
+        //这个负责强制校验SSL证书
+    }
     //add ssl
     if ($requestType == 'get') {
         curl_setopt($ch, CURLOPT_HEADER, false);
@@ -194,43 +206,40 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     }
     //处理类型
     if ($requestType != 'get') {
-        if (is_array($requestData) && !empty($requestData)) {
-            $temp = '';
-            foreach ($requestData as $key => $value) {
-                if ($urlencode) {
-                    $temp .= rawurlencode(rawurlencode($key)) . '=' . rawurlencode(rawurlencode($value)) . '&';
-                } else {
-                    $temp .= $key . '=' . $value . '&';
+        if ($postType != 'form-data') {
+            if (is_array($requestData) && !empty($requestData)) {
+                $temp = '';
+                foreach ($requestData as $key => $value) {
+                    if ($urlencode) {
+                        $temp .= rawurlencode(rawurlencode($key)) . '=' . rawurlencode(rawurlencode($value)) . '&';
+                    } else {
+                        $temp .= $key . '=' . $value . '&';
+                    }
                 }
+                $requestData = substr($temp, 0, strlen($temp) - 1);
             }
-            $requestData = substr($temp, 0, strlen($temp) - 1);
         }
         curl_setopt($ch, CURLOPT_POSTFIELDS, $requestData);
-
+    }
+    //只要不是get姿势都塞东西给他post
+    if ($requestType != 'get') {
         if ($postType == 'json') {
             $headers[]   = 'Content-Type: application/json; charset=utf-8';
             $requestData = is_array($requestData) ? json_encode($requestData) : $requestData;
         } else if ($postType == 'xml') {
-            $headers[] = 'Content-Type:text/xml; charset=utf-8';
+            $headers[]   = 'Content-Type:text/xml; charset=utf-8';
+            $requestData = is_array($requestData) ? arrayToXml($requestData) : $requestData;
         }
-        $headers[] = 'Content-Length: ' . strlen($requestData);
+        if ($postType != 'form-data')
+            $headers[] = 'Content-Length: ' . strlen($requestData);
     }
-    //只要不是get姿势都塞东西给他post
-    if (!empty($headers))
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    //header is not empty
-    $result = curl_exec($ch);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-    if ($isAdv) {
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($httpCode != 200)
-            $result = false;
-    }
-//    if($result === false)
-//        exit(dump(curl_error($ch)));
+    $result = curl_exec($ch);
     curl_close($ch);
     return $result;
 }
+
 
 /**
  * +----------------------------------------------------------
@@ -579,17 +588,50 @@ function processOrder($tradeNo, $notify = true)
     }
     $rate = $userInfo[0]['rate'] / 100;
 
-    $addMoneyRate = $orderInfo[0]['money'] * ($rate / 100);
-    $addMoneyRate = $addMoneyRate * 10;
-    $addMoneyRate = number_format($addMoneyRate, 2, '.', '');
-    //累计金额方便统计 仅仅保留两位小数
-    $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate)->update();
+
+    $rateMoney = \app\pay\model\PayModel::getOrderAttr($tradeNo, 'rateMoney');
+    if (empty($rateMoney)) {
+        $addMoneyRate = $orderInfo[0]['money'] * ($rate / 100);
+        $addMoneyRate = $addMoneyRate * 10;
+        $addMoneyRate = number_format($addMoneyRate, 2, '.', '');
+        //累计金额方便统计 仅仅保留两位小数
+        $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate)->update();
+    } else {
+        $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->dec('balance', $rateMoney)->update();
+    }
     //处理用户余额部分
     if (!$result) {
         trace('更新用户余额错误 uid =>' . $orderInfo[0]['uid'] . ' tradeNo =>' . $tradeNo . ' 订单金额 =>' . ($orderInfo[0]['money'] / 100), 'error');
 //        return;
     }
     //处理更新余额失败部分
+
+    {
+        $orderPayConfig = \app\pay\model\PayModel::getOrderAttr($tradeNo, 'payConfig');
+        if (!empty($orderPayConfig)) {
+
+            $orderPayConfig = json_decode($orderPayConfig, true);
+            \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])->limit(1)->inc('money', $orderInfo[0]['money'])->update();
+            $roundMoney = 0;
+            if ($orderPayConfig['configType'] == 1) {
+                $systemPayConfig = getConfig()['wxpay'] * 100;
+                $roundMoney      = $systemPayConfig['wxxMeanMoney'];
+                //集体号
+            } else if ($orderPayConfig['configType'] == 2) {
+                $userPayConfig = getPayUserAttr($orderInfo[0]['uid'], 'payConfig');
+                $roundMoney    = $userPayConfig['wxxMeanMoney'] / 100 * 100;
+                //独立号
+            }
+            $applyAccountInfo = \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])->field('rounds,money')->limit(1)->select();
+            if (!empty($applyAccountInfo)) {
+                if ($applyAccountInfo[0]['money'] > $roundMoney) {
+                    \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])->limit(1)->dec('money', $roundMoney)->inc('rounds', 1)->update();
+                }
+            }
+        }
+    }
+    //这个负责轮询
+
     if ($result && $userInfo[0]['clearType'] == 4) {
         settleUserDepositMoney($orderInfo[0]['uid']);
         //支付宝自动转账
@@ -597,20 +639,41 @@ function processOrder($tradeNo, $notify = true)
     //必须金额更新成功后才能触发自动结算
     if ($notify) {
         $notifyUrl     = buildCallBackUrl($tradeNo, 'notify');
-        $requestResult = curl($notifyUrl, [], 'get', '', '', true, false, true);
+        $requestResult = curl($notifyUrl);
         //开启高级模式 不为200 直接走重发
+        $isReCallback = false;
         if ($requestResult === false)
+            $isReCallback = true;
+        else if ($requestResult != 'SUCCESS') {
+            $isReCallback = true;
+        }
+        if ($isReCallback)
             addCallBackLog($orderInfo[0]['uid'], $notifyUrl);
         //回调事件
 //        trace('日志信息: 请求结果 => '.$requestResult .' 请求url =>' .$notifyUrl,'info');
     }
 }
 
-function addCallBackLog($uid, $url)
+/**
+ * 新增定时回调
+ * @param int $uid
+ * @param string $url
+ * @param string $method
+ * @param array $requestData
+ */
+function addCallBackLog(int $uid, string $url, string $method = 'get', array $requestData = [])
 {
-    \think\Db::table('epay_callback')->insert([
+    if (empty($requestData) && $method == 'get') {
+        $parseUrl    = parse_url($url);
+        $url         = $parseUrl['scheme'] . '://' . $parseUrl['host'] . $parseUrl['path'];
+        $requestData = \GuzzleHttp\Psr7\parse_query($parseUrl['query']);
+    }
+    //构建兼容层
+    \think\Db::table('epay_cron_callback')->insert([
         'url'        => $url,
         'uid'        => $uid,
+        'method'     => $method,
+        'data'       => json_encode($requestData),
         'status'     => 0,
         'createTime' => getDateTime()
     ]);
@@ -833,4 +896,24 @@ function exportToExcel($filename, $tileArray = [], $dataArray = [])
     ob_flush();
     flush();
     ob_end_clean();
+}
+
+/**
+ * 百度获取短链接
+ * @param string $url
+ * @return string
+ */
+function shortenUrl(string $url): string
+{
+    return $url;
+    $requestUrl = 'http://api.suolink.cn/api.php';
+    $param      = [
+        'url' => urlencode($url),
+        'key' => '5d205cddb1a9c70e343cfc84@73e9912eaa3ce9c238fb8de0a3488d72'
+    ];
+    $result     = curl($requestUrl, [], 'get', $param, '', false);
+    if ($result === false)
+        return 'get shorten fail';
+    return $result;
+
 }

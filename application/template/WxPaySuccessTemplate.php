@@ -15,7 +15,7 @@
 <div class="has-header" style="padding: 5px;position: absolute;width: 100%;">
     <div class="text-center" style="color: #a09ee5;">
         <i class="icon ion-checkmark-circled" style="font-size: 80px;"></i><br>
-        <span>支付成功，请关闭此页面</span>
+        <h4 style="margin-top:2rem;">支付成功，一定要返回浏览器</h4>
     </div>
 </div>
 <script>

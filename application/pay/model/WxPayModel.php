@@ -130,11 +130,12 @@ class WxPayModel
      * 检查订单是否已经支付，注意没有进行订单金额效验
      * @param string $orderID
      * @param string $type
+     * @param string $subMid
      * @return bool
      */
-    public function checkWxPayStatus(string $orderID, string $type = 'out_trade_no')
+    public function checkWxPayStatus(string $orderID, string $type = 'out_trade_no',string $subMid ='')
     {
-        $result = $this->selectWxPayRecord($orderID, $type);
+        $result = $this->selectWxPayRecord($orderID, $type,$subMid);
         if (!$result)
             return false;
         if (empty($result['return_code']) || empty($result['result_code']) || empty($result['trade_state']))
@@ -146,9 +147,10 @@ class WxPayModel
      * 查询微信支付记录
      * @param string $orderID
      * @param string $type
+     * @param string $subMid
      * @return array|bool|mixed|object
      */
-    public function selectWxPayRecord(string $orderID, string $type = 'out_trade_no')
+    public function selectWxPayRecord(string $orderID, string $type = 'out_trade_no', string $subMid = '')
     {
         if ($type != 'out_trade_no' && $type != 'transaction_id')
             return false;
@@ -158,6 +160,8 @@ class WxPayModel
             'mch_id'    => $this->mchID,
             'nonce_str' => getRandChar(32),
         ];
+        if(!empty($subMid))
+            $requestData['sub_mch_id'] = $subMid;
         if ($type == 'out_trade_no')
             $requestData['out_trade_no'] = $orderID;
         else
@@ -177,9 +181,10 @@ class WxPayModel
      * @param string $type
      * @param string $notifyUrl
      * @param string $openCode
+     * @param String $subMid
      * @return array|mixed|object
      */
-    public function sendPayRequest(array $tradeData, string $type, string $notifyUrl, string $openCode = '')
+    public function sendPayRequest(array $tradeData, string $type, string $notifyUrl, string $openCode = '', String $subMid = '')
     {
         $requestUrl  = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
         $requestData = [
@@ -197,6 +202,8 @@ class WxPayModel
             'time_expire'      => date('YmdHis', time() + 360),
             'sign_type'        => $this->signType
         ];
+        if (!empty($subMid))
+            $requestData['sub_mch_id'] = $subMid;
         //订单失效6分钟
         if ($type == 'JSAPI') {
             $openID                = $this->getWxOpenID($openCode);

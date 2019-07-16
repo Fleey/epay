@@ -82,7 +82,9 @@
                         //从服务器得到数据，显示数据并继续查询
                         if (data['status'] === 1) {
                             layer.msg('支付成功，正在跳转中...', {icon: 16, shade: 0.01, time: 15000});
-                            setTimeout(window.location.href = data['url'], 1000);
+                            setTimeout(function () {
+                                window.location.href = '/Pay/WxPay/WapResult';
+                            }, 1000);
                         } else {
                             setTimeout('getOrderStatus()', 2000);
                         }

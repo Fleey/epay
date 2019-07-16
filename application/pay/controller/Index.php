@@ -53,7 +53,7 @@ class Index extends Controller
             return $this->fetch('/SystemMessage', ['msg' => 'PID不存在！']);
         if (empty($this->getData['sign']))
             return $this->fetch('/SystemMessage', ['msg' => '签名(sign)不能为空']);
-        $userData = Db::table('epay_user')->limit(1)->field('key,isBan')->where('id', $uid)->select();
+        $userData = Db::table('epay_user')->limit(1)->field('key,isBan,balance')->where('id', $uid)->select();
         if (empty($userData))
             return $this->fetch('/SystemMessage', ['msg' => '签名校验失败，请返回重试！']);
         if (!PayModel::checkSign($this->getData, $userData[0]['key'], $this->getData['sign']))
@@ -119,9 +119,6 @@ class Index extends Controller
         if (empty($converPayType))
             return $this->fetch('/SystemMessage', ['msg' => '支付类型(type)暂不支持该方式']);
 
-//        if($money < 100 && $converPayType == 1)
-//            return $this->fetch('/SystemMessage',['msg'=>'微信最低支付金额 1 RMB']);
-
         if ($converPayType == 3 && !$this->systemConfig['alipay']['isOpen']) {
             return $this->fetch('/SystemMessage', ['msg' => $this->systemConfig['alipay']['tips']]);
         } else if ($converPayType == 2 && !$this->systemConfig['qqpay']['isOpen']) {
@@ -147,6 +144,7 @@ class Index extends Controller
             //检测用户是否有相应支付接口权限
         }
 
+
         $clientIpv4 = getClientIp();
 
         $tradeNo = date('YmdHis') . rand(11111, 99999);
@@ -171,6 +169,26 @@ class Index extends Controller
                 $money = $discountMoneyAfter;
             //如果减免后金额小于或等于0则不进行减免操作
 
+            $orderRateMoney = 0;
+            {
+                $userAccountList = Db::table('epay_wxx_apply_list')->alias('applyList')
+                    ->where(['applyList.status' => 2])->limit(1)
+                    ->leftJoin('epay_wxx_apply_info applyInfo', 'applyList.accountID = applyInfo.id AND applyInfo.uid = :uid and applyInfo.type = 2')
+                    ->bind(['uid' => $uid])->field('applyList.id')->select();
+
+                if (!empty($userAccountList)){
+                    if ($userPayConfig['wxpay']['apiType'] == 2 && $converPayType == 1) {
+                        $orderRateMoney = PayModel::getOrderRateMoney($uid, $money);
+                        if ($userData[0]['balance'] <= 0)
+                            return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
+                        if ($userData[0]['balance'] - $orderRateMoney < 0)
+                            return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
+                    }
+                }
+                //如果为小微商户执行这里
+            }
+            //这里开始检查是否够钱扣除费率
+
             $orderCreateTime = getDateTime();
             $result          = Db::table('epay_order')->insert([
                 'uid'         => $uid,
@@ -187,6 +205,15 @@ class Index extends Controller
             ]);
             if (!$result)
                 return $this->fetch('/SystemMessage', ['msg' => '创建订单失败,请重试']);
+
+            if ($userPayConfig['wxpay']['apiType'] == 2) {
+                Db::table('epay_order_attr')->insert([
+                    'tradeNo'    => $tradeNo,
+                    'attrKey'    => 'rateMoney',
+                    'attrValue'  => $orderRateMoney,
+                    'createTime' => $orderCreateTime
+                ]);
+            }
 
             if ($orderDiscountMoney != 0)
                 Db::table('epay_order_attr')->insert([

@@ -52,8 +52,8 @@
         </div>
     </div>
 </div>
-<script src="/static/js/qq/qrcode.min.js"></script>
-<script src="/static/js/qq/qcloud_util.js"></script>
+<script src="/static/js/qq/qrcode.min.js?1"></script>
+<script src="/static/js/qq/qcloud_util.js?1"></script>
 <script src="/static/js/layer/layer.js"></script>
 <script>
     var isSafari = navigator.userAgent.indexOf("Safari") > -1;

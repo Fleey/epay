@@ -16,6 +16,10 @@ Route::group('test', function () {
     Route::get('notify', 'user/Test/getNotify');
     Route::rule('', 'user/Test/loadTemplate');
 });
+Route::group('Wxx', function () {
+    Route::rule('index', 'user/WxxApply/indexTemplate');
+    Route::controller('api', 'user/WxxApply');
+});
 Route::group('Pay', function () {
     Route::controller('Alipay', 'pay/Alipay');
     Route::controller('QQPay', 'pay/QQPay');
@@ -50,7 +54,8 @@ Route::group('auth', function () {
 Route::group('cy2018', function () {
     Route::controller('file', 'admin/File');
     Route::get('file/filePath/<fileID>.json', 'admin/File/getFilePath', ['cache' => 3600], ['fileID' => '\d+']);
-    Route::controller('api/AD','admin/AD');
+    Route::controller('api/AD', 'admin/AD');
+    Route::controller('api/Wxx', 'admin/Wxx');
     Route::controller('api', 'admin/Index');
     Route::rule('[:templateName]', 'admin/Index/loadTemplate');
 });
@@ -69,10 +74,11 @@ Route::group('doc', function () {
     Route::rule('v1', 'api/ApiV1/loadTemplate');
     Route::rule('v2', 'api/ApiV2/loadTemplate');
 });
-Route::get('AD/<id>','admin/AD/Redirects',[],['id'=>'\d+']);
+Route::get('AD/<id>', 'admin/AD/Redirects', [], ['id' => '\d+']);
 Route::rule('submit.php', 'pay/Index/submit');
 Route::rule('api.php', 'api/ApiV1/apiCtrl');
 Route::rule('qrcode.php', 'api/ApiV1/apiQrCode');
+Route::get('MP_verify_<code>.txt','admin/Wxx/WxOpenVerify',[],['code'=>'[a-zA-Z0-9]{16}']);
 return [
 
 ];

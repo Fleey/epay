@@ -100,11 +100,11 @@ $(function () {
 
         dataTable.fnDestroy();
         var data = {'searchTable': 'epay_wxx_apply_info', 'search': {}, 'args': {}};
-        if (appID)
+        if (idCardName)
             data['args']['idCardName'] = idCardName;
-        if (mchID)
+        if (idCardNumber)
             data['args']['idCardNumber'] = idCardNumber;
-        if (desc)
+        if (type)
             data['args']['type'] = type;
         dataTableConfig['ajax'] = {
             url: baseUrl + 'cy2018/api/searchTable',

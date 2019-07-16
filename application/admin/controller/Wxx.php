@@ -500,6 +500,22 @@ class Wxx extends Controller
         return json(['status' => 1, 'msg' => '提交申请成功']);
     }
 
+    public function postApplyListStatus()
+    {
+        $id     = input('post.id/s');
+        $status = input('post.status/d', 0);
+
+        if (empty($id))
+            return json(['status' => 0, 'msg' => '请求参数不能为空']);
+
+        $updateResult = Db::table('epay_wxx_apply_list')->where('id', $id)->limit(1)->update([
+            'status' => $status
+        ]);
+        if (!$updateResult)
+            return json(['status' => 0, 'msg' => '更新账号状态失败，请重试。']);
+        return json(['status' => 1, 'msg' => '更新账号状态成功']);
+    }
+
     /**
      * @param int $accountID
      * @return WxxApiV1Model|null

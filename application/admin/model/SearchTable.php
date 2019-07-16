@@ -219,14 +219,15 @@ class SearchTable
             if (isset($this->args['type']))
                 $queryResult = $queryResult->where('type', $this->args['type']);
         } else if ($this->searchTable == 'epay_wxx_apply_list') {
-            if (isset($this->args['accountID']))
-                $queryResult = $queryResult->where('accountID', $this->args['accountID']);
+            if (isset($this->args['applyInfoID']))
+                $queryResult = $queryResult->where('epay_wxx_apply_list.applyInfoID', $this->args['applyInfoID']);
             if (isset($this->args['subMchID']))
-                $queryResult = $queryResult->where('subMchID', $this->args['subMchID']);
-            if (isset($this->args['status']))
-                $queryResult = $queryResult->where('status', $this->args['status']);
+                $queryResult = $queryResult->where('epay_wxx_apply_list.subMchID', $this->args['subMchID']);
+            if (isset($this->args['type']))
+                $queryResult = $queryResult->where('epay_wxx_apply_list.status', $this->args['type']);
             if (isset($this->args['desc']))
-                $queryResult = $queryResult->where('desc', 'like', '%' . $this->args['desc'] . '%');
+                $queryResult = $queryResult->where('epay_wxx_apply_list.desc', 'like', '%' . $this->args['desc'] . '%');
+
         }
         return $queryResult;
     }
@@ -277,7 +278,7 @@ class SearchTable
         } else if ($this->searchTable == 'epay_wxx_apply_info') {
             $searchOrderList = ['id', 'idCardName', 'idCardNumber', 'type', 'createTime'];
         } else if ($this->searchTable == 'epay_wxx_apply_list') {
-            $searchOrderList = ['epay_wxx_apply_list.id', 'epay_wxx_apply_list.accountID','epay_wxx_apply_info.idCardName', 'epay_wxx_apply_list.status', 'epay_wxx_apply_list.createTime', 'epay_wxx_account_list.desc', 'epay_wxx_account_list.appID'];
+            $searchOrderList = ['epay_wxx_apply_list.id', 'epay_wxx_apply_list.accountID','epay_wxx_apply_list.subMchID','epay_wxx_apply_info.idCardName', 'epay_wxx_apply_list.status', 'epay_wxx_apply_list.createTime', 'epay_wxx_account_list.desc', 'epay_wxx_account_list.appID'];
             $queryResult = $queryResult->leftJoin('epay_wxx_account_list', 'epay_wxx_apply_list.accountID = epay_wxx_account_list.id');
             $queryResult = $queryResult->leftJoin('epay_wxx_apply_info', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id');
         }

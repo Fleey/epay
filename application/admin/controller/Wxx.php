@@ -14,7 +14,7 @@ class Wxx extends Controller
     public function __construct(App $app = null)
     {
         parent::__construct($app);
-        if ($this->request->action() != 'redirects') {
+        if ($this->request->action() != 'wxopenverify') {
             $username = session('username', '', 'admin');
             if (empty($username))
                 exit(json_encode(['status' => 0, 'msg' => '您需要登录后才能操作']));
@@ -28,7 +28,7 @@ class Wxx extends Controller
      */
     public function WxOpenVerify(string $code)
     {
-        return $code;
+        return response($code)->header(['Content-Type' => 'text/plain']);
     }
 
     public function getAccount()

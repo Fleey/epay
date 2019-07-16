@@ -20,7 +20,7 @@ $(function () {
         retrieve: true,
         "bRetrieve": true,
         'columns': [
-            {}, {}, {
+            {}, {},{}, {
                 'render': function (data) {
                     if (data === 1) {
                         return '待签约';
@@ -46,7 +46,7 @@ $(function () {
                     html += '</div>';
                     return html;
                 },
-                'targets': 4
+                'targets': 5
             }
         ],
         'fnDrawCallback': function (obj) {

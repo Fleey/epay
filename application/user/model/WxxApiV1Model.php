@@ -64,7 +64,10 @@ class WxxApiV1Model
         if ($result['return_code'] != 'SUCCESS')
             return ['isSuccess' => false, 'msg' => $result['return_msg']];
         if ($result['result_code'] != 'SUCCESS')
-            return ['isSuccess' => false, 'msg' => $result['error_code'] . ' ' . $result['error_code_desc']];
+            if (isset($result['error_code']))
+                return ['isSuccess' => false, 'msg' => $result['error_code'] . ' ' . $result['error_code_desc']];
+            else
+                return ['isSuccess' => false, 'msg' => $result['err_code'] . ' ' . $result['err_code_des']];
         if (self::signParam($result, $this->appKey, 'MD5') != $result['sign'])
             return ['isSuccess' => false, 'msg' => 'return data sign fail'];
         //这里好坑。。。居然是用MD5的，不是跟随请求签名类型的
@@ -403,7 +406,7 @@ class WxxApiV1Model
             if (!empty($result['err_code_desc']))
                 return ['isSuccess' => false, 'msg' => $result['err_code'] . '  ' . $result['err_code_desc']];
             else
-                return ['isSuccess' => false, 'msg' =>$result['err_code'] . '  ' . $result['err_code_des']];
+                return ['isSuccess' => false, 'msg' => $result['err_code'] . '  ' . $result['err_code_des']];
         }
         if (self::signParam($result, $this->appKey, 'HMAC-SHA256') != $result['sign'])
             return ['isSuccess' => false, 'msg' => 'return data sign fail'];

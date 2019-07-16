@@ -32,15 +32,6 @@
                 <small>提示：你可以将以上链接发到自己微信的聊天框（在微信顶部搜索框可以搜到自己的微信），即可点击进入支付</small>
             </div>
             <div class="list-group-item">
-                <a href="#" target="_blank">
-                    <small>
-                        <marquee style="font-weight: bold;line-height: 20px;font-size: 20px;color: #FF0000;">
-                            投诉QQ：<?php echo htmlentities($qq); ?>-或进入网站首页进行投诉，有任何问题请联系我们.点我跳转
-                        </marquee>
-                    </small>
-                </a>
-            </div>
-            <div class="list-group-item">
                 <a href="weixin://" class="btn btn-primary">打开微信</a> <button style="margin-left:5px;" onclick="getOrderStatus()" class="btn btn-primary">检查订单状态</button>
             </div>
         </div>

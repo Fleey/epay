@@ -16,10 +16,6 @@ Route::group('test', function () {
     Route::get('notify', 'user/Test/getNotify');
     Route::rule('', 'user/Test/loadTemplate');
 });
-Route::group('Wxx', function () {
-    Route::rule('index', 'user/WxxApply/indexTemplate');
-    Route::controller('api', 'user/WxxApply');
-});
 Route::group('Pay', function () {
     Route::controller('Alipay', 'pay/Alipay');
     Route::controller('QQPay', 'pay/QQPay');

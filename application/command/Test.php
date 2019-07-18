@@ -2,11 +2,7 @@
 
 namespace app\command;
 
-
 use app\pay\model\PayModel;
-use app\pay\model\QQPayModel;
-use app\pay\model\WxPayModel;
-use function GuzzleHttp\Psr7\parse_query;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -23,30 +19,49 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        $uid = 1000;
-        $userAccountList = Db::table('epay_wxx_apply_list')->alias('applyList')
-            ->where(['applyList.status' => 2])->limit(1)
-            ->leftJoin('epay_wxx_apply_info applyInfo', 'applyList.accountID = applyInfo.id AND applyInfo.uid = :uid')
-            ->bind(['uid' => $uid])->field('applyList.accountID,applyList.subMchID')->order('applyList.rounds asc')->select(false);
-        dump($userAccountList);
-    }
+        $userList = Db::table('epay_user')
+            ->field([
+                'epay_user.id',
+                'epay_user.balance',
+                'IF(epay_wxx_apply_info.type is NULL,1,epay_wxx_apply_info.type) as type',
+            ])->leftJoin('epay_wxx_apply_info', 'epay_user.id = epay_wxx_apply_info.uid')
+            ->where([
+                'epay_user.isBan' => 0,
+                'type'            => 2,
+                'epay_user.id'    => 1259
+            ])->group('epay_user.id')->cursor();
 
-    private function rebuildImage(string $imagePath, string $tempImageSavePath)
-    {
-        $info = getimagesize($imagePath);
-        //get images info
-        $type = image_type_to_extension($info[2], false);
-        //get images ext
-        $fun   = 'imagecreatefrom' . $type;
-        $image = $fun($imagePath);
-        //动态执行函数
-        $col = imagecolorallocatealpha($image, 255, 255, 255, 50);
-        imagestring($image, 1, rand(0, $info[0]), rand(0, $info[1]), '.', $col);
-        $fun               = 'image' . $type;
-        $tempImageSavePath = $tempImageSavePath . '/' . uniqid('tempImage_', true) . '.' . $type;
-        $fun($image, $tempImageSavePath);
-        imagedestroy($image);
-        return $tempImageSavePath;
+        foreach ($userList as $data) {
+            $uid         = $data['id'];
+            $userBalance = $data['balance'] / 1000;
+
+            $totalMoney1 = Db::table('epay_order')->where([
+                ['uid', '=', $uid],
+                ['status', '=', 1],
+                ['type', '<>', 1],
+            ])->sum('money');
+
+            $totalMoney1 /= 100;
+            $totalMoney1 -= PayModel::getOrderRateMoney($uid, $totalMoney1) / 10;
+
+//            exit($totalMoney1);
+            $totalMoney2 = Db::table('epay_order')->where([
+                ['uid', '=', $uid],
+                ['status', '=', 1],
+                ['type', '=', 1],
+            ])->sum('money');
+            $totalMoney2 /= 100;
+            $totalMoney1 -= PayModel::getOrderRateMoney($uid, $totalMoney2) / 10;
+            exit(dump( PayModel::getOrderRateMoney($uid, $totalMoney2) / 10));
+
+            Db::table('epay_user')->where('id', $uid)->update([
+                'balance' => $totalMoney1 * 1000
+            ]);
+//            $changeBalance = ($userBalance -($totalMoney*100)-PayModel::getOrderRateMoney($uid, $totalMoney));
+
+//            echo 'uid => ' . $uid . ' balance => ' . $userBalance . '  changeBalance => ' . $changeBalance . PHP_EOL;
+        }
+        //10:45
     }
 
     /**

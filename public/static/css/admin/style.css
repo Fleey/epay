@@ -55,4 +55,4 @@
 #signQrCode{
     border: medium none;margin-top: -28px;width: 200px;height: 200px;
 }
-.sign-tips-div{display: none;}
+.sign-tips-div,.param-tips-div{display: none;}

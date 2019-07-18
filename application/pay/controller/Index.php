@@ -171,19 +171,21 @@ class Index extends Controller
 
             $orderRateMoney = 0;
             {
-                $userAccountList = Db::table('epay_wxx_apply_list')->alias('applyList')
-                    ->where(['applyList.status' => 2])->limit(1)
-                    ->leftJoin('epay_wxx_apply_info applyInfo', 'applyList.accountID = applyInfo.id AND applyInfo.uid = :uid and applyInfo.type = 2')
-                    ->bind(['uid' => $uid])->field('applyList.id')->select();
+                $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
+                    ->leftJoin('epay_wxx_apply_list', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id')
+                    ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID')->where([
+                        'epay_wxx_apply_info.uid'    => $uid,
+                        'epay_wxx_apply_info.type'   => 2,
+                        'epay_wxx_apply_list.status' => 2
+                    ])->order('epay_wxx_apply_list.rounds asc')->select();
 
-                if (!empty($userAccountList)){
-                    if ($userPayConfig['wxpay']['apiType'] == 2 && $converPayType == 1) {
-                        $orderRateMoney = PayModel::getOrderRateMoney($uid, $money);
-                        if ($userData[0]['balance'] <= 0)
-                            return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
-                        if ($userData[0]['balance'] - $orderRateMoney < 0)
-                            return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
-                    }
+                if (!empty($userAccountList) && $converPayType == 1) {
+                    $orderRateMoney = PayModel::getOrderRateMoney($uid, $money);
+                    if ($userData[0]['balance'] <= 0)
+                        return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
+                    if ($userData[0]['balance'] - $orderRateMoney < 0)
+                        return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
+                    PayModel::setOrderAttr($tradeNo, 'rateMoney', $orderRateMoney);
                 }
                 //如果为小微商户执行这里
             }

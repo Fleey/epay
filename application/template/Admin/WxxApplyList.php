@@ -81,6 +81,26 @@
                                 <input data-name="createTime" class="form-control" disabled>
                             </div>
                         </div>
+                        <div class="col-md-12 param-tips-div">
+                            <div class="alert alert-danger">
+                                <h3 class="text-danger">
+                                    <i class="fa fa-exclamation-circle"></i>
+                                    参数错误提示
+                                </h3>
+                                <div class="row">
+                                    <table class="table table-bordered" id="error-param-tips">
+                                        <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>参数名称</th>
+                                            <th>提示</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-md-12 sign-tips-div">
                             <div class="alert alert-info">
                                 <h3 class="text-info">

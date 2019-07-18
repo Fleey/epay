@@ -32,8 +32,8 @@ $(function () {
                         return '已冻结';
                     } else if (data === 2) {
                         return '已通过';
-                    }else if(data === -3){
-                        return  '封禁中';
+                    } else if (data === -3) {
+                        return '封禁中';
                     }
                     return '未知状态';
                 }
@@ -340,6 +340,7 @@ $(function () {
                     return;
                 }
                 $('.sign-tips-div').hide();
+                $('.param-tips-div').hide();
                 swal.close();
                 data = data['data'];
                 $.each(data, function (key, value) {
@@ -354,16 +355,27 @@ $(function () {
                             value = '已冻结';
                         } else if (value === 2) {
                             value = '已通过';
+                        } else if (value === -3) {
+                            value = '已封禁';
                         } else {
                             value = '未知状态';
                         }
                     } else if (key === 'applyData') {
+                        if(value === null)
+                            return;
                         value = JSON.parse(value);
                         if (data['status'] === 1) {
                             $('#applyInfoResult h2[data-name="idCardName"]').text(data['idCardName']);
                             $('#applyInfoResult a[data-name="signUrl"]').attr('href', value['signUrl']).text(value['signUrl']);
                             $('#signQrCode').attr('src', value['signUrl']);
                             $('.sign-tips-div').show();
+                        } else if (data['status'] === -1 && value['audit_detail'] !== undefined) {
+                            $('.param-tips-div').show();
+                            var html = '';
+                            $.each(value['audit_detail'], function (id, content) {
+                                html += '<tr><th scope="row">' + id + '</th><td>' + content['param_name'] + '</td><td>' + content['reject_reason'] + '</td></tr>';
+                            });
+                            $('#error-param-tips>tbody').html(html);
                         }
                     }
                     if (key !== 'applyData')

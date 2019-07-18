@@ -163,36 +163,36 @@
                 </div>
             </div>
         </div>
-    </div>
-    <?php
-    $result       = curl('http://update.zmz999.com/version.json');
-    $isNeedUpdate = false;
-    if ($result != false) {
-        $result = json_decode($result, true);
-        if (!empty($result['version'])) {
-            if (config('app_version') != $result['version'])
-                $isNeedUpdate = true;
+        <?php
+        $result       = curl('http://update.zmz999.com/version.json');
+        $isNeedUpdate = false;
+        if ($result != false) {
+            $result = json_decode($result, true);
+            if (!empty($result['version'])) {
+                if (config('app_version') != $result['version'])
+                    $isNeedUpdate = true;
+            }
         }
-    }
-    if ($isNeedUpdate) {
-        ?>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">检测到新版本发布</h5>
-                    <div class="row">
-                        <div class="col-md-5">
-                            <p><b>最新聚合支付程序</b>
-                                <br><?php echo $result['version']; ?></p>
-                        </div>
-                        <div class="col-md-7">
-                            <button class="btn btn-primary float-right" data-update-program>立刻更新</button>
+        if ($isNeedUpdate) {
+            ?>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">检测到新版本发布</h5>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <p><b>最新聚合支付程序</b>
+                                    <br><?php echo $result['version']; ?></p>
+                            </div>
+                            <div class="col-md-7">
+                                <button class="btn btn-primary float-right" data-update-program>立刻更新</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    <?php } ?>
+        <?php } ?>
+    </div>
 </div>
 </div>
 

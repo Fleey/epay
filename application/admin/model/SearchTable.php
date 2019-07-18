@@ -84,6 +84,7 @@ class SearchTable
         $result = $this->sortData($result);
         $result = $this->searchValue($result);
         $result = $this->searchArgs($result);
+
         $result = $result->limit($this->startSite, $this->getLength)->select();
 
         $recordsFiltered = Db::table($this->searchTable);
@@ -97,6 +98,14 @@ class SearchTable
                 'recordsFiltered' => 0,
                 'data'            => [],
             ];
+        }
+
+        if ($this->searchTable == 'epay_wxx_apply_list') {
+            foreach ($result as $key => $value) {
+                $result[$key]['accountID'] = $value['appID'] . '-' . $value['desc'];
+                unset($result[$key]['appID']);
+                unset($result[$key]['desc']);
+            }
         }
 
         $data = [];
@@ -131,7 +140,7 @@ class SearchTable
 
         if ($this->searchTable == 'epay_order') {
             if (isset($this->args['uid']))
-                $queryResult = $queryResult->where('uid', $this->args['uid']);
+                $queryResult = $queryResult->where('uid', intval($this->args['uid']));
             if (isset($this->args['tradeNo']))
                 $queryResult = $queryResult->where('tradeNo', $this->args['tradeNo']);
             if (isset($this->args['tradeNoOut']))
@@ -154,22 +163,22 @@ class SearchTable
                 $queryResult = $queryResult->where('createTime', '<=', $this->args['productEndTime']);
         } else if ($this->searchTable == 'epay_user') {
             if (isset($this->args['uid']))
-                $queryResult = $queryResult->where('id', $this->args['uid']);
+                $queryResult = $queryResult->where('epay_user.id', intval($this->args['uid']));
             if (isset($this->args['key']))
-                $queryResult = $queryResult->where('key', $this->args['key']);
+                $queryResult = $queryResult->where('epay_user.key', $this->args['key']);
             if (isset($this->args['account']))
-                $queryResult = $queryResult->where('account', $this->args['account']);
+                $queryResult = $queryResult->where('epay_user.account', $this->args['account']);
             if (isset($this->args['username']))
-                $queryResult = $queryResult->where('username', $this->args['username']);
+                $queryResult = $queryResult->where('epay_user.username', $this->args['username']);
             if (isset($this->args['email']))
-                $queryResult = $queryResult->where('email', $this->args['email']);
+                $queryResult = $queryResult->where('epay_user.email', $this->args['email']);
             if (isset($this->args['qq']))
-                $queryResult = $queryResult->where('qq', $this->args['qq']);
+                $queryResult = $queryResult->where('epay_user.qq', $this->args['qq']);
             if (isset($this->args['domain']))
-                $queryResult = $queryResult->where('domain', $this->args['domain']);
+                $queryResult = $queryResult->where('epay_user.domain', $this->args['domain']);
         } else if ($this->searchTable == 'epay_settle') {
             if (isset($this->args['uid']))
-                $queryResult = $queryResult->where('uid', $this->args['uid']);
+                $queryResult = $queryResult->where('uid', intval($this->args['uid']));
             if (isset($this->args['clearType']))
                 $queryResult = $queryResult->where('clearType', $this->args['clearType']);
             if (isset($this->args['clearMode']))
@@ -186,10 +195,10 @@ class SearchTable
                 $queryResult = $queryResult->where('status', $this->args['status']);
         } else if ($this->searchTable == 'epay_user_money_log') {
             if (isset($this->args['uid']))
-                $queryResult = $queryResult->where('uid', $this->args['uid']);
+                $queryResult = $queryResult->where('uid', intval($this->args['uid']));
         } else if ($this->searchTable == 'epay_log') {
             if (isset($this->args['uid']))
-                $queryResult = $queryResult->where('uid', $this->args['uid']);
+                $queryResult = $queryResult->where('uid', intval($this->args['uid']));
             if (isset($this->args['type']))
                 $queryResult = $queryResult->where('type', $this->args['type']);
             if (isset($this->args['ipv4']))
@@ -211,14 +220,15 @@ class SearchTable
             if (isset($this->args['type']))
                 $queryResult = $queryResult->where('type', $this->args['type']);
         } else if ($this->searchTable == 'epay_wxx_apply_list') {
-            if (isset($this->args['accountID']))
-                $queryResult = $queryResult->where('accountID', $this->args['accountID']);
+            if (isset($this->args['applyInfoID']))
+                $queryResult = $queryResult->where('epay_wxx_apply_list.applyInfoID', $this->args['applyInfoID']);
             if (isset($this->args['subMchID']))
-                $queryResult = $queryResult->where('subMchID', $this->args['subMchID']);
-            if (isset($this->args['status']))
-                $queryResult = $queryResult->where('status', $this->args['status']);
+                $queryResult = $queryResult->where('epay_wxx_apply_list.subMchID', $this->args['subMchID']);
+            if (isset($this->args['type']))
+                $queryResult = $queryResult->where('epay_wxx_apply_list.status', $this->args['type']);
             if (isset($this->args['desc']))
-                $queryResult = $queryResult->where('desc', 'like', '%' . $this->args['desc'] . '%');
+                $queryResult = $queryResult->where('epay_wxx_apply_list.desc', 'like', '%' . $this->args['desc'] . '%');
+
         }
         return $queryResult;
     }
@@ -253,9 +263,11 @@ class SearchTable
         $searchOrderList = [];
 
         if ($this->searchTable == 'epay_order') {
-            $searchOrderList = ['tradeNo', 'tradeNoOut', 'productName', 'money', 'type', 'status', 'createTime'];
+            $searchOrderList = ['epay_order.tradeNo', 'epay_order.tradeNoOut', 'epay_order.productName', 'epay_order.money', 'epay_order.type', 'epay_order.status', 'epay_order.createTime'];
         } else if ($this->searchTable == 'epay_user') {
-            $searchOrderList = ['id', 'key', 'balance', 'account', 'username', 'isBan'];
+            $searchOrderList = ['epay_user.id', 'epay_user.key', 'epay_user.balance', 'epay_user.account', 'epay_user.username', 'IF(epay_wxx_apply_info.type is NULL,1,epay_wxx_apply_info.type) as type', 'epay_user.isBan'];
+            $queryResult     = $queryResult->leftJoin('epay_wxx_apply_info', 'epay_user.id = epay_wxx_apply_info.uid');
+            $queryResult     = $queryResult->group('epay_user.id');
         } else if ($this->searchTable == 'epay_settle') {
             $searchOrderList = ['id', 'uid', 'clearType', 'account', 'username', 'money', 'fee', 'status', 'createTime'];
         } else if ($this->searchTable == 'epay_user_money_log') {
@@ -269,7 +281,9 @@ class SearchTable
         } else if ($this->searchTable == 'epay_wxx_apply_info') {
             $searchOrderList = ['id', 'idCardName', 'idCardNumber', 'type', 'createTime'];
         } else if ($this->searchTable == 'epay_wxx_apply_list') {
-            $searchOrderList = ['id', 'accountID', 'status', 'createTime'];
+            $searchOrderList = ['epay_wxx_apply_list.id', 'epay_wxx_apply_list.accountID', 'epay_wxx_apply_list.subMchID', 'epay_wxx_apply_info.idCardName', 'epay_wxx_apply_list.status', 'epay_wxx_apply_list.createTime', 'epay_wxx_account_list.desc', 'epay_wxx_account_list.appID'];
+            $queryResult     = $queryResult->leftJoin('epay_wxx_account_list', 'epay_wxx_apply_list.accountID = epay_wxx_account_list.id');
+            $queryResult     = $queryResult->leftJoin('epay_wxx_apply_info', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id');
         }
         $field = '';
         foreach ($searchOrderList as $item) {

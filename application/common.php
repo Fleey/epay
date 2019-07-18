@@ -10,7 +10,6 @@
 // +----------------------------------------------------------------------
 
 // 应用公共文件
-
 /**
  * 获取随机字符串
  * @param int $length
@@ -239,7 +238,6 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     curl_close($ch);
     return $result;
 }
-
 
 /**
  * +----------------------------------------------------------
@@ -614,12 +612,17 @@ function processOrder($tradeNo, $notify = true)
             \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])->limit(1)->inc('money', $orderInfo[0]['money'])->update();
             $roundMoney = 0;
             if ($orderPayConfig['configType'] == 1) {
-                $systemPayConfig = getConfig()['wxpay'] * 100;
-                $roundMoney      = $systemPayConfig['wxxMeanMoney'];
+                $systemPayConfig = getConfig()['wxpay'];
+                if (empty($systemPayConfig['wxxMeanMoney']))
+                    $systemPayConfig['wxxMeanMoney'] = 20000;
+                $roundMoney = $systemPayConfig['wxxMeanMoney'] * 100;
                 //集体号
             } else if ($orderPayConfig['configType'] == 2) {
-                $userPayConfig = getPayUserAttr($orderInfo[0]['uid'], 'payConfig');
-                $roundMoney    = $userPayConfig['wxxMeanMoney'] / 100 * 100;
+                $userPayConfig = unserialize(getPayUserAttr($orderInfo[0]['uid'], 'payConfig'));
+                $userPayConfig = $userPayConfig['wxpay'];
+                if (empty($userPayConfig['wxxMeanMoney']))
+                    $userPayConfig['wxxMeanMoney'] = 20000;
+                $roundMoney = $userPayConfig['wxxMeanMoney'] / 100;
                 //独立号
             }
             $applyAccountInfo = \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])->field('rounds,money')->limit(1)->select();

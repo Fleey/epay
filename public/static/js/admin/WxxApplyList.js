@@ -20,7 +20,7 @@ $(function () {
         retrieve: true,
         "bRetrieve": true,
         'columns': [
-            {}, {}, {
+            {}, {}, {}, {}, {
                 'render': function (data) {
                     if (data === 1) {
                         return '待签约';
@@ -32,6 +32,8 @@ $(function () {
                         return '已冻结';
                     } else if (data === 2) {
                         return '已通过';
+                    }else if(data === -3){
+                        return  '封禁中';
                     }
                     return '未知状态';
                 }
@@ -42,11 +44,16 @@ $(function () {
                 'orderable': false,
                 'render': function (data, type, row) {
                     var html = '<div class="btn-group" role="group" aria-label="Button group with nested dropdown">';
+                    if (row[4] === 2) {
+                        html += '<button type="button" class="btn btn-sm btn-secondary" data-type="changeStatus" data-status="freeze">冻结账号</button>';
+                    } else if (row[4] === -3) {
+                        html += '<button type="button" class="btn btn-sm btn-secondary" data-type="changeStatus" data-status="unfreeze">解冻账号</button>';
+                    }
                     html += '<button type="button" class="btn btn-sm btn-secondary" data-type="more">查看更多</button>';
                     html += '</div>';
                     return html;
                 },
-                'targets': 4
+                'targets': 6
             }
         ],
         'fnDrawCallback': function (obj) {
@@ -65,21 +72,24 @@ $(function () {
                 searchTable: 'epay_wxx_apply_list'
             }
         };
-        $('#appID').val('');
+        $('#searchFilter select[data-name="applyInfoID"]').val('');
         $('#mchID').val('');
-        $('#desc').val('');
+        $('#searchFilter #desc').val('');
+        $('#searchFilter #type').val('');
+        $('#searchFilter #subMchID').val('');
         $('#orderList1').dataTable(dataTableConfig);
         $('#searchFilter').modal('hide');
         $('#cancelSearchFilter').hide();
     });
     $('#searchContent').off("click").on('click', function () {
-        var appID = $('#appID').val();
-        var mchID = $('#mchID').val();
-        var desc = $('#desc').val();
+        var applyInfoID = $('#searchFilter select[data-name="applyInfoID"]').val();
+        var desc = $('#searchFilter #desc').val();
+        var type = $('#searchFilter #type').val();
+        var subMchID = $('#searchFilter #subMchID').val();
 
         var dataTable = $('#orderList1').dataTable();
 
-        if (!appID && !mchID && !desc) {
+        if (!applyInfoID && !type && !desc && !subMchID) {
             dataTableConfig['ajax'] = {
                 url: baseUrl + 'cy2018/api/searchTable',
                 type: 'post',
@@ -93,15 +103,16 @@ $(function () {
             $('#cancelSearchFilter').hide();
             return true;
         }
-
         dataTable.fnDestroy();
         var data = {'searchTable': 'epay_wxx_apply_list', 'search': {}, 'args': {}};
-        if (appID)
-            data['args']['appID'] = appID;
-        if (mchID)
-            data['args']['mchID'] = mchID;
+        if (applyInfoID)
+            data['args']['applyInfoID'] = applyInfoID;
+        if (type)
+            data['args']['type'] = type;
         if (desc)
             data['args']['desc'] = desc;
+        if (subMchID)
+            data['args']['subMchID'] = subMchID;
         dataTableConfig['ajax'] = {
             url: baseUrl + 'cy2018/api/searchTable',
             type: 'post',
@@ -116,7 +127,7 @@ $(function () {
         setTimeout(function () {
             $('#searchFilter select:not([data-name="applyInfoID"])').val(null).select2({
                 language: 'zh-CN',
-                placeholder:'请选择申请状态'
+                placeholder: '请选择申请状态'
             });
             $('#searchFilter select[data-name="applyInfoID"]').val(null).select2({
                 language: 'zh-CN',
@@ -142,7 +153,7 @@ $(function () {
                         };
                     }
                 },
-                placeholder:'请选择需要查询的用户信息'
+                placeholder: '请选择需要查询的用户信息'
             });
         }, 300);
     });
@@ -274,9 +285,9 @@ $(function () {
                         };
                     },
                 },
-                placeholder:'请选择需要批量的用户信息'
+                placeholder: '请选择需要批量的用户信息'
             });
-            $('#applyInfoModal select[data-name="accountID"]').attr('disabled','').val(null).select2({
+            $('#applyInfoModal select[data-name="accountID"]').attr('disabled', '').val(null).select2({
                 language: 'zh-CN',
                 placeholder: '请选择服务商号信息',
                 ajax: {
@@ -365,6 +376,26 @@ $(function () {
                     'data-apply-info-id': data['applyInfoID']
                 });
             });
+        } else if (clickType === 'changeStatus') {
+            var status = $(this).attr('data-status');
+            if (status === 'freeze')
+                status = -3;
+            else
+                status = 2;
+            swal({
+                title: '请稍后...',
+                text: '正在积极等待服务器响应',
+                showConfirmButton: false
+            });
+
+            $.post('/cy2018/api/Wxx/ApplyListStatus', {id: id, status: status}, function (data) {
+                if (data['status'] !== 1) {
+                    swal('请求失败', data['msg'], 'error');
+                    return true;
+                }
+                swal('请求成功', data['msg'], 'success');
+                $('#orderList1').dataTable().fnDraw(false);
+            }, 'json');
         }
     });
 });

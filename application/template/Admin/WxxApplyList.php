@@ -18,6 +18,8 @@
                             <tr>
                                 <th>ID</th>
                                 <th>服务商</th>
+                                <th>subMchID</th>
+                                <th>用户名称</th>
                                 <th>状态</th>
                                 <th>创建日期</th>
                                 <th>操作</th>
@@ -154,6 +156,12 @@
                                 <select class="form-control" data-name="applyInfoID">
                                     <option selected disabled>请选择要查询的账号名称</option>
                                 </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="desc" class="col-md-3 control-label">subMchID</label>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" id="subMchID" placeholder="小微商户ID">
                             </div>
                         </div>
                         <div class="form-group row">

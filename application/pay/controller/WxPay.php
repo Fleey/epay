@@ -140,6 +140,7 @@ class WxPay extends Controller
                 }
             }
         }
+
         if ($requestResult['return_code'] != 'SUCCESS')
             return $this->fetch('/SystemMessage', ['msg' => '微信支付下单失败！<br>[' . $requestResult['return_code'] . '] ' . $requestResult['return_msg']]);
         if ($requestResult['result_code'] != 'SUCCESS')
@@ -154,7 +155,7 @@ class WxPay extends Controller
                     'cancelCallback' => buildCallBackUrl($tradeNo, 'return')
                 ]);
             } else if ($this->request->isMobile()) {
-                if ($wxPayMode != 2) {
+                if ($wxPayMode != 2 && isset($requestResult['mweb_url'])) {
                     $returnUrl  = url('/Pay/WxPay/WapReturn?tradeNo=' . $tradeNo, '', false, true);
                     $requestUrl = $requestResult['mweb_url'] . '&redirect_url=' . urlencode($returnUrl);
                     $parseUrl   = parse_url($requestUrl);
@@ -289,21 +290,26 @@ class WxPay extends Controller
         }
         //存在预先配置
         $uid             = $orderInfo[0]['uid'];
-        $userAccountList = Db::table('epay_wxx_apply_list')->alias('applyList')
-            ->where(['applyList.status' => 2])->limit(1)
-            ->leftJoin('epay_wxx_apply_info applyInfo', 'applyList.accountID = applyInfo.id AND applyInfo.uid = :uid and applyInfo.type = 2')
-            ->bind(['uid' => $uid])->field('applyList.accountID,applyList.subMchID')->order('applyList.rounds asc')->select();
+        $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
+            ->leftJoin('epay_wxx_apply_list', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id')
+            ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID')->where([
+                'epay_wxx_apply_info.uid'      => $uid,
+                'epay_wxx_apply_info.type'     => 2,
+                'epay_wxx_apply_list.status' => 2
+            ])->order('epay_wxx_apply_list.rounds asc')->select();
         if (!empty($userAccountList)) {
-            PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'],'configType'=>2]));
+            PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 2]));
             return $this->buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID']);
             //独立号
         } else {
-            $userAccountList = Db::table('epay_wxx_apply_list')->alias('applyList')
-                ->where(['applyList.status' => 2])->limit(1)
-                ->leftJoin('epay_wxx_apply_info applyInfo', 'applyList.accountID = applyInfo.id AND applyInfo.uid = :uid and applyInfo.type = 1')
-                ->field('applyList.accountID,applyList.subMchID')->order('applyList.rounds asc')->select();
+            $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
+                ->leftJoin('epay_wxx_apply_list', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id')
+                ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID')->where([
+                    'epay_wxx_apply_info.type'     => 1,
+                    'epay_wxx_apply_list.status' => 2
+                ])->order('epay_wxx_apply_list.rounds asc')->select();
             //集体号
-            PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'],'configType'=>1]));
+            PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 1]));
             return $this->buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID']);
         }
     }
@@ -324,16 +330,16 @@ class WxPay extends Controller
             throw new Exception('数据结构异常');
         $returnData = $this->systemConfig['wxpay'];
 
-        $config['key']   = $selectResult[0]['appKey'];
-        $config['appid'] = $selectResult[0]['appID'];
-        $config['mchid'] = $selectResult[0]['mchID'];
+        $returnData['key']   = $selectResult[0]['appKey'];
+        $returnData['appid'] = $selectResult[0]['appID'];
+        $returnData['mchid'] = $selectResult[0]['mchID'];
 
-        $config['jsApiAppid']     = $selectResult[0]['appID'];
-        $config['jsApiMchid']     = $selectResult[0]['mchID'];
-        $config['jsApiKey']       = $selectResult[0]['appKey'];
-        $config['jsApiAppSecret'] = $selectResult[0]['appSecret'];
+        $returnData['jsApiAppid']     = $selectResult[0]['appID'];
+        $returnData['jsApiMchid']     = $selectResult[0]['mchID'];
+        $returnData['jsApiKey']       = $selectResult[0]['appKey'];
+        $returnData['jsApiAppSecret'] = $selectResult[0]['appSecret'];
 
-        $config['sub_mch_id'] = $subMchID;
+        $returnData['sub_mch_id'] = $subMchID;
         return $returnData;
     }
 }

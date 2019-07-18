@@ -55,7 +55,7 @@
                 <div class="col-10 col-sm-6 mx-auto">
                     <div class="browser colored no-b-b no-r-b bg-body">
                         <div class="pos-rlt">
-                            <img src="http://cloud.zmz999.com/wl/?id=qRZRVxgdIBkHb2ShRGVYbrKZ6wZbItIh"
+                            <img src="https://cloud.zmz999.com/index.php?share/fileProxy&user=1&sid=6wENCkAY"
                                  class="w-100 no-radius" alt="White Dashboard"></div>
                     </div>
                 </div>

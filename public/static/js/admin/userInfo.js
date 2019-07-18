@@ -26,6 +26,10 @@ $(function () {
                 }
             }, {}, {}, {
                 'render': function (data) {
+                    return data === 1 ? '集体号' : '独立号';
+                }
+            }, {
+                'render': function (data) {
                     return data === 0 ? '未封禁' : '已封禁';
                 }
             }
@@ -40,7 +44,7 @@ $(function () {
                     html += '</div>';
                     return html;
                 },
-                'targets': 6
+                'targets': 7
             }
         ],
         'fnDrawCallback': function (obj) {

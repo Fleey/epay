@@ -14,7 +14,7 @@ class Wxx extends Controller
     public function __construct(App $app = null)
     {
         parent::__construct($app);
-        if ($this->request->action() != 'redirects') {
+        if ($this->request->action() != 'wxopenverify') {
             $username = session('username', '', 'admin');
             if (empty($username))
                 exit(json_encode(['status' => 0, 'msg' => '您需要登录后才能操作']));
@@ -28,7 +28,7 @@ class Wxx extends Controller
      */
     public function WxOpenVerify(string $code)
     {
-        return $code;
+        return response($code)->header(['Content-Type' => 'text/plain']);
     }
 
     public function getAccount()
@@ -473,6 +473,8 @@ class Wxx extends Controller
                 $desc = $applyResult['msg'];
                 if (strpos($desc, '暂不支持此身份证号码入驻') !== false)
                     $status = -2;
+                else if (strpos($desc, 'business_code对应的申请单当前状态不可编辑') !== false)
+                    $status = 0;
                 else
                     $status = -1;
             }
@@ -498,6 +500,22 @@ class Wxx extends Controller
         }
 
         return json(['status' => 1, 'msg' => '提交申请成功']);
+    }
+
+    public function postApplyListStatus()
+    {
+        $id     = input('post.id/s');
+        $status = input('post.status/d', 0);
+
+        if (empty($id))
+            return json(['status' => 0, 'msg' => '请求参数不能为空']);
+
+        $updateResult = Db::table('epay_wxx_apply_list')->where('id', $id)->limit(1)->update([
+            'status' => $status
+        ]);
+        if (!$updateResult)
+            return json(['status' => 0, 'msg' => '更新账号状态失败，请重试。']);
+        return json(['status' => 1, 'msg' => '更新账号状态成功']);
     }
 
     /**

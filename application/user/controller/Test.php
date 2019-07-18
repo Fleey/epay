@@ -41,10 +41,15 @@ class Test extends Controller
         //需http://格式的完整路径，不能加?id=123这类自定义参数
         $return_url = url('/test/return', '', false, true);
         //需http://格式的完整路径，不能加?id=123这类自定义参数，不能写成http://localhost/  页面跳转同步通知页面路径
+
+        if(empty( $getData['WIDout_trade_no'])||empty( $getData['WIDsubject']) || empty( $getData['WIDtotal_fee']))
+            return '<h1 style="text-align: center;padding-top: 6rem;">页面数据异常，请返回原页面再发起。</h1>';
+
         $out_trade_no = $getData['WIDout_trade_no'];
         //商户网站订单系统中唯一订单号，必填
         $type = $getData['type'];
         //支付方式
+
         $name = $getData['WIDsubject'];
         //商品名称
         $money = $getData['WIDtotal_fee'];

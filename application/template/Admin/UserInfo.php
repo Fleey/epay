@@ -24,7 +24,8 @@
                                 <th>余额</th>
                                 <th>结算账号</th>
                                 <th>结算名称</th>
-                                <th>账号状态</th>
+                                <th>类型</th>
+                                <th>状态</th>
                                 <th>操作</th>
                             </tr>
                             </thead>

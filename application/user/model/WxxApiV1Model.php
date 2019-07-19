@@ -103,7 +103,7 @@ class WxxApiV1Model
 
         $result = xmlToArray($result);
         if ($result['return_code'] != 'SUCCESS')
-            return ['isSuccess' => false, 'msg' => 'wxx -> ' . $result['return_msg']];
+            return ['isSuccess' => false, 'msg' => $result['return_msg']];
         if ($result['result_code'] != 'SUCCESS') {
             if (!empty($result['err_code_desc']))
                 return ['isSuccess' => false, 'msg' => $result['err_code'] . '  ' . $result['err_code_desc']];
@@ -111,7 +111,7 @@ class WxxApiV1Model
                 return ['isSuccess' => false, 'msg' => $result['err_code'] . '  ' . $result['err_code_des']];
         }
         if (self::signParam($result, $this->appKey, 'HMAC-SHA256') != $result['sign'])
-            return ['isSuccess' => false, 'msg' => ' wxx -> return data sign fail'];
+            return ['isSuccess' => false, 'msg' => 'return data sign fail'];
 
         return ['isSuccess' => true, 'data' => [
             'date'        => $result['date'],

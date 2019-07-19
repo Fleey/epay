@@ -235,6 +235,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-type="delete">删除账号</button>
+                <button type="button" class="btn btn-github" data-type="reloadSettle">发起提现</button>
                 <button type="button" class="btn btn-primary" id="saveInfo">保存</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             </div>

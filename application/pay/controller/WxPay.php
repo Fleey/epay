@@ -33,6 +33,11 @@ class WxPay extends Controller
     {
         $requestData = input('get.');
 
+        if (empty($requestData['tradeNo']))
+            return $this->fetch('/SystemMessage', ['msg' => '请求参数有误，请重新发起订单请求！']);
+        if (strlen($requestData['tradeNo']) != 19)
+            return $this->fetch('/SystemMessage', ['msg' => '请求参数有误，请重新发起订单请求！']);
+
         $this->systemConfig['wxpay'] = $this->getWxxPayConfig($requestData['tradeNo']);
 
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
@@ -293,8 +298,8 @@ class WxPay extends Controller
         $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
             ->leftJoin('epay_wxx_apply_list', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id')
             ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID')->where([
-                'epay_wxx_apply_info.uid'      => $uid,
-                'epay_wxx_apply_info.type'     => 2,
+                'epay_wxx_apply_info.uid'    => $uid,
+                'epay_wxx_apply_info.type'   => 2,
                 'epay_wxx_apply_list.status' => 2
             ])->order('epay_wxx_apply_list.rounds asc')->select();
         if (!empty($userAccountList)) {
@@ -305,7 +310,7 @@ class WxPay extends Controller
             $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
                 ->leftJoin('epay_wxx_apply_list', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id')
                 ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID')->where([
-                    'epay_wxx_apply_info.type'     => 1,
+                    'epay_wxx_apply_info.type'   => 1,
                     'epay_wxx_apply_list.status' => 2
                 ])->order('epay_wxx_apply_list.rounds asc')->select();
             //集体号

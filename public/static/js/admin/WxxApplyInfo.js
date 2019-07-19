@@ -352,6 +352,7 @@ $(function () {
         var dom = $('#applyInfo').modal('show');
         dom.find('#saveInfo').attr('data-type', 'add');
         dom.find('button[data-type="delete"]').hide();
+        dom.find('button[data-type="reloadSettle"]').hide();
 
         $('#applyInfo input[type!="file"]').val('');
         $('#applyInfo input[type="file"]').removeAttr('data-file-id');
@@ -361,8 +362,8 @@ $(function () {
         $.each($('#applyInfo select'), function (key, value) {
             $(value).find('option[selected]')[0].selected = true;
         });
-        $('#applyInfo select[data-area-name="city"]').attr('disabled','');
-        $('#applyInfo select[data-area-name="area"]').attr('disabled','');
+        $('#applyInfo select[data-area-name="city"]').attr('disabled', '');
+        $('#applyInfo select[data-area-name="area"]').attr('disabled', '');
         initSelect();
         // dom.find('[data-name]').val('');
     });
@@ -393,6 +394,43 @@ $(function () {
             readFileHash(value, readHashEvent, {'inputDom': dom});
             //为减少图片缓存做准备
         });
+    });
+    $('#applyInfo button[data-type="reloadSettle"]').click(function () {
+        swal({
+                title: "重新发起小微商户提现",
+                text: "自动提现单提现日期 YYYYMMDD 20180602",
+                type: "input",
+                showCancelButton: true,
+                closeOnConfirm: false,
+                animation: "slide-from-top",
+                inputPlaceholder: "20180602"
+            },
+            function (inputValue) {
+                if (inputValue === false) return false;
+
+                if (inputValue === "") {
+                    swal.showInputError("您必须输入点东西");
+                    return false
+                }
+                isRequest = true;
+                swal({
+                    title: '请稍后...',
+                    text: '正在积极等待服务器响应',
+                    showConfirmButton: false
+                });
+                $.post('/cy2018/api/Wxx/ReAutoWithDrawByDate', {
+                    id: $('#applyInfo').attr('data-apply-id'),
+                    date: inputValue
+                }, function (data) {
+                    isRequest = false;
+                    if (data['status'] !== 1) {
+                        swal('请求失败', data['msg'], 'error');
+                        return true;
+                    }
+                    swal('请求成功', data['msg'], 'success');
+                    $('#applyInfo').modal('hide');
+                });
+            });
     });
     $('#orderList1>tbody').on('click', 'td>div.btn-group [data-type]', function () {
         var clickDom = $(this);
@@ -426,6 +464,7 @@ $(function () {
                 //基础信息置入
                 $('#applyInfo').modal('show').attr('data-apply-id', id).find('#saveInfo').attr('data-type', 'update');
                 $('#applyInfo button[data-type="delete"]').show();
+                $('#applyInfo button[data-type="reloadSettle"]').show();
                 $.each(data, function (key, value) {
                     if (key === 'idCardCopyFilePath') {
                         var dom = $('#applyInfo input[data-name="idCardCopy"]').parent();

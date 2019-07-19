@@ -40,7 +40,7 @@ class CenterPay extends Controller
         if (empty($result))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID无效！']);
         if ($result[0]['status'])
-            return redirect(buildCallBackUrl($tradeNo,'return'));
+            return redirect(buildCallBackUrl($tradeNo, 'return'));
 
         $payName = PayModel::converPayName($result[0]['type'], true);
         if (empty($this->systemConfig[$payName]))
@@ -83,7 +83,10 @@ class CenterPay extends Controller
             if (!empty($requestResult['html']))
                 return $requestResult['html'];
         }
-        return $this->fetch('/SystemMessage', ['msg' => $requestResult['msg']]);
+        if(!empty($requestResult['msg']))
+            return $this->fetch('/SystemMessage', ['msg' => $requestResult['msg']]);
+        trace('CenterPay errorContent => ' . json_encode($requestResult,true), 'info');
+        return $this->fetch('/SystemMessage', ['msg' => '系统似乎开小差了，请重新发起请求']);
     }
 
     public function postNotify()

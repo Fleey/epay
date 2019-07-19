@@ -28,7 +28,7 @@ class Test extends Command
             ->where([
                 'epay_user.isBan' => 0,
                 'type'            => 2,
-                'epay_user.id'    => 1259
+                'epay_user.id'    => 1260
             ])->group('epay_user.id')->cursor();
 
         foreach ($userList as $data) {
@@ -39,21 +39,25 @@ class Test extends Command
                 ['uid', '=', $uid],
                 ['status', '=', 1],
                 ['type', '<>', 1],
+                ['endTime', '>=', '2019-7-18 00:00:00'],
+                ['endTime','<=','2019-7-18 23:59:59']
             ])->sum('money');
 
             $totalMoney1 /= 100;
             $totalMoney1 -= PayModel::getOrderRateMoney($uid, $totalMoney1) / 10;
-
+            $a = $totalMoney1;
 //            exit($totalMoney1);
             $totalMoney2 = Db::table('epay_order')->where([
                 ['uid', '=', $uid],
                 ['status', '=', 1],
                 ['type', '=', 1],
+                ['endTime', '>=', '2019-7-18 00:00:00'],
+                ['endTime','<=','2019-7-18 23:59:59']
             ])->sum('money');
             $totalMoney2 /= 100;
             $totalMoney1 -= PayModel::getOrderRateMoney($uid, $totalMoney2) / 10;
-            exit(dump( PayModel::getOrderRateMoney($uid, $totalMoney2) / 10));
-
+//            exit(dump( PayModel::getOrderRateMoney($uid, $totalMoney2) / 10));
+            exit(dump([$totalMoney1, PayModel::getOrderRateMoney($uid, $totalMoney2) / 10,$a]));
             Db::table('epay_user')->where('id', $uid)->update([
                 'balance' => $totalMoney1 * 1000
             ]);

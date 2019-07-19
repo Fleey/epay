@@ -502,6 +502,41 @@ class Wxx extends Controller
         return json(['status' => 1, 'msg' => '提交申请成功']);
     }
 
+    /**
+     * 小微商户重新发起结算
+     */
+    public function postReAutoWithDrawByDate()
+    {
+        $id   = input('post.id/s');
+        $date = input('post.date/s');
+        if (empty($id) || empty($date))
+            return json(['status' => 0, 'msg' => '参数不能为空']);
+
+        $applyInfo = Db::table('epay_wxx_apply_info')->where('id', $id)->field('id')->limit(1)->select();
+        if (empty($applyInfo))
+            return json(['status' => 0, 'msg' => '账号信息不存在，请刷新页面再试。']);
+
+        $accountList = Db::table('epay_wxx_apply_list')->where([
+            ['applyInfoID', '=', $id],
+            ['status', '<>', 0],
+            ['status', '<>', -1]
+        ])->field('accountID,subMchID')->select();
+
+        $isSuccessSettle = false;
+
+        foreach ($accountList as $value) {
+            if (empty($value['subMchID']))
+                return json(['status' => 0, 'msg' => '系统异常,请联系相关人员处理。']);
+            $wxxModel = $this->getWxxApiModel($value['accountID']);
+            $result   = $wxxModel->reAutoWithDrawByDate($value['subMchID'], $date);
+            if ($result['isSuccess'])
+                $isSuccessSettle = true;
+        }
+        if ($isSuccessSettle)
+            return json(['status' => 1, 'msg' => '重新发起提现成功']);
+        return json(['status' => 0, 'msg' => '发起结算失败，有可能当日交易额为零']);
+    }
+
     public function postApplyListStatus()
     {
         $id     = input('post.id/s');

@@ -70,7 +70,9 @@ class CenterPay extends Controller
         $config            = $systemPayConfig;
         $config['gateway'] = 'http://center.zmz999.com';
         $centerPayModel    = new CenterPayModel($config);
-        $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, $userPayConfig[$payName]['payAisle'], ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);;
+        $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, $userPayConfig[$payName]['payAisle'], ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);
+        if ($requestResult['isSuccess'] && (empty($requestResult['html'] && empty($requestResult['url']))))
+            $requestResult = $centerPayModel->getPayUrl($tradeNo, $payName, $userPayConfig[$payName]['payAisle'], ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);
         if ($requestResult['isSuccess']) {
 //            if (empty($requestResult['html'])) {
 //                return redirect($requestResult['url'], [], 302);
@@ -83,9 +85,9 @@ class CenterPay extends Controller
             if (!empty($requestResult['html']))
                 return $requestResult['html'];
         }
-        if(!empty($requestResult['msg']))
+        if (!empty($requestResult['msg']))
             return $this->fetch('/SystemMessage', ['msg' => $requestResult['msg']]);
-        trace('CenterPay errorContent => ' . json_encode($requestResult,true), 'info');
+        trace('CenterPay errorContent => ' . json_encode($requestResult, true), 'info');
         return $this->fetch('/SystemMessage', ['msg' => '系统似乎开小差了，请重新发起请求']);
     }
 

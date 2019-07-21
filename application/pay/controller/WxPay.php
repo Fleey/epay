@@ -289,7 +289,7 @@ class WxPay extends Controller
     {
         $orderInfo = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid')->limit(1)->select();
         if (empty($orderInfo))
-            throw new Exception('数据库异常');
+            return [];
         $getPayConfig = PayModel::getOrderAttr($tradeNo, 'payConfig');
         if (!empty($getPayConfig)) {
             $getPayConfig = json_decode($getPayConfig, true);

@@ -76,6 +76,8 @@ class WxPay extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '该订单尚不支持原生支付！']);
         else {
             $this->systemConfig['wxpay'] = $this->getWxxPayConfig($tradeNo);
+            if(empty($this->systemConfig['wxpay']))
+                return $this->fetch('/SystemMessage', ['msg' => '系统已经冻结所有账号，请联系站点管理员处理！']);
         }
 
         if (empty($this->systemConfig['wxpay']['sub_mch_id']))
@@ -295,14 +297,19 @@ class WxPay extends Controller
         }
         //存在预先配置
         $uid             = $orderInfo[0]['uid'];
-        $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
-            ->leftJoin('epay_wxx_apply_list', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id')
-            ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID')->where([
-                'epay_wxx_apply_info.uid'    => $uid,
-                'epay_wxx_apply_info.type'   => 2,
-                'epay_wxx_apply_list.status' => 2
-            ])->order('epay_wxx_apply_list.rounds asc')->select();
-        if (!empty($userAccountList)) {
+        $isCollectiveAccount = Db::table('epay_wxx_apply_info')->where('uid', $uid)->limit(1)->field('id')->select();
+        $isCollectiveAccount = empty($isCollectiveAccount);
+        //判断是否为集体号
+        if (!$isCollectiveAccount) {
+            $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
+                ->leftJoin('epay_wxx_apply_list', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id')
+                ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID')->where([
+                    'epay_wxx_apply_info.uid'    => $uid,
+                    'epay_wxx_apply_info.type'   => 2,
+                    'epay_wxx_apply_list.status' => 2
+                ])->order('epay_wxx_apply_list.rounds asc')->select();
+            if(empty($userAccountList))
+                return [];
             PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 2]));
             return $this->buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID']);
             //独立号

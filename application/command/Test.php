@@ -28,9 +28,9 @@ class Test extends Command
             ->where([
                 'epay_user.isBan' => 0,
                 'type'            => 2,
-                'epay_user.id'    => 1260
+                'epay_user.id'    => 1290
             ])->group('epay_user.id')->cursor();
-
+        $day = '20';
         foreach ($userList as $data) {
             $uid         = $data['id'];
             $userBalance = $data['balance'] / 1000;
@@ -39,8 +39,8 @@ class Test extends Command
                 ['uid', '=', $uid],
                 ['status', '=', 1],
                 ['type', '<>', 1],
-                ['endTime', '>=', '2019-7-18 00:00:00'],
-                ['endTime','<=','2019-7-18 23:59:59']
+                ['endTime', '>=', '2019-7-'.$day.' 00:00:00'],
+                ['endTime','<=','2019-7-'.$day.' 23:59:59']
             ])->sum('money');
 
             $totalMoney1 /= 100;
@@ -51,8 +51,8 @@ class Test extends Command
                 ['uid', '=', $uid],
                 ['status', '=', 1],
                 ['type', '=', 1],
-                ['endTime', '>=', '2019-7-18 00:00:00'],
-                ['endTime','<=','2019-7-18 23:59:59']
+                ['endTime', '>=', '2019-7-'.$day.' 00:00:00'],
+                ['endTime','<=','2019-7-'.$day.' 23:59:59']
             ])->sum('money');
             $totalMoney2 /= 100;
             $totalMoney1 -= PayModel::getOrderRateMoney($uid, $totalMoney2) / 10;

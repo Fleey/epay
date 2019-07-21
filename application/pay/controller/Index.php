@@ -171,23 +171,21 @@ class Index extends Controller
 
             $orderRateMoney = 0;
             {
-                $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
-                    ->leftJoin('epay_wxx_apply_list', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id')
-                    ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID')->where([
-                        'epay_wxx_apply_info.uid'    => $uid,
-                        'epay_wxx_apply_info.type'   => 2,
-                        'epay_wxx_apply_list.status' => 2
-                    ])->order('epay_wxx_apply_list.rounds asc')->select();
-
-                if (!empty($userAccountList) && $converPayType == 1) {
-                    $orderRateMoney = PayModel::getOrderRateMoney($uid, $money);
-                    if ($userData[0]['balance'] <= 0)
-                        return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
-                    if ($userData[0]['balance'] - $orderRateMoney < 0)
-                        return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
-                    PayModel::setOrderAttr($tradeNo, 'rateMoney', $orderRateMoney);
+                if ($converPayType == 1) {
+                    $isCollectiveAccount = Db::table('epay_wxx_apply_info')->where('uid', $uid)->limit(1)->field('id')->select();
+                    $isCollectiveAccount = empty($isCollectiveAccount);
+                    //判断是否为集体号
+                    if($isCollectiveAccount){
+                        $orderRateMoney = PayModel::getOrderRateMoney($uid, $money);
+                        if ($userData[0]['balance'] <= 0)
+                            return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
+                        if ($userData[0]['balance'] - $orderRateMoney < 0)
+                            return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
+                        PayModel::setOrderAttr($tradeNo, 'rateMoney', $orderRateMoney);
+                    }
+                    //如果为集体号走这里
                 }
-                //如果为小微商户执行这里
+                //如果为微信支付通道走这里
             }
             //这里开始检查是否够钱扣除费率
 

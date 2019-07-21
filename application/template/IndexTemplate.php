@@ -55,7 +55,7 @@
                 <div class="col-10 col-sm-6 mx-auto">
                     <div class="browser colored no-b-b no-r-b bg-body">
                         <div class="pos-rlt">
-                            <img src="https://cloud.zmz999.com/index.php?share/fileProxy&user=1&sid=6wENCkAY"
+                            <img src="https://cloud.zmz999.com/api/public/dl/hkEdE9JL/Dashboard.png"
                                  class="w-100 no-radius" alt="White Dashboard"></div>
                     </div>
                 </div>
@@ -66,15 +66,15 @@
                     <div class="row">
                         <div class="col-6 col-md-4 my-4"><span class="text-muted">.01</span><h5
                                     class="my-3 text-highlight">自建系统对接</h5><a href="#"><img
-                                        src="http://cloud.zmz999.com/wl/?id=zIoUn0PkvmtcWHfYzlI9appYEPLGtqFJ"
+                                        src="https://cloud.zmz999.com/api/public/dl/zxbkvbB2/serveice-scene-3.png"
                                         class="w-100 no-radius"></a></div>
                         <div class="col-6 col-md-4 my-4"><span class="text-muted">.02</span><h5
                                     class="my-3 text-highlight">超低费率</h5><a href="#"><img
-                                        src="http://cloud.zmz999.com/wl/?id=Up3hhpwqmYf093SNj46rSLyOxNJ4bE7k"
+                                        src="https://cloud.zmz999.com/api/public/dl/ZU86vP5E/serveice-scene-6.png"
                                         class="w-100 no-radius"></a></div>
                         <div class="col-6 col-md-4 my-4"><span class="text-muted">.03</span><h5
                                     class="my-3 text-highlight">稳定可靠</h5><a href="#"><img
-                                        src="http://cloud.zmz999.com/wl/?id=Wlfa9iYO37CxGGC12VCoM0LnLPKbASVt"
+                                        src="https://cloud.zmz999.com/api/public/dl/UXELV-Y9/serveice-scene-4.png"
                                         class="w-100 no-radius"></a></div>
                     </div>
                 </div>
@@ -88,27 +88,27 @@
                         <div class="col-4 list-item mb-4">
                             <div class="browser">
                                 <div class="media-action"><a href="#" class="btn btn-rounded btn-dark">支付宝</a></div>
-                                <img src="http://cloud.zmz999.com/wl/?id=WGIZsrWCKTU5l38YUXCnEJwg8vhigWmh" class="w-100 no-radius" alt="AliPay"></div>
+                                <img src="https://cloud.zmz999.com/api/public/dl/4GF6MvFP/alipay.jpg" class="w-100 no-radius" alt="AliPay"></div>
                         </div>
                         <div class="col-4 list-item mb-4">
                             <div class="browser">
                                 <div class="media-action"><a href="#" class="btn btn-rounded btn-dark">微信</a></div>
-                                <img src="http://cloud.zmz999.com/wl/?id=Jkjvc1OlSAfOVihlMXQSsJ8fRcvxCr8f" class="w-100 no-radius" alt="微信支付"></div>
+                                <img src="https://cloud.zmz999.com/api/public/dl/VeuAifNU/wechat.jpg" class="w-100 no-radius" alt="微信支付"></div>
                         </div>
                         <div class="col-4 list-item mb-4">
                             <div class="browser">
                                 <div class="media-action"><a href="#" class="btn btn-rounded btn-dark">QQ</a></div>
-                                <img src="http://cloud.zmz999.com/wl/?id=A9RYLjMhe3NtHuN46Q1iwerzBRslUAUr" class="w-100 no-radius" alt="QQ"></div>
+                                <img src="https://cloud.zmz999.com/api/public/dl/glwIXZI8/qq.jpg" class="w-100 no-radius" alt="QQ"></div>
                         </div>
                         <div class="col-4 list-item mb-4">
                             <div class="browser">
                                 <div class="media-action"><a href="#" class="btn btn-rounded btn-dark">京东钱包</a></div>
-                                <img src="http://cloud.zmz999.com/wl/?id=ruF7i4a2Ub3SrUZVE1hwMDPUCZMRGXNy" class="w-100 no-radius" alt="京东钱包"></div>
+                                <img src="https://cloud.zmz999.com/api/public/dl/PwlS65qB/jd.jpg" class="w-100 no-radius" alt="京东钱包"></div>
                         </div>
                         <div class="col-4 list-item mb-4">
                             <div class="browser">
                                 <div class="media-action"><a href="#" class="btn btn-rounded btn-dark">百度钱包</a></div>
-                                <img src="http://cloud.zmz999.com/wl/?id=8YMGfjtAaiWqWohDAanpUK9rqBwP7LQV" class="w-100 no-radius" alt="百度钱包"></div>
+                                <img src="https://cloud.zmz999.com/api/public/dl/73CdJSlL/bd.jpg" class="w-100 no-radius" alt="百度钱包"></div>
                         </div>
                     </div>
                 </div>

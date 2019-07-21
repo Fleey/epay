@@ -19,53 +19,47 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        $userList = Db::table('epay_user')
-            ->field([
-                'epay_user.id',
-                'epay_user.balance',
-                'IF(epay_wxx_apply_info.type is NULL,1,epay_wxx_apply_info.type) as type',
-            ])->leftJoin('epay_wxx_apply_info', 'epay_user.id = epay_wxx_apply_info.uid')
-            ->where([
-                'epay_user.isBan' => 0,
-                'type'            => 2,
-                'epay_user.id'    => 1290
-            ])->group('epay_user.id')->cursor();
-        $day = '20';
-        foreach ($userList as $data) {
-            $uid         = $data['id'];
-            $userBalance = $data['balance'] / 1000;
+        $orderList = Db::table('epay_order')->where([
+            ['type', '=', 1],
+            ['status', '=', 1],
+            ['endTime', '>=', '2019-7-21 14:25:00'],
+            ['endTime', '<=', '2019-7-21 15:14:00']
+        ])->field('tradeNo,uid,money')->cursor();
 
-            $totalMoney1 = Db::table('epay_order')->where([
-                ['uid', '=', $uid],
-                ['status', '=', 1],
-                ['type', '<>', 1],
-                ['endTime', '>=', '2019-7-'.$day.' 00:00:00'],
-                ['endTime','<=','2019-7-'.$day.' 23:59:59']
-            ])->sum('money');
+        $total = 0;
+        foreach ($orderList as $orderInfo) {
+            $uid       = $orderInfo['uid'];
+            $money     = $orderInfo['money'];
+            $tradeNo   = $orderInfo['tradeNo'];
+            $payConfig = PayModel::getOrderAttr($orderInfo['tradeNo'], 'payConfig');
+            $payConfig = json_decode($payConfig, true);
 
-            $totalMoney1 /= 100;
-            $totalMoney1 -= PayModel::getOrderRateMoney($uid, $totalMoney1) / 10;
-            $a = $totalMoney1;
-//            exit($totalMoney1);
-            $totalMoney2 = Db::table('epay_order')->where([
-                ['uid', '=', $uid],
-                ['status', '=', 1],
-                ['type', '=', 1],
-                ['endTime', '>=', '2019-7-'.$day.' 00:00:00'],
-                ['endTime','<=','2019-7-'.$day.' 23:59:59']
-            ])->sum('money');
-            $totalMoney2 /= 100;
-            $totalMoney1 -= PayModel::getOrderRateMoney($uid, $totalMoney2) / 10;
-//            exit(dump( PayModel::getOrderRateMoney($uid, $totalMoney2) / 10));
-            exit(dump([$totalMoney1, PayModel::getOrderRateMoney($uid, $totalMoney2) / 10,$a]));
-            Db::table('epay_user')->where('id', $uid)->update([
-                'balance' => $totalMoney1 * 1000
-            ]);
-//            $changeBalance = ($userBalance -($totalMoney*100)-PayModel::getOrderRateMoney($uid, $totalMoney));
+            $isErrorOrder = false;
 
-//            echo 'uid => ' . $uid . ' balance => ' . $userBalance . '  changeBalance => ' . $changeBalance . PHP_EOL;
+            $orderRate = PayModel::getOrderAttr($orderInfo['tradeNo'], 'rateMoney');
+            if ($payConfig['configType'] == 2) {
+                $isErrorOrder = empty($orderRate);
+                //独立号判断是否出错
+            } else if ($payConfig['configType'] == 1) {
+                $isErrorOrder = !empty($orderRate);
+                //集体号判断是否出错
+            }
+            if (!$isErrorOrder)
+                continue;
+
+            $orderRate = PayModel::getOrderRateMoney($uid, $money) / 10;
+            if ($payConfig['configType'] == 2) {
+                Db::table('epay_user')->where('id', $uid)->limit(1)->dec('balance', $money)->update();
+                PayModel::setOrderAttr($tradeNo, 'rateMoney', $orderRate * 10);
+            } else if ($payConfig['configType'] == 1) {
+                Db::table('epay_user')->where('id', $uid)->limit(1)->inc('balance', $money)->update();
+                Db::table('epay_order_attr')->where(['tradeNo' => $tradeNo, 'attrKey' => 'rateMoney'])->limit(1)->delete();
+            }
+            $total++;
+            echo '.';
         }
-        //10:45
+        echo PHP_EOL . 'Run Ok , operate count => ' . $total;
+
     }
 
     /**

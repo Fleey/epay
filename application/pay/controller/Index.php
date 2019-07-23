@@ -144,7 +144,6 @@ class Index extends Controller
             //检测用户是否有相应支付接口权限
         }
 
-
         $clientIpv4 = getClientIp();
 
         $tradeNo = date('YmdHis') . rand(11111, 99999);
@@ -175,7 +174,7 @@ class Index extends Controller
                     $isCollectiveAccount = Db::table('epay_wxx_apply_info')->where('uid', $uid)->limit(1)->field('id')->select();
                     $isCollectiveAccount = empty($isCollectiveAccount);
                     //判断是否为集体号
-                    if(!$isCollectiveAccount){
+                    if (!$isCollectiveAccount) {
                         $orderRateMoney = PayModel::getOrderRateMoney($uid, $money);
                         if ($userData[0]['balance'] <= 0)
                             return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
@@ -223,6 +222,18 @@ class Index extends Controller
                     'createTime' => $orderCreateTime
                 ]);
             //创建订单减免记录 如果减免金额为 0 则不创建
+
+
+            {
+                if (!empty($this->getData['subMchID'])) {
+                    $selectAccount = Db::table('epay_wxx_apply_list')->where('subMchID', $this->getData['subMchID'])->limit(1)->field('accountID')->select();
+                    if (empty($selectAccount))
+                        return $this->fetch('/SystemMessage', ['msg' => '小微商户ID不存在,请重试']);
+                    PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $selectAccount[0]['accountID'], 'subMchID' => $this->getData['subMchID'], 'configType' => 1]));
+                }
+            }
+            //临时代码
+
         } else {
             $tradeNo = $tradeNoOutData[0]['tradeNo'];
             if ($tradeNoOutData[0]['type'] != $converPayType)

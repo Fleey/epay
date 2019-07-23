@@ -33,9 +33,33 @@ class Settle extends Command
             $output->info('start add settle data');
             $this->addSettleData();
             $output->info('end add settle data');
+
+            $output->info('start add cron Wxx Trade Record data');
+            $this->cronWxxTradeRecord();
+            $output->info('end add cron Wxx Trade Record data');
         }
         //凌晨4点执行本任务优化数据库
 
+    }
+
+    private function cronWxxTradeRecord()
+    {
+        $yesterday    = date('Y-m-d', strtotime('-1 day')) . ' 00:00:00';
+        $wxxApplyList = Db::table('epay_wxx_apply_list')->field('subMchID,money')->cursor();
+        foreach ($wxxApplyList as $wxxApplyInfo) {
+            if (empty($wxxApplyInfo['money']))
+                continue;
+            $tradeMoney = $wxxApplyInfo['money'];
+            Db::table('epay_wxx_apply_list')->where('subMchID', $wxxApplyInfo['subMchID'])->limit(1)->update([
+                'money' => 0,
+                'round' => 0
+            ]);
+            Db::table('epay_wxx_trade_record')->insert([
+                'subMchID'   => $wxxApplyInfo['subMchID'],
+                'totalMoney' => $tradeMoney,
+                'createTime' => $yesterday
+            ]);
+        }
     }
 
     private function addSettleData()
@@ -56,7 +80,7 @@ class Settle extends Command
             'status' => 1
         ])->whereTime('endTime', 'yesterday')->sum('money');
 
-        addServerLog(2,3,'System',date('Y-m-d', strtotime('- 1 day')) . ' 交易总金额=>' . ($totalMoney / 100) . ' 当日利润金额=>' . (($totalMoney-$totalRateMoney) / 100));
+        addServerLog(2, 3, 'System', date('Y-m-d', strtotime('- 1 day')) . ' 交易总金额=>' . ($totalMoney / 100) . ' 当日利润金额=>' . (($totalMoney - $totalRateMoney) / 100));
     }
 
     /**

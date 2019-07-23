@@ -39,6 +39,8 @@ class WxPay extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '请求参数有误，请重新发起订单请求！']);
 
         $this->systemConfig['wxpay'] = $this->getWxxPayConfig($requestData['tradeNo']);
+        if(empty($this->systemConfig['wxpay']))
+            return $this->fetch('/SystemMessage', ['msg' => '系统已经冻结所有账号，请联系站点管理员处理！']);
 
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
         $wxPayModel->getWxOpenCode(url('/Pay/WxPay/Submit?' . $wxPayModel->buildUrlParam($requestData), '', '', true));
@@ -307,7 +309,7 @@ class WxPay extends Controller
                     'epay_wxx_apply_info.uid'    => $uid,
                     'epay_wxx_apply_info.type'   => 2,
                     'epay_wxx_apply_list.status' => 2
-                ])->order('epay_wxx_apply_list.rounds asc')->select();
+                ])->order('epay_wxx_apply_list.money asc')->select();
             if(empty($userAccountList))
                 return [];
             PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 2]));
@@ -319,7 +321,7 @@ class WxPay extends Controller
                 ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID')->where([
                     'epay_wxx_apply_info.type'   => 1,
                     'epay_wxx_apply_list.status' => 2
-                ])->order('epay_wxx_apply_list.rounds asc')->select();
+                ])->order('epay_wxx_apply_list.money asc')->select();
             //集体号
             PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 1]));
             return $this->buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID']);

@@ -607,30 +607,8 @@ function processOrder($tradeNo, $notify = true)
     {
         $orderPayConfig = \app\pay\model\PayModel::getOrderAttr($tradeNo, 'payConfig');
         if (!empty($orderPayConfig)) {
-
             $orderPayConfig = json_decode($orderPayConfig, true);
             \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])->limit(1)->inc('money', $orderInfo[0]['money'])->update();
-            $roundMoney = 0;
-            if ($orderPayConfig['configType'] == 1) {
-                $systemPayConfig = getConfig()['wxpay'];
-                if (empty($systemPayConfig['wxxMeanMoney']))
-                    $systemPayConfig['wxxMeanMoney'] = 20000;
-                $roundMoney = $systemPayConfig['wxxMeanMoney'] * 100;
-                //集体号
-            } else if ($orderPayConfig['configType'] == 2) {
-                $userPayConfig = unserialize(getPayUserAttr($orderInfo[0]['uid'], 'payConfig'));
-                $userPayConfig = $userPayConfig['wxpay'];
-                if (empty($userPayConfig['wxxMeanMoney']))
-                    $userPayConfig['wxxMeanMoney'] = 20000;
-                $roundMoney = $userPayConfig['wxxMeanMoney'] / 100;
-                //独立号
-            }
-            $applyAccountInfo = \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])->field('rounds,money')->limit(1)->select();
-            if (!empty($applyAccountInfo)) {
-                if ($applyAccountInfo[0]['money'] > $roundMoney) {
-                    \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])->limit(1)->dec('money', $roundMoney)->inc('rounds', 1)->update();
-                }
-            }
         }
     }
     //这个负责轮询

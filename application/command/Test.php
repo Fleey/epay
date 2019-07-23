@@ -19,48 +19,25 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        $orderList = Db::table('epay_order')->where([
-            ['type', '=', 1],
-            ['status', '=', 1],
-            ['endTime', '>=', '2019-7-21 14:25:00'],
-            ['endTime', '<=', '2019-7-21 15:14:00']
-        ])->field('tradeNo,uid,money')->cursor();
 
-        $total = 0;
-        foreach ($orderList as $orderInfo) {
-            $uid       = $orderInfo['uid'];
-            $money     = $orderInfo['money'];
-            $tradeNo   = $orderInfo['tradeNo'];
-            $payConfig = PayModel::getOrderAttr($orderInfo['tradeNo'], 'payConfig');
-            $payConfig = json_decode($payConfig, true);
-
-            $isErrorOrder = false;
-
-            $orderRate = PayModel::getOrderAttr($orderInfo['tradeNo'], 'rateMoney');
-            if ($payConfig['configType'] == 2) {
-                $isErrorOrder = empty($orderRate);
-                //独立号判断是否出错
-            } else if ($payConfig['configType'] == 1) {
-                $isErrorOrder = !empty($orderRate);
-                //集体号判断是否出错
-            }
-            if (!$isErrorOrder)
+        $yesterday    = date('Y-m-d', strtotime('-1 day')) . ' 00:00:00';
+        $wxxApplyList = Db::table('epay_wxx_apply_list')->field('subMchID,money')->cursor();
+        foreach ($wxxApplyList as $wxxApplyInfo) {
+            if (empty($wxxApplyInfo['money']))
                 continue;
-
-            $orderRate = PayModel::getOrderRateMoney($uid, $money) / 10;
-            if ($payConfig['configType'] == 2) {
-                Db::table('epay_user')->where('id', $uid)->limit(1)->dec('balance', $money)->update();
-                PayModel::setOrderAttr($tradeNo, 'rateMoney', $orderRate * 10);
-            } else if ($payConfig['configType'] == 1) {
-                Db::table('epay_user')->where('id', $uid)->limit(1)->inc('balance', $money)->update();
-                Db::table('epay_order_attr')->where(['tradeNo' => $tradeNo, 'attrKey' => 'rateMoney'])->limit(1)->delete();
-            }
-            $total++;
-            echo '.';
+            $tradeMoney = $wxxApplyInfo['money'];
+            Db::table('epay_wxx_apply_list')->where('subMchID', $wxxApplyInfo['subMchID'])->limit(1)->update([
+                'money' => 0,
+                'round' => 0
+            ]);
+            Db::table('epay_wxx_trade_record')->insert([
+                'subMchID'   => $wxxApplyInfo['subMchID'],
+                'totalMoney' => $tradeMoney,
+                'createTime' => $yesterday
+            ]);
         }
-        echo PHP_EOL . 'Run Ok , operate count => ' . $total;
-
     }
+
 
     /**
      * 构建url请求参数
@@ -78,99 +55,8 @@ class Test extends Command
         return $tempBuff;
     }
 
-    private function dumpSettleResult()
-    {
-        $userList = Db::table('epay_user')->field('id,username,rate')->cursor();
-        $a        = 0;
-        $b        = 0;
-        $c        = 0;
 
-        $a1 = 0;
-        $b2 = 0;
-        $c3 = 0;
-        foreach ($userList as $key => $value) {
-            $userInfo    = $value;
-            $rate        = $userInfo['rate'] / 10000;
-            $day16       = Db::table('epay_order')->where([
-                'status'   => 1,
-                'isShield' => 0,
-                'uid'      => $userInfo['id']
-            ])->whereBetweenTime('endTime', '2019-5-31')->sum('money');
-            $day16Settle = Db::table('epay_settle')->where([
-                'uid' => $userInfo['id']
-            ])->whereBetweenTime('createTime', '2019-6-1')->limit(1)->field('money')->select();
-            $day16       /= 100;
-            $day16Rate   = $day16 * $rate;
-            if (empty($day16Settle))
-                $day16Settle = 0;
-            else
-                $day16Settle = $day16Settle[0]['money'] / 100;
-            $a += $day16;
-            $b += $day16Rate;
-            $c += $day16Settle;
-
-            $day17       = Db::table('epay_order')->where([
-                'status'   => 1,
-                'isShield' => 0,
-                'uid'      => $userInfo['id']
-            ])->whereBetweenTime('endTime', '2019-6-1')->sum('money');
-            $day17Settle = Db::table('epay_settle')->where([
-                'uid' => $userInfo['id']
-            ])->whereBetweenTime('createTime', '2019-6-2')->limit(1)->field('money')->select();
-            $day17       /= 100;
-            $day17Rate   = $day17 * $rate;
-
-            if (empty($day17Settle))
-                $day17Settle = 0;
-            else
-                $day17Settle = $day17Settle[0]['money'] / 100;
-
-            $a1 += $day17;
-            $b2 += $day17Rate;
-            $c3 += $day17Settle;
-
-            echo 'uid=>(' . $userInfo['id'] . ') username=>(' . $userInfo['username'] . ') 1=>(' . $day16 . ',' . $day16Rate . ',' . $day16Settle . ')' . ' 2=>(' . $day17 . ',' . $day17Rate . ',' . $day17Settle . ')' . PHP_EOL;
-        }
-        echo "1=>($a,$b,$c) 2=>($a1,$b2,$c3)";
-        // 指令输出
-    }
-
-    private function buildCallBackUrlA(string $tradeNo, string $type)
-    {
-        $type = strtolower($type);
-        if ($type != 'notify' && $type != 'return')
-            return '1';
-        //type is error
-        $orderData = \think\Db::table('pay_order')->where('trade_no', $tradeNo)->field('pid,trade_no,out_trade_no,type,name,money,' . $type . '_url')->limit(1)->select();
-        if (empty($orderData))
-            return '2';
-        //order type
-        $orderData = $orderData[0];
-
-        $userKey = \think\Db::table('pay_user')->where('id', $orderData['pid'])->field('key')->limit(1)->select();
-        if (empty($userKey))
-            $userKey = '3';
-        else
-            $userKey = $userKey[0]['key'];
-        //get user key
-//兼容层
-        $args        = [
-            'pid'          => $orderData['pid'],
-            'trade_no'     => $orderData['trade_no'],
-            'out_trade_no' => $orderData['out_trade_no'],
-            'type'         => $orderData['type'],
-            'name'         => $orderData['name'],
-            'money'        => $orderData['money'],
-            'trade_status' => 'TRADE_SUCCESS'
-        ];
-        $args        = argSort(paraFilter($args));
-        $sign        = signMD5(createLinkString($args), $userKey);
-        $callBackUrl = $orderData[$type . '_url'] . (strpos($orderData[$type . '_url'], '?') ? '&' : '?') . createLinkStringUrlEncode($args) . '&sign=' . $sign . '&sign_type=MD5';
-        return $callBackUrl;
-    }
-
-    protected
-    function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlEncode = true)
+    protected function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlEncode = true)
     {
         if (empty($url))
             return '';

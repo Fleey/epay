@@ -42,7 +42,7 @@ class Test extends Controller
         $return_url = url('/test/return', '', false, true);
         //需http://格式的完整路径，不能加?id=123这类自定义参数，不能写成http://localhost/  页面跳转同步通知页面路径
 
-        if(empty( $getData['WIDout_trade_no'])||empty( $getData['WIDsubject']) || empty( $getData['WIDtotal_fee']))
+        if (empty($getData['WIDout_trade_no']) || empty($getData['WIDsubject']) || empty($getData['WIDtotal_fee']))
             return '<h1 style="text-align: center;padding-top: 6rem;">页面数据异常，请返回原页面再发起。</h1>';
 
         $out_trade_no = $getData['WIDout_trade_no'];
@@ -57,6 +57,8 @@ class Test extends Controller
         $sitename = '小老弟支付测试站点';
         //站点名称
 
+        $subMchID = input('post.subMchID/d', 0);
+
         $param = [
             'pid'          => $this->partner,
             'type'         => $type,
@@ -65,7 +67,8 @@ class Test extends Controller
             'out_trade_no' => $out_trade_no,
             'name'         => $name,
             'money'        => $money,
-            'sitename'     => $sitename
+            'sitename'     => $sitename,
+            'subMchID'     => $subMchID
         ];
         return $this->buildRequestForm($param);
     }
@@ -131,7 +134,7 @@ class Test extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '签名效验不正确！']);
 
         //下面做你想做的事情
-        if($getData['trade_status'] != 'TRADE_SUCCESS')
+        if ($getData['trade_status'] != 'TRADE_SUCCESS')
             return '<h1 style="text-align: center;margin-top: 6rem;">您已经取消支付，这个是取消支付页面</h1>';
 
         return '<h1 style="text-align: center;margin-top: 6rem;">您已经成功支付</h1>';

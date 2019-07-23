@@ -22,6 +22,11 @@
                     </div>
                     <br/>
                     <div class="input-group">
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-barcode"></span></span>
+                        <input size="30" name="subMchID" class="form-control" placeholder="小微商户ID"/>
+                    </div>
+                    <br>
+                    <div class="input-group">
                             <span class="input-group-addon"><span
                                         class="glyphicon glyphicon-shopping-cart"></span></span>
                         <input size="30" name="WIDsubject" value="测试商品" class="form-control" placeholder="商品名称"

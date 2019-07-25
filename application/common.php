@@ -625,7 +625,7 @@ function processOrder($tradeNo, $notify = true)
         $isReCallback = false;
         if ($requestResult === false)
             $isReCallback = true;
-        else if (strpos($requestResult, 'SUCCESS') === false) {
+        else if (strpos(strtoupper($requestResult), 'SUCCESS') === false) {
             $isReCallback = true;
         }
         if ($isReCallback)

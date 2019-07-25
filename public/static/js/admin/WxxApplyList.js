@@ -1,4 +1,9 @@
 $(function () {
+        var setDataNameInfo = function (dataName, info) {
+            if (info === '0' || info === null)
+                info = '暂无记录';
+            $('#applyInfoResult [data-name="' + dataName + '"]').val(info);
+        };
         var isRequest = false;
         var dataTableConfig = {
             'language': {url: '/static/zh_CN.txt'},
@@ -230,6 +235,73 @@ $(function () {
         $('#applyInfoModal select[data-name="applyInfoID"]').change(function () {
             $('#applyInfoModal select[data-name="accountID"]').removeAttr('disabled');
         });
+        $('#applyInfoResult button[data-type="refresh"]').click(function () {
+            var dom = $('#applyInfoResult');
+
+            var applyInfo = dom.attr('data-apply-id');
+            $.getJSON(baseUrl + 'cy2018/api/Wxx/ApplyStatus', {
+                id: applyInfo
+            }, function (data) {
+                if (data['status'] !== 1) {
+                    swal('获取信息失败', data['msg'], 'error');
+                    return;
+                }
+                $('.sign-tips-div').hide();
+                $('.param-tips-div').hide();
+                swal.close();
+                data = data['data'];
+                $.each(data, function (key, value) {
+                    if (key === 'status') {
+                        if (value === 1) {
+                            value = '待签约';
+                        } else if (value === -1) {
+                            value = '已驳回';
+                        } else if (value === 0) {
+                            value = '审核中';
+                        } else if (value === -2) {
+                            value = '已冻结';
+                        } else if (value === 2) {
+                            value = '已通过';
+                        } else if (value === -3) {
+                            value = '已封禁';
+                        } else {
+                            value = '未知状态';
+                        }
+                    } else if (key === 'applyData') {
+                        if (value === null)
+                            return;
+                        value = JSON.parse(value);
+                        if (data['status'] === 1) {
+                            $('#applyInfoResult h2[data-name="idCardName"]').text(data['idCardName']);
+                            $('#applyInfoResult a[data-name="signUrl"]').attr('href', value['signUrl']).text(value['signUrl']);
+                            $('#signQrCode').attr('src', value['signUrl']);
+                            $('.sign-tips-div').show();
+                        } else if (data['status'] === -1 && value['audit_detail'] !== undefined) {
+                            $('.param-tips-div').show();
+                            var html = '';
+                            $.each(value['audit_detail'], function (id, content) {
+                                html += '<tr><th scope="row">' + id + '</th><td>' + content['param_name'] + '</td><td>' + content['reject_reason'] + '</td></tr>';
+                            });
+                            $('#error-param-tips>tbody').html(html);
+                        }
+                    }
+                    if (key !== 'applyData')
+                        setDataNameInfo(key, value);
+                });
+                //基础信息置入
+                if (data['status'] !== -1 && data['status'] !== 0 && data['status'] !== 1 && data['status'] !== -2) {
+                    // console.log(data);
+                    loadMchIDStatistics(data['subMchID']);
+                } else {
+                    $('.trade-statistics').hide();
+                }
+                $('#applyInfoResult').modal('show').attr({
+                    'data-apply-id': applyInfo,
+                    'data-account-id': data['accountID'],
+                    'data-apply-info-id': data['applyInfoID']
+                });
+            });
+        });
         $('#applyInfoResult button[data-type="replay"]').click(function () {
             var dom = $('#applyInfoResult');
 
@@ -325,11 +397,6 @@ $(function () {
             var clickDom = $(this);
             var clickType = $(this).attr('data-type');
             var id = $(this).parent().parent().parent().find('td:nth-child(1)').text();
-            var setDataNameInfo = function (dataName, info) {
-                if (info === '0' || info === null)
-                    info = '暂无记录';
-                $('#applyInfoResult [data-name="' + dataName + '"]').val(info);
-            };
             if (clickType === 'more') {
                 swal({
                     title: '请稍后...',
@@ -422,14 +489,14 @@ $(function () {
         });
 
         function loadMchIDStatistics(id) {
-            $.getJSON('/cy2018/api/Wxx/WxxSubMchTradeStatistics?id='+id,function (data) {
-                if(data['status'] !== 1)
+            $.getJSON('/cy2018/api/Wxx/WxxSubMchTradeStatistics?id=' + id, function (data) {
+                if (data['status'] !== 1)
                     return;
                 data = data['data']['record'];
 
                 var timeList = [];
                 var moneyList = [];
-                $.each(data,function (key,value) {
+                $.each(data, function (key, value) {
                     timeList.push(value['time']);
                     moneyList.push(value['money'].toString())
                 });
@@ -456,7 +523,7 @@ $(function () {
                         {
                             type: 'category',
                             boundaryGap: false,
-                            data:timeList,
+                            data: timeList,
                         }
                     ],
                     yAxis: {

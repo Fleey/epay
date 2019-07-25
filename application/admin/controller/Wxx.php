@@ -566,11 +566,11 @@ class Wxx extends Controller
         }
         foreach ($data['record'] as $key => $value) {
             $result = Db::table('epay_wxx_trade_record')->field('totalMoney')->where([
-                'subMchID'=>$subMchID,
-                'createTime'=>$value['time']
+                'subMchID'   => $subMchID,
+                'createTime' => $value['time']
             ])->limit(1)->select();
             if (!empty($result))
-                $data['record'][$key]['money'] = $result[0]['totalMoney']/100;
+                $data['record'][$key]['money'] = $result[0]['totalMoney'] / 100;
             else
                 $data['record'][$key]['money'] = 0;
         }
@@ -578,6 +578,74 @@ class Wxx extends Controller
             'status' => 1,
             'data'   => $data
         ]);
+    }
+
+    public function getApplyStatus()
+    {
+        $applyID = input('get.id/d');
+
+        if (empty($applyID))
+            return json(['status' => 0, 'msg' => '小微商户号不能为空']);
+
+        $selectResult = Db::table('epay_wxx_apply_list')->where('id', $applyID)->limit(1)->field('accountID,businessCode')->select();
+
+        if (empty($selectResult))
+            return json(['status' => 0, 'msg' => '申请信息不存在，请刷新页面重试']);
+
+        $wxxModel    = self::getWxxApiModel($selectResult[0]['accountID']);
+        $applyStatus = $wxxModel->applyStatus($selectResult[0]['businessCode']);
+        if (!$applyStatus['isSuccess'])
+            return json(['status' => 0, 'msg' => $applyStatus['msg']]);
+
+        $updateData = [
+            'status'   => 0,
+            'desc'     => '',
+            'subMchID' => 0
+        ];
+
+        switch ($applyStatus['data']['applyState']) {
+            case 'FROZEN':
+                $updateData['status'] = -2;
+                $updateData['desc']   = $applyStatus['data']['applyStateDesc'];
+                break;
+            case 'REJECTED':
+                $updateData['status']    = -1;
+                $updateData['desc']      = $applyStatus['data']['applyStateDesc'];
+                $updateData['applyData'] = $applyStatus['data']['auditDetail'];
+                break;
+            case 'AUDITING':
+                $updateData['status'] = 0;
+                $updateData['desc']   = $applyStatus['data']['applyStateDesc'];
+                break;
+            case 'TO_BE_SIGNED':
+                $updateData['status']    = 1;
+                $updateData['desc']      = $applyStatus['data']['applyStateDesc'];
+                $updateData['applyData'] = json_encode(['signUrl' => $applyStatus['data']['signUrl']]);
+                $updateData['subMchID']  = $applyStatus['data']['subMchId'];
+                break;
+            case 'FINISH':
+                $updateData['status']   = 2;
+                $updateData['desc']     = $applyStatus['data']['applyStateDesc'];
+                $updateData['subMchID'] = $applyStatus['data']['subMchId'];
+                break;
+        }
+        Db::table('epay_wxx_apply_list')->where('id', $applyID)->limit(1)->update($updateData);
+
+        $selectResult = Db::table('epay_wxx_apply_list')->where('id', $applyID)->limit(1)->select();
+        $returnData                = $selectResult[0];
+        $returnData['idCardName']  = '未知姓名';
+        $returnData['accountName'] = '未知服务商名称';
+
+        $selectResult = Db::table('epay_wxx_apply_info')->where('id', $returnData['applyInfoID'])->field('idCardName')->limit(1)->select();
+        if (!empty($selectResult))
+            $returnData['idCardName'] = $selectResult[0]['idCardName'];
+
+        $selectResult = Db::table('epay_wxx_account_list')->where('id', $returnData['accountID'])->field('appID,desc')->limit(1)->select();
+        if (!empty($selectResult))
+            $returnData['accountName'] = $selectResult[0]['appID'] . '-' . $selectResult[0]['desc'];
+
+        return json(['status' => 1, 'data' => $returnData]);
+//        return
     }
 
     /**
@@ -597,6 +665,7 @@ class Wxx extends Controller
         return new WxxApiV1Model($selectResult[0]['mchID'], $selectResult[0]['appKey'],
             FileModel::getFilePath($selectResult[0]['apiCertID']), FileModel::getFilePath($selectResult[0]['apiKeyID']));
     }
+
 
     /**
      * 重新构建图片 专门为小微商户申请使用 保存后记得删除

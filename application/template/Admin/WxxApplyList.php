@@ -127,6 +127,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-type="delete">删除</button>
+                <button type="button" class="btn btn-facebook" data-type="refresh">刷新结果</button>
                 <button type="button" class="btn btn-primary" data-type="replay">重新申请</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             </div>

@@ -20,8 +20,11 @@ class SyncWxxStatus extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        if(getServerConfig('isRunningSyncWxxApply') == 'true')
+        $output->info('Start Run ...');
+        if(getServerConfig('isRunningSyncWxxApply') == 'true'){
+            $output->info('Start Runing ...');
             return;
+        }
         setServerConfig('isRunningSyncWxxApply', 'true');
         $selectResult = Db::table('epay_wxx_apply_list')->where('status', 0)->whereOr('status', 1)->field('accountID,businessCode,id')->cursor();
         foreach ($selectResult as $data) {
@@ -29,8 +32,10 @@ class SyncWxxStatus extends Command
             if ($wxxModel == null)
                 continue;
             $statusResult = $wxxModel->applyStatus($data['businessCode']);
-            if (!$statusResult['isSuccess'])
+            if (!$statusResult['isSuccess']){
+                $output->error('AccountID =>' .$data['accountID'].'  msg => '.$statusResult['msg']);
                 continue;
+            }
             $updateData = [
                 'status'   => 0,
                 'desc'     => '',
@@ -66,5 +71,6 @@ class SyncWxxStatus extends Command
             Db::table('epay_wxx_apply_list')->where('id', $data['id'])->limit(1)->update($updateData);
         }
         setServerConfig('isRunningSyncWxxApply', 'false');
+        $output->info('Start End ...');
     }
 }

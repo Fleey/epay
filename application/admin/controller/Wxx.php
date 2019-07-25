@@ -42,8 +42,8 @@ class Wxx extends Controller
             return json(['status' => 0, 'msg' => '查询记录已经不存在，请刷新页面后重试。']);
 
         $returnData            = $searchResult[0];
-        $returnData['apiCert'] = file_get_contents(FileModel::getFilePath($returnData['apiCertID']));
-        $returnData['apiKey']  = file_get_contents(FileModel::getFilePath($returnData['apiKeyID']));
+        $returnData['apiCert'] = @file_get_contents(FileModel::getFilePath($returnData['apiCertID']));
+        $returnData['apiKey']  = @file_get_contents(FileModel::getFilePath($returnData['apiKeyID']));
         unset($returnData['apiCertID']);
         unset($returnData['apiKeyID']);
         return json(['status' => 1, 'data' => $returnData]);

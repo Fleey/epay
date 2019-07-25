@@ -75,6 +75,10 @@ class ComposerStaticInit92a6e849039a6ba7097b88d05c9b8f04
         array (
             'GuzzleHttp\\Psr7\\' => 16,
         ),
+        'D' => 
+        array (
+            'Delayer\\' => 8,
+        ),
         'C' => 
         array (
             'Clue\\StreamFilter\\' => 18,
@@ -167,6 +171,10 @@ class ComposerStaticInit92a6e849039a6ba7097b88d05c9b8f04
         'GuzzleHttp\\Psr7\\' => 
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
+        ),
+        'Delayer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mix/delayer-client/src',
         ),
         'Clue\\StreamFilter\\' => 
         array (

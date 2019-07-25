@@ -19,6 +19,7 @@ final class Versions
   'guzzlehttp/psr7' => '1.5.2@9f83dded91781a01c63574e387eaa769be769115',
   'http-interop/http-factory-guzzle' => '1.0.0@34861658efb9899a6618cef03de46e2a52c80fc0',
   'jean85/pretty-package-versions' => '1.2@75c7effcf3f77501d0e0caa75111aff4daa0dd48',
+  'mix/delayer-client' => 'v1.0.3@46c42356c865a2108c14c265af49023938e0c58e',
   'ocramius/package-versions' => '1.4.0@a4d4b60d0e60da2487bd21a2c6ac089f85570dbb',
   'paragonie/random_compat' => 'v9.99.99@84b4dfb120c6f9b4ff7b3685f9b8f1aa365a0c95',
   'php-http/client-common' => '2.0.0@2b8aa3c4910afc21146a9c8f96adb266e869517a',
@@ -41,7 +42,7 @@ final class Versions
   'topthink/framework' => 'v5.1.34@7c8cd1ea2bd4683a6ef46af415334260c6e2cc15',
   'topthink/think-installer' => 'v2.0.0@f5400a12c60e513911aef41fe443fa6920952675',
   'zendframework/zend-diactoros' => '2.1.2@37bf68b428850ee26ed7c3be6c26236dd95a95f1',
-  'topthink/think' => 'dev-master@69e20681a6563cb3b5dba5c1e256bdb77818e889',
+  'topthink/think' => 'dev-master@0dd77b9bc062416aab79a3bf37af85222fdc87b7',
 );
 
     private function __construct()

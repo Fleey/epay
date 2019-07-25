@@ -29,7 +29,9 @@
     "ext-zip": "*",
     "sentry/sdk": "2.0.3",
     "ext-sodium": "*",
-    "ext-gd": "*"
+    "ext-gd": "*",
+    "mix/delayer-client": "^1.0",
+    "sentry/sentry": "^2.1"
   },
   "autoload": {
     "psr-4": {

@@ -19,23 +19,38 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
+        $config = [
+            'host'     => '222.187.239.133',
+            'port'     => 6379,
+            'database' => 0,
+            'password' => '',
+        ];
+        $client = new \Delayer\Client($config);
+// 任务数据，用户自己定义
+        $data    = [
+            'method' => 'get',
+            'url'    => 'http://test.zmz999.com/999',
+            'param'  => [
+                "test"  => 'a',
+                'yesy1' => '6'
+            ]
+        ];
+        $message = new \Delayer\Message([
+            // 任务ID，必须全局唯一
+            'id'    => md5(uniqid(mt_rand(), true)),
+            // 主题，取出任务时需使用
+            'topic' => '15_1',
+            // 必须转换为string类型
+            'body'  => json_encode($data),
+        ]);
+// 第2个参数为延迟时间，第3个参数为延迟到期后如果任务没有被消费的最大生存时间
+        $ret = $client->push($message, 15, 86400);
+        var_dump($ret);
 
-        $yesterday    = date('Y-m-d', strtotime('-1 day')) . ' 00:00:00';
-        $wxxApplyList = Db::table('epay_wxx_apply_list')->field('subMchID,money')->cursor();
-        foreach ($wxxApplyList as $wxxApplyInfo) {
-            if (empty($wxxApplyInfo['money']))
-                continue;
-            $tradeMoney = $wxxApplyInfo['money'];
-            Db::table('epay_wxx_apply_list')->where('subMchID', $wxxApplyInfo['subMchID'])->limit(1)->update([
-                'money' => 0,
-                'round' => 0
-            ]);
-            Db::table('epay_wxx_trade_record')->insert([
-                'subMchID'   => $wxxApplyInfo['subMchID'],
-                'totalMoney' => $tradeMoney,
-                'createTime' => $yesterday
-            ]);
-        }
+//        $message = $client->pop('close_order');
+//// 没有任务时，返回false
+//        var_dump($message);
+//        var_dump($message->body);
     }
 
 

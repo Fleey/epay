@@ -625,7 +625,7 @@ function processOrder($tradeNo, $notify = true)
         $isReCallback = false;
         if ($requestResult === false)
             $isReCallback = true;
-        else if ($requestResult != 'SUCCESS') {
+        else if (strpos($requestResult, 'SUCCESS') === false) {
             $isReCallback = true;
         }
         if ($isReCallback)
@@ -650,18 +650,18 @@ function addCallBackLog(int $uid, string $url, string $method = 'get', array $re
         $requestData = \GuzzleHttp\Psr7\parse_query($parseUrl['query']);
     }
     //构建兼容层
-    $data = [
+    $data    = [
         'url'    => $url,
         'method' => $method,
-        'param'   => $requestData,
+        'param'  => $requestData,
     ];
-    $config = [
+    $config  = [
         'host'     => '127.0.0.1',
         'port'     => 6379,
         'database' => 0,
         'password' => '',
     ];
-    $client = new \Delayer\Client($config);
+    $client  = new \Delayer\Client($config);
     $message = new \Delayer\Message([
         'id'    => md5(uniqid(mt_rand(), true)),
         'topic' => '15_1',

@@ -109,10 +109,10 @@ class Index extends Controller
                 ];
             }
         } else {
-            $settleTimeList = Db::table('epay_settle')->where('addType', 1)->order('createTime desc')->limit(15)->group('createTime')->field('createTime')->select();
+            $settleTimeList = Db::table('epay_settle')->order('createTime desc')->where('addType',1)->limit(15)->group('createTime')->field('createTime')->cursor();
             $data           = [];
             foreach ($settleTimeList as $value) {
-                $result = Db::table('epay_settle')->where('addType', 1)->where('createTime', $value['createTime'])->sum('money');
+                $result = Db::table('epay_settle')->whereTime('createTime', $value['createTime'])->sum('money');
                 if (!empty($result))
                     $data[] = [
                         'createTime' => $value['createTime'],
@@ -147,10 +147,7 @@ class Index extends Controller
         } else if ($type == 'downloadSettle') {
             $head   = ['商户ID', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
             $body   = [];
-            $result = Db::table('epay_settle')->field('uid,clearType,account,username,money,addType')->where([
-                ['createTime', '=', $createTime],
-                ['addType', '=', 1]
-            ])->select();
+            $result = Db::table('epay_settle')->field('uid,clearType,account,username,money,addType')->whereTime('createTime',$createTime)->cursor();
             foreach ($result as $value) {
                 $clearName = '';
                 switch ($value['clearType']) {
@@ -179,6 +176,7 @@ class Index extends Controller
                 $body[] = [$value['uid'], $clearName, $value['account'], $value['username'], $value['money'] / 100, $desc];
             }
             exportToExcel('pay_' . $createTime . '.csv', $head, $body);
+            return;
         } else if ($type == 'downloadSettleAuto') {
             $head          = ['商户ID', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
             $body          = [];
@@ -193,6 +191,7 @@ class Index extends Controller
                 $body[]      = [$value['id'], '支付宝转账（自动）', $value['account'], $value['username'], $settleMoney / 100, '支付宝自动转账'];
             }
             exportToExcel('pay_' . $createTime . '.csv', $head, $body);
+            return;
         } else if ($type == 'userSettleInfo') {
             $uid = input('get.uid/d');
             if (empty($uid))

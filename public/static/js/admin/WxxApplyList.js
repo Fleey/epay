@@ -48,9 +48,9 @@ $(function () {
                     'orderable': false,
                     'render': function (data, type, row) {
                         var html = '<div class="btn-group" role="group" aria-label="Button group with nested dropdown">';
-                        if (row[4] === 2) {
+                        if (row[5] === 2) {
                             html += '<button type="button" class="btn btn-sm btn-secondary" data-type="changeStatus" data-status="freeze">冻结账号</button>';
-                        } else if (row[4] === -3) {
+                        } else if (row[5] === -3) {
                             html += '<button type="button" class="btn btn-sm btn-secondary" data-type="changeStatus" data-status="unfreeze">解冻账号</button>';
                         }
                         html += '<button type="button" class="btn btn-sm btn-secondary" data-type="more">查看更多</button>';

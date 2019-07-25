@@ -624,7 +624,7 @@ class Wxx extends Controller
                 $updateData['subMchID']  = $applyStatus['data']['subMchId'];
                 break;
             case 'FINISH':
-                $updateData['status']   = 2;
+                $updateData['status']   = -3;
                 $updateData['desc']     = $applyStatus['data']['applyStateDesc'];
                 $updateData['subMchID'] = $applyStatus['data']['subMchId'];
                 break;

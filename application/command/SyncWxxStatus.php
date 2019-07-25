@@ -63,7 +63,7 @@ class SyncWxxStatus extends Command
                     $updateData['subMchID']  = $statusResult['data']['subMchId'];
                     break;
                 case 'FINISH':
-                    $updateData['status']   = 2;
+                    $updateData['status']   = -3;
                     $updateData['desc']     = $statusResult['data']['applyStateDesc'];
                     $updateData['subMchID'] = $statusResult['data']['subMchId'];
                     break;

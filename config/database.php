@@ -31,7 +31,7 @@ return [
     // 数据库表前缀
     'prefix'          => '',
     // 数据库调试模式
-    'debug'           => false,
+    'debug'           => true,
     // 数据库部署方式:0 集中式(单一服务器),1 分布式(主从服务器)
     'deploy'          => 0,
     // 数据库读写是否分离 主从式有效
@@ -51,7 +51,7 @@ return [
     // 时间字段取出后的默认时间格式
     'datetime_format' => 'Y-m-d H:i:s',
     // 是否需要进行SQL性能分析
-    'sql_explain'     => false,
+    'sql_explain'     => true,
     // Builder类
     'builder'         => '',
     // Query类

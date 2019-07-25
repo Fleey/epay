@@ -1167,7 +1167,6 @@ class Index extends Controller
     {
         $cacheDashboardData = cache('DashboardData');
         if (empty($cacheDashboardData)) {
-
             $data['totalOrder'] = Db::table('epay_order')->count('id');
             $data['totalUser']  = Db::table('epay_user')->count('id');
             $data['totalMoney'] = getServerConfig('totalMoney');

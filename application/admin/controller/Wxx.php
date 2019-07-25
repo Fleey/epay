@@ -553,6 +553,33 @@ class Wxx extends Controller
         return json(['status' => 1, 'msg' => '更新账号状态成功']);
     }
 
+    public function getWxxSubMchTradeStatistics()
+    {
+        $subMchID = input('get.id/d');
+
+        if (empty($subMchID))
+            return json(['status' => 0, 'msg' => '小微商户号不能为空']);
+
+        $data['record'] = [];
+        for ($i = 6; $i >= 1; $i--) {
+            $data['record'][] = ['time' => date('Y-m-d', strtotime('-' . $i . ' day'))];
+        }
+        foreach ($data['record'] as $key => $value) {
+            $result = Db::table('epay_wxx_trade_record')->field('totalMoney')->where([
+                'subMchID'=>$subMchID,
+                'createTime'=>$value['time']
+            ])->limit(1)->select();
+            if (!empty($result))
+                $data['record'][$key]['money'] = $result[0]['totalMoney']/100;
+            else
+                $data['record'][$key]['money'] = 0;
+        }
+        return json([
+            'status' => 1,
+            'data'   => $data
+        ]);
+    }
+
     /**
      * @param int $accountID
      * @return WxxApiV1Model|null

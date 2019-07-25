@@ -18,6 +18,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>服务商</th>
+                                <th>当日交易金额</th>
                                 <th>subMchID</th>
                                 <th>用户名称</th>
                                 <th>状态</th>
@@ -118,6 +119,9 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-12 trade-statistics">
+                            <div id="chartMap" style="height: 300px;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -213,4 +217,5 @@
         </div>
     </div>
 </div>
+<script src="/static/js/resource/echarts.min.js"></script>
 <script src="/static/js/admin/WxxApplyList.js"></script>

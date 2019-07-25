@@ -281,7 +281,7 @@ class SearchTable
         } else if ($this->searchTable == 'epay_wxx_apply_info') {
             $searchOrderList = ['id', 'idCardName', 'idCardNumber', 'type', 'createTime'];
         } else if ($this->searchTable == 'epay_wxx_apply_list') {
-            $searchOrderList = ['epay_wxx_apply_list.id', 'epay_wxx_apply_list.accountID', 'epay_wxx_apply_list.subMchID', 'epay_wxx_apply_info.idCardName', 'epay_wxx_apply_list.status', 'epay_wxx_apply_list.createTime', 'epay_wxx_account_list.desc', 'epay_wxx_account_list.appID'];
+            $searchOrderList = ['epay_wxx_apply_list.id', 'epay_wxx_apply_list.accountID','epay_wxx_apply_list.money', 'epay_wxx_apply_list.subMchID', 'epay_wxx_apply_info.idCardName', 'epay_wxx_apply_list.status', 'epay_wxx_apply_list.createTime', 'epay_wxx_account_list.desc', 'epay_wxx_account_list.appID'];
             $queryResult     = $queryResult->leftJoin('epay_wxx_account_list', 'epay_wxx_apply_list.accountID = epay_wxx_account_list.id');
             $queryResult     = $queryResult->leftJoin('epay_wxx_apply_info', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id');
         }

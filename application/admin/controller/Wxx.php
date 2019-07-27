@@ -377,6 +377,34 @@ class Wxx extends Controller
             return json(['status' => 1, 'msg' => '新增用户信息成功']);
         }
 
+        $applyInfoData = Db::table('epay_wxx_apply_info')->where('id', $id)->limit(1)->select();
+
+        if (empty($applyInfoData))
+            return json(['status' => 0, 'msg' => '数据不存在，请刷新页面后再试']);
+
+        $applyInfoData = $applyInfoData[0];
+        {
+            $isModifyArchives = $applyInfoData['accountNumber'] != $accountNumber || $applyInfoData['accountBank'] != $accountBank ||
+                $applyInfoData['bankName'] != $bankName || $applyInfoData['bankAddressCode'] != $bankAddressCode;
+            //是否修改结算信息
+            $isModifyContactInfo = $applyInfoData['servicePhone'] != $servicePhone || $applyInfoData['merchantShortName'] != $merchantShortName;
+            //判断是否修改联系信息
+
+            if ($isModifyContactInfo || $isModifyArchives) {
+                $applyList = Db::table('epay_wxx_apply_list')->where('applyInfoID', $id)->whereNotIn('status', [1, -1, 0, -2])->field('subMchID,id,accountID')->cursor();
+                foreach ($applyList as $info) {
+                    $wxxModel = self::getWxxApiModel($info['accountID']);
+                    if ($isModifyArchives) {
+                        $wxxModel->modifyArchives($info['subMchID'], $accountNumber, $accountBank, $bankName, $bankAddressCode);
+                    }
+                    if ($isModifyContactInfo) {
+                        $wxxModel->modifyContactInfo($info['subMchID'], $servicePhone, '', $merchantShortName);
+                    }
+                }
+            }
+        }
+        //diff change
+
         $updateResult = Db::table('epay_wxx_apply_info')->where('id', $id)->update([
             'uid'               => $uid,
             'type'              => $type,
@@ -426,7 +454,7 @@ class Wxx extends Controller
         $idCardNationalFile = FileModel::getFilePath($applyInfo['idCardNational']);
 
         foreach ($accountIDs as $accountID) {
-            $wxxModel = $this->getWxxApiModel($accountID);
+            $wxxModel = self::getWxxApiModel($accountID);
             if ($wxxModel == null)
                 return json(['status' => 0, 'msg' => '获取服务商号信息异常，AccountID => ' . $accountID]);
 
@@ -631,7 +659,7 @@ class Wxx extends Controller
         }
         Db::table('epay_wxx_apply_list')->where('id', $applyID)->limit(1)->update($updateData);
 
-        $selectResult = Db::table('epay_wxx_apply_list')->where('id', $applyID)->limit(1)->select();
+        $selectResult              = Db::table('epay_wxx_apply_list')->where('id', $applyID)->limit(1)->select();
         $returnData                = $selectResult[0];
         $returnData['idCardName']  = '未知姓名';
         $returnData['accountName'] = '未知服务商名称';

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="renderer" content="webkit" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title><?php echo $webName . ' - 聚合支付系统'; ?></title>
+    <title><?php echo $webName; ?></title>
     <link rel="stylesheet" href="/static/css/resource/sweetalert.min.css">
     <link rel="stylesheet" href="/static/css/resource/style.css">
     <link rel="stylesheet" href="/static/css/resource/prism.css">
@@ -30,7 +30,7 @@
                         <img src="/static/images/logo-icon.png" alt="homepage" class="dark-logo"/>
                     </b>
                     <span class="logo-text">
-                        <span style="color: #0f0f0f;"><?php echo $webName; ?>聚合支付平台</span>
+                        <span style="color: #0f0f0f;"><?php echo $webName; ?></span>
                     </span>
                 </a>
                 <a class="topbartoggler d-block d-md-none waves-effect waves-light" href="javascript:void(0)"

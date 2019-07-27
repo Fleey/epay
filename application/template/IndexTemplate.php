@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title><?php echo htmlentities($webName); ?> - 致力于成为安全可靠稳定的支付平台</title>
+    <title><?php echo htmlentities($webName); ?></title>
     <meta name="description" content="聚合支付,微信支付,支付宝支付,银联支付,安全支付,开户,低费率,<?php echo htmlentities($webName); ?>">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
     <link rel="stylesheet" href="/static/css/resource/site.min.css">

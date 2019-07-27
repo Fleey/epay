@@ -94,13 +94,13 @@ class Test extends Controller
         $signType = $getData['sign_type'];
 
         if ($signType != 'MD5')
-            return $this->fetch('/SystemMessage', ['msg' => '验证签名算法不支持！']);
+            return 'FAIL';
         if ($this->buildSign($getData) != $getData['sign'])
-            return $this->fetch('/SystemMessage', ['msg' => '签名效验不正确！']);
+            return 'FAIL';
 
         //下面做你想做的事情
 
-        return '<h1 style="text-align: center;">您已经成功支付</h1>';
+        return 'SUCCESS';
     }
 
     public function getReturn()

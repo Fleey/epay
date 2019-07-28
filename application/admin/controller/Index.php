@@ -109,15 +109,15 @@ class Index extends Controller
                 ];
             }
         } else {
-            $settleTimeList = Db::table('epay_settle')->order('createTime desc')->where('addType',1)->limit(15)->group('createTime')->field('createTime')->cursor();
-            $data           = [];
-            foreach ($settleTimeList as $value) {
-                $result = Db::table('epay_settle')->whereTime('createTime', $value['createTime'])->sum('money');
-                if (!empty($result))
-                    $data[] = [
-                        'createTime' => $value['createTime'],
-                        'totalMoney' => $result
-                    ];
+            $data = [];
+            for ($i = 0; $i <= 7; $i++) {
+                $time   = date('Y-m-d', strtotime('-' . $i . ' day'));
+                $data[] = [
+                    'createTime' => $time,
+                    'totalMoney' => Db::table('epay_settle')->where([
+                        'addType' => 1
+                    ])->whereBetweenTime('createTime', $time)->sum('money')
+                ];
             }
             if (empty($data))
                 return json(['status' => 0, 'msg' => '暂无更多记录']);
@@ -147,7 +147,7 @@ class Index extends Controller
         } else if ($type == 'downloadSettle') {
             $head   = ['商户ID', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
             $body   = [];
-            $result = Db::table('epay_settle')->field('uid,clearType,account,username,money,addType')->whereTime('createTime',$createTime)->cursor();
+            $result = Db::table('epay_settle')->field('uid,clearType,account,username,money,addType')->where('addType',1)->whereBetweenTime('createTime',$createTime)->cursor();
             foreach ($result as $value) {
                 $clearName = '';
                 switch ($value['clearType']) {

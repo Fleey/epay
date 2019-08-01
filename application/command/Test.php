@@ -19,7 +19,10 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        dump(Db::table('epay_wxx_apply_list')->where('applyInfoID', 1)->whereNotIn('status', [1, -1, 0, -2])->field('subMchID,id,accountID')->select(false));
+        dump(
+            \think\Db::table('epay_wxx_apply_list')->where('subMchID', 1545101421)
+                ->limit(1)->inc('money', 100)->inc('tempMoney',100)->fetchSql(true)->update()
+        );
     }
 
 

@@ -610,16 +610,30 @@ function processOrder($tradeNo, $notify = true)
             \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])
                 ->limit(1)->inc('money', $orderInfo[0]['money'])->inc('tempMoney', $orderInfo[0]['money'])->update();
 
-            $applyListData = \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])
-                ->limit(1)->field('tempMoney')->select();
-            $roundMoney = 5000;
-            //轮询金额
-            if (!empty($applyListData)) {
-                if ($applyListData[0]['tempMoney'] > $roundMoney) {
+            $roundMoney = 0;
+            if ($orderPayConfig['configType'] == 1) {
+                $systemPayConfig = getConfig()['wxpay'];
+                if (empty($systemPayConfig['wxxMeanMoney']))
+                    $systemPayConfig['wxxMeanMoney'] = 200;
+                $roundMoney = $systemPayConfig['wxxMeanMoney'] * 100;
+                //集体号
+            } else if ($orderPayConfig['configType'] == 2) {
+                $userPayConfig = unserialize(getPayUserAttr($orderInfo[0]['uid'], 'payConfig'));
+                $userPayConfig = $userPayConfig['wxpay'];
+                if (empty($userPayConfig['wxxMeanMoney']))
+                    $userPayConfig['wxxMeanMoney'] = 200;
+                $roundMoney = $userPayConfig['wxxMeanMoney'] * 100;
+                //独立号
+            }
+            $applyAccountInfo = \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])->field('rounds,tempMoney')->limit(1)->select();
+            if (!empty($applyAccountInfo)) {
+                if ($applyAccountInfo[0]['tempMoney'] > $roundMoney) {
                     \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])
-                        ->dec('tempMoney',$roundMoney)->inc('rounds',1)->update();
+                        ->limit(1)->dec('tempMoney', $roundMoney)->inc('rounds', 1)->update();
                 }
             }
+
+            //轮询金额
         }
     }
     //这个负责轮询
@@ -641,7 +655,6 @@ function processOrder($tradeNo, $notify = true)
         if ($isReCallback)
             addCallBackLog($orderInfo[0]['uid'], $notifyUrl);
         //回调事件
-//        trace('日志信息: 请求结果 => '.$requestResult .' 请求url =>' .$notifyUrl,'info');
     }
 }
 

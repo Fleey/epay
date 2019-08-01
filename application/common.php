@@ -600,7 +600,6 @@ function processOrder($tradeNo, $notify = true)
     //处理用户余额部分
     if (!$result) {
         trace('更新用户余额错误 uid =>' . $orderInfo[0]['uid'] . ' tradeNo =>' . $tradeNo . ' 订单金额 =>' . ($orderInfo[0]['money'] / 100), 'error');
-//        return;
     }
     //处理更新余额失败部分
 
@@ -608,7 +607,19 @@ function processOrder($tradeNo, $notify = true)
         $orderPayConfig = \app\pay\model\PayModel::getOrderAttr($tradeNo, 'payConfig');
         if (!empty($orderPayConfig)) {
             $orderPayConfig = json_decode($orderPayConfig, true);
-            \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])->limit(1)->inc('money', $orderInfo[0]['money'])->update();
+            \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])
+                ->limit(1)->inc('money', $orderInfo[0]['money'])->inc('tempMoney', $orderInfo[0]['money'])->update();
+
+            $applyListData = \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])
+                ->limit(1)->field('tempMoney')->select();
+            $roundMoney = 5000;
+            //轮询金额
+            if (!empty($applyListData)) {
+                if ($applyListData[0]['tempMoney'] > $roundMoney) {
+                    \think\Db::table('epay_wxx_apply_list')->where('subMchID', $orderPayConfig['subMchID'])
+                        ->dec('tempMoney',$roundMoney)->inc('rounds',1)->update();
+                }
+            }
         }
     }
     //这个负责轮询
@@ -621,8 +632,7 @@ function processOrder($tradeNo, $notify = true)
     if ($notify) {
         $notifyUrl     = buildCallBackUrl($tradeNo, 'notify');
         $requestResult = curl($notifyUrl);
-        //开启高级模式 不为200 直接走重发
-        $isReCallback = false;
+        $isReCallback  = false;
         if ($requestResult === false)
             $isReCallback = true;
         else if (strpos(strtoupper($requestResult), 'SUCCESS') === false) {

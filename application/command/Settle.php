@@ -51,8 +51,9 @@ class Settle extends Command
                 continue;
             $tradeMoney = $wxxApplyInfo['money'];
             Db::table('epay_wxx_apply_list')->where('subMchID', $wxxApplyInfo['subMchID'])->limit(1)->update([
-                'money' => 0,
-                'rounds' => 0
+                'money'     => 0,
+                'rounds'    => 0,
+                'tempMoney' => 0
             ]);
             Db::table('epay_wxx_trade_record')->insert([
                 'subMchID'   => $wxxApplyInfo['subMchID'],

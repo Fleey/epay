@@ -309,7 +309,7 @@ class WxPay extends Controller
                     'epay_wxx_apply_info.uid'    => $uid,
                     'epay_wxx_apply_info.type'   => 2,
                     'epay_wxx_apply_list.status' => 2
-                ])->order('epay_wxx_apply_list.money asc')->select();
+                ])->order('epay_wxx_apply_list.rounds asc')->select();
             if(empty($userAccountList))
                 return [];
             PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 2]));
@@ -321,7 +321,7 @@ class WxPay extends Controller
                 ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID')->where([
                     'epay_wxx_apply_info.type'   => 1,
                     'epay_wxx_apply_list.status' => 2
-                ])->order('epay_wxx_apply_list.money asc')->select();
+                ])->order('epay_wxx_apply_list.rounds asc')->select();
             //集体号
             PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 1]));
             return $this->buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID']);

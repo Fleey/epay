@@ -114,9 +114,7 @@ class Index extends Controller
                 $time   = date('Y-m-d', strtotime('-' . $i . ' day'));
                 $data[] = [
                     'createTime' => $time,
-                    'totalMoney' => Db::table('epay_settle')->where([
-                        'addType' => 1
-                    ])->whereBetweenTime('createTime', $time)->sum('money')
+                    'totalMoney' => Db::table('epay_settle')->whereIn('addType',[1,3])->whereBetweenTime('createTime', $time)->sum('money')
                 ];
             }
             if (empty($data))
@@ -147,7 +145,7 @@ class Index extends Controller
         } else if ($type == 'downloadSettle') {
             $head   = ['商户ID', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
             $body   = [];
-            $result = Db::table('epay_settle')->field('uid,clearType,account,username,money,addType')->where('addType',1)->whereBetweenTime('createTime',$createTime)->cursor();
+            $result = Db::table('epay_settle')->field('uid,clearType,account,username,money,addType')->whereIn('addType',[1,3])->whereBetweenTime('createTime',$createTime)->cursor();
             foreach ($result as $value) {
                 $clearName = '';
                 switch ($value['clearType']) {

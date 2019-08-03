@@ -23,7 +23,7 @@
                     <br/>
                     <div class="input-group">
                         <span class="input-group-addon"><span class="glyphicon glyphicon-barcode"></span></span>
-                        <input size="30" name="subMchID" class="form-control" placeholder="小微商户ID"/>
+                        <input size="30" name="subMchID" class="form-control" placeholder="商户ID"/>
                     </div>
                     <br>
                     <div class="input-group">

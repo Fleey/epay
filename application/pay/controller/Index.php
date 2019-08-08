@@ -73,7 +73,7 @@ class Index extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '通知地址(notify_url)不能为空']);
         if (empty($this->getData['return_url']))
             return $this->fetch('/SystemMessage', ['msg' => '回调地址(return_url)不能为空']);
-
+ 
         if (!is_IntOrDecimal($this->getData['money']))
             return $this->fetch('/SystemMessage', ['msg' => '金额(money) 格式不正确']);
         //判断金额格式 禁止那些E

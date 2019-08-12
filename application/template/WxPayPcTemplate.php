@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="Content-Language" content="zh-cn">
-    <meta name="renderer" content="webkit" />
+    <meta name="renderer" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>微信安全支付 - <?php echo $siteName ?></title>
     <link href="/static/css/wx/wechat_pay.css" rel="stylesheet" media="screen">
@@ -14,12 +14,9 @@
         <span class="ico-wechat"></span><span class="text">微信支付</span>
     </h1>
     <div class="mod-ct">
-        <div class="order">
-        </div>
+        <div class="order"></div>
         <div class="amount">￥<?php echo $money; ?></div>
-        <div class="qr-image" id="qrcode">
-        </div>
-
+        <div id="dwhqihdiwq"></div>
         <div class="detail" id="orderDetail">
             <dl class="detail-ct" style="display: none;">
                 <dt>商家</dt>
@@ -42,8 +39,7 @@
                 <p>扫描二维码完成支付</p>
             </div>
         </div>
-        <div class="tip-text">
-        </div>
+        <div class="tip-text"></div>
     </div>
     <div class="foot">
         <div class="inner">
@@ -56,14 +52,7 @@
 <script src="/static/js/qq/qcloud_util.js"></script>
 <script src="/static/js/layer/layer.js"></script>
 <script>
-    var qrcode = new QRCode('qrcode', {
-        text: '<?php echo $codeUrl?>',
-        width: 230,
-        height: 230,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    var qrcode = new QRCode('dwhqihdiwq', {text: '<?php echo $codeUrl?>', width: 230, height: 230, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H});
     // 订单详情
     $('#orderDetail .arrow').click(function (event) {
         if ($('#orderDetail').hasClass('detail-open')) {

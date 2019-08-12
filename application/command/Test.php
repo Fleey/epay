@@ -19,10 +19,12 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        dump(
-            \think\Db::table('epay_wxx_apply_list')->where('subMchID', 1545101421)
-                ->limit(1)->inc('money', 100)->inc('tempMoney',100)->fetchSql(true)->update()
-        );
+        $deleteTime = '- ' . 5 . ' day';
+        dump(Db::table('epay_order')->fetchSql(true)->whereTime('createTime', '<=', $deleteTime)->delete());
+        dump( Db::table('epay_order_attr')->fetchSql(true)->whereTime('createTime', '<=', $deleteTime)->delete());
+        dump(Db::table('epay_settle')->fetchSql(true)->whereTime('createTime', '<=', $deleteTime)->delete());
+        dump( Db::table('epay_log')->fetchSql(true)->whereTime('createTime', '<=', $deleteTime)->delete());
+        dump( Db::table('epay_wxx_trade_record')->fetchSql(true)->whereTime('createTime', '<=', $deleteTime)->delete());
     }
 
 

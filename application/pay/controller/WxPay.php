@@ -39,7 +39,7 @@ class WxPay extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '请求参数有误，请重新发起订单请求！']);
 
         $this->systemConfig['wxpay'] = $this->getWxxPayConfig($requestData['tradeNo']);
-        if(empty($this->systemConfig['wxpay']))
+        if (empty($this->systemConfig['wxpay']))
             return $this->fetch('/SystemMessage', ['msg' => '系统已经冻结所有账号，请联系站点管理员处理！']);
 
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
@@ -78,23 +78,23 @@ class WxPay extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '该订单尚不支持原生支付！']);
         else {
             $this->systemConfig['wxpay'] = $this->getWxxPayConfig($tradeNo);
-            if(empty($this->systemConfig['wxpay']))
+            if (empty($this->systemConfig['wxpay']))
                 return $this->fetch('/SystemMessage', ['msg' => '系统已经冻结所有账号，请联系站点管理员处理！']);
         }
 
         if (empty($this->systemConfig['wxpay']['sub_mch_id']))
             return $this->fetch('/SystemMessage', ['msg' => '微信支付下单失败！<br>[系统配置异常] 尚未进行用户身份审核，请发送相关个人资料到相关人员处理。']);
 
-//        $productNameShowMode = intval(getPayUserAttr($result[0]['uid'], 'productNameShowMode'));
-//        $productName         = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];
-//        if ($productNameShowMode == 1) {
-//            $tempData    = getPayUserAttr($result[0]['uid'], 'productName');
-//            $productName = empty($tempData) ? '商户尚未设置默认商品名称' : $tempData;
-//        } else if ($productNameShowMode == 2) {
-//            $productName = $result[0]['productName'];
-//        }
+        $productNameShowMode = intval(getPayUserAttr($result[0]['uid'], 'productNameShowMode'));
+        $productName         = empty($this->systemConfig['defaultProductName']) ? '这个是默认商品名称' : $this->systemConfig['defaultProductName'];
+        if ($productNameShowMode == 1) {
+            $tempData    = getPayUserAttr($result[0]['uid'], 'productName');
+            $productName = empty($tempData) ? '商户尚未设置默认商品名称' : $tempData;
+        } else if ($productNameShowMode == 2) {
+            $productName = $result[0]['productName'];
+        }
 
-        $productName = $this->systemConfig['defaultProductName'] . '-' . md5($tradeNo);
+        //$productName = $this->systemConfig['defaultProductName'] . '-' . md5($tradeNo);
 
         $tradeData                = $result[0];
         $tradeData['tradeNo']     = $tradeNo;
@@ -173,11 +173,16 @@ class WxPay extends Controller
                     //core code
                     return $formHtml;
                 }
-
+                $userData = Db::query('SELECT epay_user.qq FROM epay_user RIGHT JOIN epay_order ON epay_order.uid = epay_user.id WHERE epay_order.tradeNo = :tradeNo', ['tradeNo' => $tradeNo]);
+                if (empty($userData))
+                    $userQQ = '310512312';
+                else
+                    $userQQ = $userData[0]['qq'];
                 return $this->fetch('/WxPayJsH5Template', [
                     'codeUrl' => $requestResult['code_url'],
                     'money'   => $result[0]['money'] / 100,
-                    'tradeNo' => $tradeNo
+                    'tradeNo' => $tradeNo,
+                    'qq'      => $userQQ
                 ]);
             } else {
                 return $this->fetch('/WxPayPcTemplate', [
@@ -298,7 +303,7 @@ class WxPay extends Controller
             return $this->buildWxxPayConfig($getPayConfig['accountID'], $getPayConfig['subMchID']);
         }
         //存在预先配置
-        $uid             = $orderInfo[0]['uid'];
+        $uid                 = $orderInfo[0]['uid'];
         $isCollectiveAccount = Db::table('epay_wxx_apply_info')->where('uid', $uid)->limit(1)->field('id')->select();
         $isCollectiveAccount = empty($isCollectiveAccount);
         //判断是否为集体号
@@ -310,7 +315,7 @@ class WxPay extends Controller
                     'epay_wxx_apply_info.type'   => 2,
                     'epay_wxx_apply_list.status' => 2
                 ])->order('epay_wxx_apply_list.rounds asc,epay_wxx_apply_list.tempMoney asc')->select();
-            if(empty($userAccountList))
+            if (empty($userAccountList))
                 return [];
             PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 2]));
             return $this->buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID']);

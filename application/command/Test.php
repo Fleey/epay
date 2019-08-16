@@ -19,12 +19,10 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        $deleteTime = '- ' . 5 . ' day';
-        dump(Db::table('epay_order')->fetchSql(true)->whereTime('createTime', '<=', $deleteTime)->delete());
-        dump( Db::table('epay_order_attr')->fetchSql(true)->whereTime('createTime', '<=', $deleteTime)->delete());
-        dump(Db::table('epay_settle')->fetchSql(true)->whereTime('createTime', '<=', $deleteTime)->delete());
-        dump( Db::table('epay_log')->fetchSql(true)->whereTime('createTime', '<=', $deleteTime)->delete());
-        dump( Db::table('epay_wxx_trade_record')->fetchSql(true)->whereTime('createTime', '<=', $deleteTime)->delete());
+        Db::table('epay_wxx_apply_list')->where('id', '<>', 0)->update([
+            'rounds'    => 0,
+            'tempMoney' => 0
+        ]);
     }
 
 

@@ -578,6 +578,17 @@ class Wxx extends Controller
         ]);
         if (!$updateResult)
             return json(['status' => 0, 'msg' => '更新账号状态失败，请重试。']);
+        if ($status == 2) {
+            $applyInfoID = Db::table('epay_wxx_apply_list')->where('id', $id)->field('applyInfoID')->limit(1)->select();
+            if (!empty($applyInfoID)) {
+                list($applyInfoID) = [$applyInfoID[0]['applyInfoID']];
+                Db::table('epay_wxx_apply_list')->where('applyInfoID', $applyInfoID)->update([
+                    'tempMoney' => 0,
+                    'rounds'    => 0
+                ]);
+            }
+        }
+        //重置数据 让金额均分均匀
         return json(['status' => 1, 'msg' => '更新账号状态成功']);
     }
 

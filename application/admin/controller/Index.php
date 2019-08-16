@@ -409,6 +409,8 @@ class Index extends Controller
             foreach ($value as $key => $value1) {
                 if (strpos($key, 'is') === 0)
                     $value[$key] = $value1 === 'true';
+                else
+                    $value[$key] = trim($value);
             }
         } else {
             if ($keyName == 'defaultMaxPayMoney' || $keyName == 'defaultMoneyRate')

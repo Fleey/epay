@@ -2,6 +2,7 @@
 
 namespace app\pay\controller;
 
+use app\admin\controller\Wxx;
 use app\pay\model\PayModel;
 use app\pay\model\WxPayModel;
 use function GuzzleHttp\Psr7\parse_query;
@@ -38,7 +39,7 @@ class WxPay extends Controller
         if (strlen($requestData['tradeNo']) != 19)
             return $this->fetch('/SystemMessage', ['msg' => '请求参数有误，请重新发起订单请求！']);
 
-        $this->systemConfig['wxpay'] = $this->getWxxPayConfig($requestData['tradeNo']);
+        $this->systemConfig['wxpay'] = self::getWxxPayConfig($requestData['tradeNo'], $this->systemConfig);
         if (empty($this->systemConfig['wxpay']))
             return $this->fetch('/SystemMessage', ['msg' => '系统已经冻结所有账号，请联系站点管理员处理！']);
 
@@ -77,7 +78,7 @@ class WxPay extends Controller
         if ($this->systemConfig['wxpay']['apiType'] == 1)
             return $this->fetch('/SystemMessage', ['msg' => '该订单尚不支持原生支付！']);
         else {
-            $this->systemConfig['wxpay'] = $this->getWxxPayConfig($tradeNo);
+            $this->systemConfig['wxpay'] = self::getWxxPayConfig($tradeNo, $this->systemConfig);
             if (empty($this->systemConfig['wxpay']))
                 return $this->fetch('/SystemMessage', ['msg' => '系统已经冻结所有账号，请联系站点管理员处理！']);
         }
@@ -224,6 +225,65 @@ class WxPay extends Controller
     }
 
     /**
+     * 微信退款统一异步回调
+     */
+    public function postRefundNotify()
+    {
+        $requestData = file_get_contents('php://input');
+        //get post xml
+        $requestData = xmlToArray($requestData);
+        //数据转换
+        if ($requestData['return_code'] != 'SUCCESS') {
+            trace('[微信退款回调异常] 异常提示 => ' . $requestData['return_msg'], 'error');
+            return xml([
+                'return_code' => 'FAIL',
+                'return_msg'  => '微信补单异常提示已记录待处理'
+            ]);
+        }
+        //异常处理
+        $appID       = $requestData['appid'];
+        $requestInfo = $requestData['req_info'];
+        if (empty($appID) || empty($requestInfo))
+            return xml([
+                'return_code' => 'FAIL',
+                'return_msg'  => '请求参数错误，请重试'
+            ]);
+        //请求参数错误
+        $selectAccountInfo = Db::table('epay_wxx_account_list')->where('appID=:appID', ['appID' => $appID])->limit(1)->field('id,desc')->select();
+        if (empty($selectAccountInfo))
+            return xml([
+                'return_code' => 'FAIL',
+                'return_msg'  => '查询无此商户号'
+            ]);
+        try {
+            $wxxApiV1Model = Wxx::getWxxApiModel($selectAccountInfo[0]['id']);
+            $xmlData       = $wxxApiV1Model->getDecrypt($requestInfo);
+            if ($xmlData === false) {
+                trace('[微信退款回调异常] 数据解密错误。', 'warning');
+                return xml([
+                    'return_code' => 'FAIL',
+                    'return_msg'  => '解密数据错误'
+                ]);
+            }
+            $xmlData = xmlToArray($xmlData);
+            if ($xmlData['refund_status'] == 'SUCCESS') {
+                Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $xmlData['out_trade_no']])->limit(1)->update([
+                    'status' => 4
+                ]);
+            } else {
+                trace('[微信退款回调异常] 退款状态错误 请登录相关后台自查 name => ' . $selectAccountInfo[0]['desc'] . ' tradeNo => ' . $xmlData['out_trade_no']);
+            }
+            return xml(['return_code' => 'SUCCESS']);
+        } catch (Exception $e) {
+            trace('[微信退款回调异常] 初始化微信模块时异常 msg => ' . $e->getMessage(), 'error');
+            return xml([
+                'return_code' => 'FAIL',
+                'return_msg'  => '初始化模块异常，已记录待处理'
+            ]);
+        }
+    }
+
+    /**
      * 微信统一回调地址
      * @return \think\response\Xml
      * @throws \think\Exception
@@ -249,7 +309,7 @@ class WxPay extends Controller
             $wxPayMode = 'h5';
         //兼容老版本 承接新版本
         if (!empty($requestData['sub_mch_id'])) {
-            $this->systemConfig['wxpay'] = $this->getWxxPayConfig($outTradeNo);
+            $this->systemConfig['wxpay'] = self::getWxxPayConfig($outTradeNo, $this->systemConfig);
         }
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], $wxPayMode);
         if ($wxPayModel->signParam($requestData) != $sign)
@@ -285,6 +345,7 @@ class WxPay extends Controller
 
     /**
      * @param string $tradeNo
+     * @param array $systemConfig
      * @return mixed
      * @throws Exception
      * @throws \think\db\exception\DataNotFoundException
@@ -292,7 +353,7 @@ class WxPay extends Controller
      * @throws \think\exception\DbException
      * @throws \think\exception\PDOException
      */
-    private function getWxxPayConfig(string $tradeNo)
+    public static function getWxxPayConfig(string $tradeNo, array $systemConfig)
     {
         $orderInfo = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid')->limit(1)->select();
         if (empty($orderInfo))
@@ -300,7 +361,7 @@ class WxPay extends Controller
         $getPayConfig = PayModel::getOrderAttr($tradeNo, 'payConfig');
         if (!empty($getPayConfig)) {
             $getPayConfig = json_decode($getPayConfig, true);
-            return $this->buildWxxPayConfig($getPayConfig['accountID'], $getPayConfig['subMchID']);
+            return self::buildWxxPayConfig($getPayConfig['accountID'], $getPayConfig['subMchID'], $systemConfig);
         }
         //存在预先配置
         $uid                 = $orderInfo[0]['uid'];
@@ -318,7 +379,7 @@ class WxPay extends Controller
             if (empty($userAccountList))
                 return [];
             PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 2]));
-            return $this->buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID']);
+            return self::buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID'], $systemConfig);
             //独立号
         } else {
             $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
@@ -329,25 +390,26 @@ class WxPay extends Controller
                 ])->order('epay_wxx_apply_list.rounds asc,epay_wxx_apply_list.tempMoney asc')->select();
             //集体号
             PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 1]));
-            return $this->buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID']);
+            return self::buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID'], $systemConfig);
         }
     }
 
     /**
      * @param int $accountID
      * @param int $subMchID
+     * @param array $systemConfig
      * @return mixed
      * @throws Exception
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    private function buildWxxPayConfig(int $accountID, int $subMchID)
+    public static function buildWxxPayConfig(int $accountID, int $subMchID, array $systemConfig)
     {
         $selectResult = Db::table('epay_wxx_account_list')->where('id', $accountID)->field('appID,mchID,appKey,appSecret')->limit(1)->select();
         if (empty($selectResult))
             throw new Exception('数据结构异常');
-        $returnData = $this->systemConfig['wxpay'];
+        $returnData = $systemConfig['wxpay'];
 
         $returnData['key']   = $selectResult[0]['appKey'];
         $returnData['appid'] = $selectResult[0]['appID'];

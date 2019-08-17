@@ -3,8 +3,10 @@
 namespace app\admin\controller;
 
 use app\admin\model\SearchTable;
+use app\pay\controller\WxPay;
 use app\pay\model\CenterPayModel;
 use app\pay\model\PayModel;
+use app\pay\model\WxPayModel;
 use think\Controller;
 use think\Db;
 use think\Exception;
@@ -114,7 +116,7 @@ class Index extends Controller
                 $time   = date('Y-m-d', strtotime('-' . $i . ' day'));
                 $data[] = [
                     'createTime' => $time,
-                    'totalMoney' => Db::table('epay_settle')->whereIn('addType',[1,3])->whereBetweenTime('createTime', $time)->sum('money')
+                    'totalMoney' => Db::table('epay_settle')->whereIn('addType', [1, 3])->whereBetweenTime('createTime', $time)->sum('money')
                 ];
             }
             if (empty($data))
@@ -145,7 +147,7 @@ class Index extends Controller
         } else if ($type == 'downloadSettle') {
             $head   = ['商户ID', '收款方式', '收款账号', '收款人姓名', '付款金额（元）', '付款理由'];
             $body   = [];
-            $result = Db::table('epay_settle')->field('uid,clearType,account,username,money,addType')->whereIn('addType',[1,3])->whereBetweenTime('createTime',$createTime)->cursor();
+            $result = Db::table('epay_settle')->field('uid,clearType,account,username,money,addType')->whereIn('addType', [1, 3])->whereBetweenTime('createTime', $createTime)->cursor();
             foreach ($result as $value) {
                 $clearName = '';
                 switch ($value['clearType']) {
@@ -1106,6 +1108,42 @@ class Index extends Controller
         $args        = input('post.args/a');
         $SearchTable = new SearchTable($searchTable, $startSite, $getLength, $order, $searchValue, $args);
         return json($SearchTable->getData());
+    }
+
+    public function postOrderRefund()
+    {
+        $tradeNo = input('post.tradeNo/s');
+        $type    = input('post.type/s');
+        if (empty($tradeNo) || empty($type))
+            return json(['status' => 0, 'msg' => '参数异常']);
+
+        if ($type != '微信' && $type != '财付通')
+            return json(['status' => 0, 'msg' => '暂不不支持此订单类型退款']);
+
+        if ($type == '微信') {
+            try {
+                $payConfig = json_decode(PayModel::getOrderAttr($tradeNo, 'payConfig'), true);
+                $wxPay     = new WxPayModel(WxPay::getWxxPayConfig($tradeNo, getConfig()));
+                $orderData = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('money,uid')->limit(1)->select();
+                $result    = $wxPay->orderRefund($tradeNo, $orderData[0]['money'],$orderData[0]['money'], Wxx::getWxxCertFilePath($payConfig['accountID']), url('/Pay/WxPay/RefundNotify', '', false, true));
+                if (!$result[0])
+                    return json(['status' => 0, 'msg' => $result[1]]);
+                if ($payConfig['configType'] == 1)
+                    Db::table('epay_user')->where('id', $orderData[0]['uid'])->limit(1)->dec('balance', $orderData[0]['money'] * 10)->update();
+                Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
+                    'status' => 3
+                ]);
+                return json(['status' => 1, 'msg' => '成功提交退款']);
+            } catch (Exception $e) {
+                trace('[订单退款异常]'.$e->getMessage(), 'error');
+                return json(['status' => 0, 'msg' => '异常了，请联系相关人员处理']);
+            }
+        } else if ($type == '财付通') {
+
+        }
+
+        return json(['status' => 0, 'msg' => '系统遇到了异常']);
+
     }
 
     /**

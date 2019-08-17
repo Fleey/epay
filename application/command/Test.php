@@ -2,11 +2,20 @@
 
 namespace app\command;
 
+use app\admin\controller\Wxx;
+use app\pay\controller\WxPay;
 use app\pay\model\PayModel;
+use app\pay\model\WxPayModel;
+use app\user\model\WxxApiV1Model;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
 use think\Db;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\ModelNotFoundException;
+use think\Exception;
+use think\exception\DbException;
+use think\exception\PDOException;
 
 class Test extends Command
 {
@@ -19,10 +28,17 @@ class Test extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        Db::table('epay_wxx_apply_list')->where('id', '<>', 0)->update([
-            'rounds'    => 0,
-            'tempMoney' => 0
-        ]);
+//        $deleteTime = '- ' . 5 . ' day';
+//        Db::table('epay_order')->whereTime('createTime', '<=', $deleteTime)->delete();
+//        echo '1'.PHP_EOL;
+//        Db::table('epay_order_attr')->whereTime('createTime', '<=', $deleteTime)->delete();
+//        echo '2'.PHP_EOL;
+//        Db::table('epay_settle')->whereTime('createTime', '<=', $deleteTime)->delete();
+//        echo '3'.PHP_EOL;
+//        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
+//        echo '4'.PHP_EOL;
+//        Db::table('epay_wxx_trade_record')->whereTime('createTime', '<=', $deleteTime)->delete();
+
     }
 
 

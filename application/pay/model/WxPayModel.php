@@ -8,9 +8,9 @@ class WxPayModel
 {
     private $wxConfig;
     private $signType = 'MD5';
-    private $appID = '';
-    private $mchID = '';
-    private $key = '';
+    private $appID    = '';
+    private $mchID    = '';
+    private $key      = '';
 
 
     /**
@@ -83,43 +83,52 @@ class WxPayModel
      * 微信订单退款接口
      * @param string $tradeNo
      * @param int $money //注意单位为分
+     * @param array $sslData //sslCertPath and sslKeyPath
      * @param string $notifyUrl //申请退款回调地址
      * @return array //成功返回 [true] 失败[false,(String)失败原因]
      */
-    public function orderRefund(string $tradeNo, int $money, string $notifyUrl = '')
+    public function orderRefund(string $tradeNo, int $totalMoney, int $refundMoney, array $sslData, string $notifyUrl = '')
     {
         $requestUrl  = 'https://api.mch.weixin.qq.com/secapi/pay/refund';
         $requestData = [
-            'appid'         => $this->wxConfig['appid'],
-            'mch_id'        => $this->wxConfig['mchid'],
+            'appid'         => $this->appID,
+            'mch_id'        => $this->mchID,
             'nonce_str'     => getRandChar(32),
             'out_trade_no'  => $tradeNo,
-            'out_refund_no' => $tradeNo,
-            'total_fee'     => $money,
-            'refund_fee'    => $money
+            'out_refund_no' => md5(time()),
+            'total_fee'     => $totalMoney,
+            'refund_fee'    => $refundMoney,
         ];
-        if (!empty($requestData)) {
+        if (!empty($this->wxConfig['sub_mch_id']))
+            $requestData['sub_mch_id'] = $this->wxConfig['sub_mch_id'];
+        if (!empty($notifyUrl)) {
             if (strlen($notifyUrl) > 256)
                 return [false, '回调地址长度不能超过 256 个字符'];
             $requestData['notify_url'] = $notifyUrl;
         }
-        $requestData['sign']      = $this->signParam($requestData);
         $requestData['sign_type'] = $this->signType;
-        $xml                      = arrayToXml($requestData);
+        $requestData['sign']      = $this->signParam($requestData);
+
+        $xml = arrayToXml($requestData);
         //build xml
-        $result = curl($requestUrl, [], 'post', $xml, 'xml');
-        dump($xml);
+        $result = curl($requestUrl, [], 'post', $xml, 'xml', false, false, $sslData);
         if ($result === false)
             return [false, '请求目标网关失败,请联系管理员处理'];
         $result = xmlToArray($result);
-        dump($result);
+        if ($result['return_code'] == 'FAIL')
+            return [false, $result['return_msg']];
+        unset($result['refund_channel']);
         if ($this->signParam($result) != $result['sign'])
             return [false, '签名失败,可能数据被修改,请联系管理员处理'];
         //检查是否被劫持 验签数据
         if ($result['return_code'] != 'SUCCESS')
             return [false, $result['return_msg']];
-        if (!empty($result['err_code']))
+        if (!empty($result['err_code'])) {
+            if ($result['err_code_des'] == '累计退款金额大于支付金额') {
+                return $this->orderRefund($tradeNo, $totalMoney, $refundMoney - 1, $sslData);
+            }
             return [false, '[' . $result['err_code'] . ']' . $result['err_code_des']];
+        }
         if ($result['result_code'] != 'SUCCESS')
             return [false, '提交业务失败,请重试'];
 
@@ -133,9 +142,9 @@ class WxPayModel
      * @param string $subMid
      * @return bool
      */
-    public function checkWxPayStatus(string $orderID, string $type = 'out_trade_no',string $subMid ='')
+    public function checkWxPayStatus(string $orderID, string $type = 'out_trade_no', string $subMid = '')
     {
-        $result = $this->selectWxPayRecord($orderID, $type,$subMid);
+        $result = $this->selectWxPayRecord($orderID, $type, $subMid);
         if (!$result)
             return false;
         if (empty($result['return_code']) || empty($result['result_code']) || empty($result['trade_state']))
@@ -160,8 +169,8 @@ class WxPayModel
             'mch_id'    => $this->mchID,
             'nonce_str' => getRandChar(32),
         ];
-        if(!empty($subMid))
-            $requestData['sub_mch_id'] = $subMid;
+        if (!empty($this->wxConfig['sub_mch_id']))
+            $requestData['sub_mch_id'] = $this->wxConfig['sub_mch_id'];
         if ($type == 'out_trade_no')
             $requestData['out_trade_no'] = $orderID;
         else

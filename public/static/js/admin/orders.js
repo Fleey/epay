@@ -46,6 +46,10 @@ $(function () {
                         return '<span class="text-danger">未付款</span>';
                     else if (data === 2)
                         return '<span class="text-danger">已冻结</span>';
+                    else if (data === 3)
+                        return '<span style="color: #3b4abb;">退款中</span>';
+                    else if (data === 4)
+                        return '<span class="text-warning">已退款</span>';
                     return '<span class="text-danger">未付款</span>';
                 }
             }, {}
@@ -108,7 +112,7 @@ $(function () {
             status: status
         }, function (data) {
             if (data['status'] !== 1) {
-                swal('请求失败', '更改状态失败,请重试', 'error');
+                swal('请求失败', data['msg'], 'error');
                 return;
             }
             swal({
@@ -121,6 +125,37 @@ $(function () {
             $('span[data-name="status"]').text(data['status'] ? '已付款' : '冻结中');
             buttonDom.text(status ? '取消冻结' : '冻结订单');
         }, 'json');
+    });
+    $('button[data-type="setRefund"]').off('click').on('click', function () {
+        var tradeNo = $('span[data-name="tradeNo"]').text();
+        var type = $('span[data-name="type"]').text();
+        swal({
+                title: '操作提示',
+                text: '确定要退款吗？',
+                type: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "确定",
+                cancelButtonText: '取消',
+                closeOnConfirm: false
+            },
+            function () {
+                swal({
+                    title: '请稍后...',
+                    text: '正在积极等待服务器响应',
+                    showConfirmButton: false
+                });
+                $.post('/cy2018/api/OrderRefund', {tradeNo: tradeNo, type: type}, function (data) {
+                    if (data['status'] !== 1) {
+                        swal('请求失败', data['msg'], 'error');
+                        return true;
+                    }
+                    $('span[data-name="status"]').text('退款中');
+                    $('button[data-type="setRefund"]').hide();
+                    $('#orderList').dataTable().fnDraw(false);
+                    swal('请求成功', data['msg'], 'success');
+                }, 'json');
+            });
     });
 
     $('button[data-type="setShield"]').off("click").on('click', function () {
@@ -137,7 +172,7 @@ $(function () {
             status: status
         }, function (data) {
             if (data['status'] !== 1) {
-                swal('请求失败', '更改状态失败,请重试', 'error');
+                swal('请求失败', data['msg'], 'error');
                 return;
             }
             swal({
@@ -285,6 +320,7 @@ $(function () {
                 }
                 swal.close();
                 $('.cef-info').hide();
+                $('button[data-type="setRefund"]').show();
                 var setDataNameInfo = function (dataName, info) {
                     if (info === '0' || info === null)
                         info = '暂无记录';
@@ -304,12 +340,22 @@ $(function () {
                         else if (value === 4)
                             value = '银联';
                     } else if (key === 'status') {
+                        if (value === 4 || value === 3)
+                            $('button[data-type="setRefund"]').hide();
+
+
                         if (value === 1)
                             value = '已付款';
                         else if (value === 2)
                             value = '冻结中';
+                        else if (value === 3)
+                            value = '退款中';
+                        else if (value === 4)
+                            value = '已退款';
                         else
                             value = '未付款';
+
+
                     } else if (key === 'isShield') {
                         value = value ? '已屏蔽' : '未屏蔽';
                     }
@@ -319,7 +365,8 @@ $(function () {
                 var orderStatus = $('span[data-name="status"]').text();
                 if (orderStatus === '冻结中') {
                     $('button[data-type="setFrozen"]').text('取消冻结');
-                } else {
+                }
+                if (orderStatus === '已付款') {
                     $('button[data-type="setFrozen"]').text('冻结订单');
                 }
                 var status = $('span[data-name="isShield"]').text() !== '未屏蔽' ? 1 : 0;
@@ -327,7 +374,6 @@ $(function () {
                 $('#orderInfo').modal('show');
             });
         } else if (clickType === 'status') {
-
             swal({
                     title: "修改订单状态",
                     html: true,

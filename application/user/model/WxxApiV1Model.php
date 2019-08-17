@@ -452,6 +452,20 @@ class WxxApiV1Model
         return $sign;
     }
 
+    /**
+     * 退款解密函数
+     * https://pay.weixin.qq.com/wiki/doc/api/jsapi_sl.php?chapter=9_16#menu1
+     * @param string $base64Data
+     * @return string
+     */
+    public function getDecrypt(string $base64Data)
+    {
+        $encryption = base64_decode($base64Data);
+        $key        = md5($this->appKey);
+        $return     = openssl_decrypt($encryption, 'AES-256-ECB', $key, OPENSSL_RAW_DATA);
+        return $return;
+    }
+
     private static function decodePem(string $appKey, string $cipherText, string $nonce)
     {
         $associated_data  = 'certificate';

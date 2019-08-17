@@ -705,6 +705,27 @@ class Wxx extends Controller
             FileModel::getFilePath($selectResult[0]['apiCertID']), FileModel::getFilePath($selectResult[0]['apiKeyID']));
     }
 
+    /**
+     * 根据服务商号ID获取证书路径
+     * @param int $accountID
+     * @return array|null
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public static function getWxxCertFilePath(int $accountID)
+    {
+        if (empty($accountID))
+            return null;
+        $selectResult = Db::table('epay_wxx_account_list')->where('id', $accountID)->limit(1)->field('apiCertID,apiKeyID')->select();
+        if (empty($selectResult))
+            return null;
+        return [
+            'sslKeyPath'  => FileModel::getFilePath($selectResult[0]['apiKeyID']),
+            'sslCertPath' => FileModel::getFilePath($selectResult[0]['apiCertID'])
+        ];
+    }
+
 
     /**
      * 重新构建图片 专门为小微商户申请使用 保存后记得删除

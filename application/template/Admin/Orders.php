@@ -104,6 +104,7 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-facebook" data-order-id="" data-type="setRefund">退款订单</button>
                 <button type="button" class="btn btn-danger" data-order-id="" data-type="setShield">屏蔽订单</button>
                 <button type="button" class="btn btn-danger" data-order-id="" data-type="setFrozen">冻结订单</button>
                 <button type="button" class="btn btn-primary" data-order-id="" data-type="reloadNotify">重新回调</button>

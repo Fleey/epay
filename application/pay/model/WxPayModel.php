@@ -82,7 +82,8 @@ class WxPayModel
     /**
      * 微信订单退款接口
      * @param string $tradeNo
-     * @param int $money //注意单位为分
+     * @param int $totalMoney //订单总金额 单位分
+     * @param int $refundMoney //退款金额  单位分
      * @param array $sslData //sslCertPath and sslKeyPath
      * @param string $notifyUrl //申请退款回调地址
      * @return array //成功返回 [true] 失败[false,(String)失败原因]

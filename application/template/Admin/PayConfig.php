@@ -210,6 +210,31 @@
                             <input type="text" class="form-control" data-name="mchkey" placeholder="请输入商户支付密钥">
                             <small class="form-text text-muted">QQ钱包商户平台(http://qpay.qq.com/)获取</small>
                         </div>
+                        <h4>退款配置（不配置则无法使用QQ钱包退款功能）</h4>
+                        <hr>
+                        <div class="form-group">
+                            <label for="opUserID">操作员账户（登录账户）</label>
+                            <input type="text" class="form-control" data-name="opUserID"
+                                   placeholder="操作员账户（登录账户）">
+                            <small class="form-text text-muted">操作员帐号, 默认为商户号 一大串数字</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="opUserPassword">操作员密码（登录密码）</label>
+                            <input type="text" class="form-control" data-name="opUserPassword" placeholder="应用私钥"/>
+                            <small class="form-text text-muted">操作员密码，默认为商户号登录密码 </small>
+                        </div>
+                        <div class="form-group">
+                            <label for="certPublic">证书公钥</label>
+                            <textarea type="text" class="form-control" data-name="certPublic"
+                                      placeholder="证书公钥"></textarea>
+                            <small class="form-text text-muted">文件名为 apiclient_cert.pem</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="certPrivate">应用私钥</label>
+                            <textarea type="text" class="form-control" data-name="certPrivate"
+                                      placeholder="应用私钥"></textarea>
+                            <small class="form-text text-muted">文件名为 apiclient_key.pem</small>
+                        </div>
                     </div>
                     <div data-api-type="1" style="display: none;">
                         <div class="form-group">

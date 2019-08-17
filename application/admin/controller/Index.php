@@ -2,14 +2,19 @@
 
 namespace app\admin\controller;
 
+use app\admin\model\FileModel;
 use app\admin\model\SearchTable;
 use app\pay\controller\WxPay;
 use app\pay\model\CenterPayModel;
 use app\pay\model\PayModel;
+use app\pay\model\QQPayModel;
 use app\pay\model\WxPayModel;
 use think\Controller;
 use think\Db;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\ModelNotFoundException;
 use think\Exception;
+use think\exception\DbException;
 use ZipArchive;
 
 class Index extends Controller
@@ -312,7 +317,19 @@ class Index extends Controller
         $config = getConfig();
         if (empty($config[$keyName]))
             $config[$keyName] = '';
-        return json(['status' => 1, 'data' => $config[$keyName]]);
+
+        $config = $config[$keyName];
+        if (isset($config['certPublic'])) {
+            $config['certPublic'] = file_get_contents(FileModel::getFilePath($config['certPublic'], false));
+            if ($config['certPublic'] === false)
+                $config['certPublic'] = '读取证书文件失败，请重新上传';
+        }
+        if (isset($config['certPrivate'])) {
+            $config['certPrivate'] = file_get_contents(FileModel::getFilePath($config['certPrivate'], false));
+            if ($config['certPrivate'] === false)
+                $config['certPrivate'] = '读取证书文件失败，请重新上传';
+        }
+        return json(['status' => 1, 'data' => $config]);
     }
 
     public function getUpdateProgram()
@@ -409,10 +426,16 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '请求数据有误']);
         if ($isArray) {
             foreach ($value as $key => $value1) {
-                if (strpos($key, 'is') === 0)
+                if (strpos($key, 'is') === 0) {
                     $value[$key] = $value1 === 'true';
-                else
-                    $value[$key] = trim($value);
+                    //布尔值参数模式
+                } else if (strpos($key, 'cert') === 0) {
+                    $value[$key] = FileModel::saveString($value1, '.pem');
+                    //证书文件模式
+                } else {
+                    $value[$key] = trim($value1);
+                    //普通参数模式
+                }
             }
         } else {
             if ($keyName == 'defaultMaxPayMoney' || $keyName == 'defaultMoneyRate')
@@ -1120,12 +1143,13 @@ class Index extends Controller
         if ($type != '微信' && $type != '财付通')
             return json(['status' => 0, 'msg' => '暂不不支持此订单类型退款']);
 
+        $orderData    = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('money,uid')->limit(1)->select();
+        $systemConfig = getConfig();
         if ($type == '微信') {
             try {
                 $payConfig = json_decode(PayModel::getOrderAttr($tradeNo, 'payConfig'), true);
-                $wxPay     = new WxPayModel(WxPay::getWxxPayConfig($tradeNo, getConfig()));
-                $orderData = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('money,uid')->limit(1)->select();
-                $result    = $wxPay->orderRefund($tradeNo, $orderData[0]['money'],$orderData[0]['money'], Wxx::getWxxCertFilePath($payConfig['accountID']), url('/Pay/WxPay/RefundNotify', '', false, true));
+                $wxPay     = new WxPayModel(WxPay::getWxxPayConfig($tradeNo, $systemConfig));
+                $result    = $wxPay->orderRefund($tradeNo, $orderData[0]['money'], $orderData[0]['money'], Wxx::getWxxCertFilePath($payConfig['accountID']), url('/Pay/WxPay/RefundNotify', '', false, true));
                 if (!$result[0])
                     return json(['status' => 0, 'msg' => $result[1]]);
                 if ($payConfig['configType'] == 1)
@@ -1134,12 +1158,25 @@ class Index extends Controller
                     'status' => 3
                 ]);
                 return json(['status' => 1, 'msg' => '成功提交退款']);
-            } catch (Exception $e) {
-                trace('[订单退款异常]'.$e->getMessage(), 'error');
+            } catch (\Exception $e) {
+                trace('[订单退款异常]' . $e->getMessage(), 'error');
                 return json(['status' => 0, 'msg' => '异常了，请联系相关人员处理']);
             }
         } else if ($type == '财付通') {
-
+            $QQPayModel = new QQPayModel($systemConfig['qqpay']);
+            try {
+                $result = $QQPayModel->orderRefund($tradeNo, $orderData[0]['money']);
+                if (!$result[0])
+                    return json(['status' => 0, 'msg' => $result[1]]);
+                Db::table('epay_user')->where('id', $orderData[0]['uid'])->limit(1)->dec('balance', $orderData[0]['money'] * 10)->update();
+                Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
+                    'status' => 4
+                ]);
+                return json(['status' => 1, 'msg' => '成功提交退款']);
+            } catch (\Exception $e) {
+                trace('[订单退款异常]' . $e->getMessage(), 'error');
+                return json(['status' => 0, 'msg' => '异常了，请联系相关人员处理']);
+            }
         }
 
         return json(['status' => 0, 'msg' => '系统遇到了异常']);

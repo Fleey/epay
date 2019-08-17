@@ -44,15 +44,11 @@ class SelfHelp extends Controller
 
         //防止cc
         $connectMysql  = [
-            'mysql://pay:w4DLhbwXSRiiPz3Y@43.248.187.89:3306/pay#utf8',
-            'mysql://gg:Ycz4dyFddGtKRXsx@43.248.187.89:3306/gg#utf8',
-            'mysql://cuwoc:dXMpWfeT5wtxSmKP@43.248.187.89:3306/cuwoc#utf8'
         ];
         $connectStr    = null;
         $searchResult  = null;
         $tradeNoLength = strlen($tradeNo);
         foreach ($connectMysql as $value) {
-
             $connectStr = $value;
             if ($tradeNoLength > 20) {
                 $searchResult = Db::connect($value)->table('epay_order')->where('tradeNoOut=:tradeNo')->bind(['tradeNo' => $tradeNo])->cache(360)->limit(1)->select();

@@ -26,8 +26,8 @@ class FileModel
 
     /**
      * 获取文件的绝对路径
-     * @param int $fileID
-     * @param bool $isWebPath
+     * @param int $fileID //文件ID
+     * @param bool $isWebPath //是否获网站路径 就是web浏览器访问那种
      * @return string
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException

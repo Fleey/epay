@@ -138,6 +138,10 @@ class SearchTable
         if (empty($this->args))
             return $queryResult;
 
+        foreach ($this->args as $key => $value) {
+            $this->args[$key] = trim($value);
+        }
+
         if ($this->searchTable == 'epay_order') {
             if (isset($this->args['uid']))
                 $queryResult = $queryResult->where('uid', intval($this->args['uid']));

@@ -2,21 +2,10 @@
 
 namespace app\command;
 
-use app\admin\controller\Wxx;
-use app\pay\controller\WxPay;
-use app\pay\model\PayModel;
-use app\pay\model\QQPayModel;
-use app\pay\model\WxPayModel;
-use app\user\model\WxxApiV1Model;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
-use think\Db;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\ModelNotFoundException;
-use think\Exception;
-use think\exception\DbException;
-use think\exception\PDOException;
+
 
 class Test extends Command
 {
@@ -39,8 +28,6 @@ class Test extends Command
 //        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
 //        echo '4'.PHP_EOL;
 //        Db::table('epay_wxx_trade_record')->whereTime('createTime', '<=', $deleteTime)->delete();
-        $QQPayModel = new QQPayModel(getConfig()['qqpay']);
-        exit(dump($QQPayModel->orderRefund('2019081616540094641', 20)));
     }
 
 

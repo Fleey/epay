@@ -494,7 +494,7 @@
                         <div class="form-group row">
                             <label for="account" class="col-md-3 control-label">结算账号</label>
                             <div class="col-md-8">
-                                <input type="text" class="form-control" id="tradeNo" placeholder="结算账号">
+                                <input type="text" class="form-control" id="account" placeholder="结算账号">
                             </div>
                         </div>
                         <div class="form-group row">

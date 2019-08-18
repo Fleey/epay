@@ -18,6 +18,7 @@
             </h3>
         </div>
         <div class="list-group" style="text-align: center;">
+            <div class="list-group-item list-group-item-info">长按保存到相册使用扫码扫码完成支付</div>
             <div class="list-group-item">
                 <div class="qr-image" id="qrcode"></div>
             </div>

@@ -10,7 +10,6 @@ namespace app\admin\model;
 
 use think\Db;
 use think\db\Query;
-use think\db\Where;
 use think\Exception;
 
 class SearchTable
@@ -90,7 +89,8 @@ class SearchTable
         $recordsFiltered = Db::table($this->searchTable);
         $recordsFiltered = $this->searchArgs($recordsFiltered);
         $recordsFiltered = $this->searchValue($recordsFiltered);
-        $recordsFiltered = $recordsFiltered->count();
+        $recordsFiltered = $recordsFiltered->fetchSql(true)->select();
+        $recordsFiltered = Db::query('explain ' . $recordsFiltered)[0]['rows'];
 
         if (empty($result)) {
             return [
@@ -281,7 +281,7 @@ class SearchTable
         } else if ($this->searchTable == 'epay_wxx_apply_info') {
             $searchOrderList = ['id', 'idCardName', 'idCardNumber', 'type', 'createTime'];
         } else if ($this->searchTable == 'epay_wxx_apply_list') {
-            $searchOrderList = ['epay_wxx_apply_list.id', 'epay_wxx_apply_list.accountID','epay_wxx_apply_list.money', 'epay_wxx_apply_list.subMchID', 'epay_wxx_apply_info.idCardName', 'epay_wxx_apply_list.status', 'epay_wxx_apply_list.createTime', 'epay_wxx_account_list.desc', 'epay_wxx_account_list.appID'];
+            $searchOrderList = ['epay_wxx_apply_list.id', 'epay_wxx_apply_list.accountID', 'epay_wxx_apply_list.money', 'epay_wxx_apply_list.subMchID', 'epay_wxx_apply_info.idCardName', 'epay_wxx_apply_list.status', 'epay_wxx_apply_list.createTime', 'epay_wxx_account_list.desc', 'epay_wxx_account_list.appID'];
             $queryResult     = $queryResult->leftJoin('epay_wxx_account_list', 'epay_wxx_apply_list.accountID = epay_wxx_account_list.id');
             $queryResult     = $queryResult->leftJoin('epay_wxx_apply_info', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id');
         }

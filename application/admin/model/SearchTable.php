@@ -306,6 +306,7 @@ class SearchTable
             }
             $queryResult = $queryResult->order($searchOrderList[$this->order[0]['column']], $order);
         }
+        $queryResult = $queryResult->group('id');
         //塞排序进去
         return $queryResult;
     }

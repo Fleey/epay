@@ -218,6 +218,8 @@
                                     <option value="1">已支付</option>
                                     <option value="0">未支付</option>
                                     <option value="2">冻结中</option>
+                                    <option value="3">退款中</option>
+                                    <option value="4">已退款</option>
                                 </select>
                             </div>
                         </div>

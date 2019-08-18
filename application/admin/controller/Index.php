@@ -266,6 +266,18 @@ class Index extends Controller
         else
             $data['productName'] = '';
 
+        $payRate = getPayUserAttr($uid, 'payRate');
+        if (empty($payRate)) {
+            $data['rateWx']     = $data['rate'] / 100;
+            $data['rateQQ']     = $data['rate'] / 100;
+            $data['rateAlipay'] = $data['rate'] / 100;
+        }else{
+            $payRate = unserialize($payRate);
+            $data['rateWx']     = $payRate['rateWx'] / 100;
+            $data['rateQQ']     = $payRate['rateQQ'] / 100;
+            $data['rateAlipay'] = $payRate['rateAlipay'] / 100;
+        }
+
         {
             $settleConfig = getPayUserAttr($uid, 'settleConfig');
             if ($settleConfig != '')
@@ -707,7 +719,6 @@ class Index extends Controller
         $payDayMoneyMax       = input('post.payDayMoneyMax/s', 0);
         $payMoneyMax          = input('post.payMoneyMax/s', 0);
         $qq                   = input('post.qq/s', 0);
-        $rate                 = input('post.rate/s', 0);
         $username             = input('post.username/s', '');
         $account              = input('post.account/s', '');
         $productNameShowMode  = input('post.productNameShowMode/d', 0);
@@ -717,9 +728,26 @@ class Index extends Controller
         $settleFee            = input('post.settleFee/s', 0);
         $setUserFrozenBalance = input('post.setUserFrozenBalance/s', 0);
 
+        $rate       = input('post.rate/s', 0);
+        $rateQQ     = input('post.rateQQ/s', 0);
+        $rateWx     = input('post.rateWx/s', 0);
+        $rateAlipay = input('post.rateAlipay/s', 0);
+
         $rate = decimalsToInt($rate, 2);
         if ($rate > 10000)
             $rate = 10000;
+
+        $rateQQ = decimalsToInt($rateQQ, 2);
+        if ($rateQQ > 10000)
+            $rateQQ = 10000;
+
+        $rateWx = decimalsToInt($rateWx, 2);
+        if ($rateWx > 10000)
+            $rateWx = 10000;
+
+        $rateAlipay = decimalsToInt($rateAlipay, 2);
+        if ($rateAlipay > 10000)
+            $rateAlipay = 10000;
 
         $isAddUserBalance       = false;
         $isAddUserFrozenBalance = false;
@@ -790,6 +818,13 @@ class Index extends Controller
                 $productName = '这是默认商品名，请联系管理员处理';
             setPayUserAttr($uid, 'productName', $productName);
         }
+
+        setPayUserAttr($uid, 'payRate', serialize([
+            'rateWx'     => $rateWx,
+            'rateQQ'     => $rateQQ,
+            'rateAlipay' => $rateAlipay
+        ]));
+        //配置支付费率
 
         Db::table('epay_user')->where('id', $uid)->limit(1)->update([
             'clearType' => $clearType,

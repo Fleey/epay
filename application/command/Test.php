@@ -2,6 +2,7 @@
 
 namespace app\command;
 
+use app\pay\model\PayModel;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;

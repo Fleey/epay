@@ -156,7 +156,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="rate">结算费率（百分比%）</label>
+                                <label for="rate">默认结算费率（百分比%）</label>
                                 <input type="text" class="form-control" data-name="rate" value="" placeholder="请输入结算费率">
                             </div>
                         </div>
@@ -165,6 +165,29 @@
                                 <label for="settleFee">每笔结算手续费（单位RMB）</label>
                                 <input type="text" class="form-control" data-name="settleFee" value=""
                                        placeholder="结算手续费 支持两位小数 0 则不收手续费">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="rate">微信支付费率（百分比%）</label>
+                                <input type="text" class="form-control" data-name="rateWx" value=""
+                                       placeholder="请输入结算费率">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="rate">QQ钱包费率（百分比%）</label>
+                                <input type="text" class="form-control" data-name="rateQQ" value=""
+                                       placeholder="请输入结算费率">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="rate">支付宝费率（百分比%）</label>
+                                <input type="text" class="form-control" data-name="rateAlipay" value=""
+                                       placeholder="请输入结算费率">
                             </div>
                         </div>
                     </div>
@@ -343,7 +366,8 @@
                                         </select>
                                     </div>
                                     <div class="col-md-4">
-                                        <input type="text" class="form-control" data-value="wxxMeanMoney" placeholder="均分金额 只能整数" style="display: none;">
+                                        <input type="text" class="form-control" data-value="wxxMeanMoney"
+                                               placeholder="均分金额 只能整数" style="display: none;">
                                         <select class="form-control" data-value="payAisle" disabled>
                                             <option value="0">没有更多选项</option>
                                         </select>

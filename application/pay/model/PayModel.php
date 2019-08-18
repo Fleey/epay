@@ -12,23 +12,48 @@ class PayModel
      * 返回金额相关费率金额譬如100 95.5费率 返回4.5的利润费率
      * @param int $uid
      * @param int $orderMoney
+     * @param int $orderType
      * @return int|string|null
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public static function getOrderRateMoney(int $uid, int $orderMoney)
+    public static function getOrderRateMoney(int $uid, int $orderMoney, int $orderType = 0)
     {
-        $selectResult = Db::table('epay_user')->where('id', $uid)->limit(1)->field('rate')->select();
-        if (empty($selectResult))
-            return null;
-        $rate = $selectResult[0]['rate'] / 100;
+        $rateConfig = getPayUserAttr($uid, 'payRate');
+        if (!empty($rateConfig) && $orderType != 0) {
+            $rateConfig = unserialize($rateConfig);
+            if ($orderType == 1) {
+                $rate = $rateConfig['rateWx'];
+            } else if ($orderType == 2) {
+                $rate = $rateConfig['rateQQ'];
+            } else if ($orderType == 3) {
+                $rate = $rateConfig['rateAlipay'];
+            } else {
+                $rate = 0;
+            }
+            $rate /= 100;
+        } else {
+            $selectResult = Db::table('epay_user')->where('id', $uid)->limit(1)->field('rate')->select();
+            if (empty($selectResult)) {
+                $userInfo = \think\Db::table('epay_user')->where('id', $uid)->field('rate')->limit(1)->select();
+                if (empty($userInfo))
+                    return null;
+                if (empty($userInfo[0]['rate'])) {
+                    $config               = getConfig();
+                    $userInfo[0]['rate'] = $config['defaultMoneyRate'];
+                }
+                $rate = $userInfo[0]['rate'] / 100;
+            }else{
+                $rate = $selectResult[0]['rate'] / 100;
+            }
+        }
 
         $addMoneyRate = $orderMoney * ($rate / 100);
 //        $addMoneyRate = $addMoneyRate * 10;
         $addMoneyRate = number_format($addMoneyRate, 2, '.', '');
         //转成10进制
-        return ($orderMoney - $addMoneyRate)*10;
+        return ($orderMoney - $addMoneyRate) * 10;
     }
 
     /**

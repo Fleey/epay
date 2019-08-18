@@ -570,32 +570,23 @@ function processOrder($tradeNo, $notify = true)
         return;
 //    usleep(100000);
     //睡眠50ms 容错主从同步慢问题
-    $orderInfo = \think\Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,status')->limit(1)->select();
+    $orderInfo = \think\Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid,money,status,type')->limit(1)->select();
     if (empty($orderInfo))
         return;
     if (!$orderInfo[0]['status'])
         return;
     //订单无效
-    $userInfo = \think\Db::table('epay_user')->where('id', $orderInfo[0]['uid'])->field('clearType,username,rate')->limit(1)->select();
+    $userInfo = \think\Db::table('epay_user')->where('id', $orderInfo[0]['uid'])->field('clearType')->limit(1)->select();
     if (empty($userInfo))
         return;
 
-    if (empty($orderInfo[0]['rate'])) {
-        $config               = getConfig();
-        $orderInfo[0]['rate'] = $config['defaultMoneyRate'];
-    }
-    $rate = $userInfo[0]['rate'] / 100;
-
-
     $rateMoney = \app\pay\model\PayModel::getOrderAttr($tradeNo, 'rateMoney');
     if (empty($rateMoney)) {
-        $addMoneyRate = $orderInfo[0]['money'] * ($rate / 100);
-        $addMoneyRate = $addMoneyRate * 10;
-        $addMoneyRate = number_format($addMoneyRate, 2, '.', '');
-        //累计金额方便统计 仅仅保留两位小数
-        $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate)->update();
+        $addMoneyRate = ($orderInfo[0]['money'] * 10) - \app\pay\model\PayModel::getOrderRateMoney($orderInfo[0]['uid'], $orderInfo[0]['money'], $orderInfo[0]['type']);
+        $result       = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->inc('balance', $addMoneyRate)->update();
     } else {
         $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->dec('balance', $rateMoney)->update();
+        //如果存在rateMoney字段则进行扣除金额操作
     }
     //处理用户余额部分
     if (!$result) {

@@ -96,7 +96,7 @@ class WxPayModel
             'mch_id'        => $this->mchID,
             'nonce_str'     => getRandChar(32),
             'out_trade_no'  => $tradeNo,
-            'out_refund_no' => md5(time()),
+            'out_refund_no' => md5(uniqid()),
             'total_fee'     => $totalMoney,
             'refund_fee'    => $refundMoney,
         ];
@@ -126,7 +126,7 @@ class WxPayModel
             return [false, $result['return_msg']];
         if (!empty($result['err_code'])) {
             if ($result['err_code_des'] == '累计退款金额大于支付金额') {
-                return $this->orderRefund($tradeNo, $totalMoney, $refundMoney - 1, $sslData);
+                return $this->orderRefund($tradeNo, $totalMoney, $refundMoney - 1, $sslData,$notifyUrl);
             }
             return [false, '[' . $result['err_code'] . ']' . $result['err_code_des']];
         }

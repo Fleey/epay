@@ -73,7 +73,7 @@ class Index extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '通知地址(notify_url)不能为空']);
         if (empty($this->getData['return_url']))
             return $this->fetch('/SystemMessage', ['msg' => '回调地址(return_url)不能为空']);
- 
+
         if (!is_IntOrDecimal($this->getData['money']))
             return $this->fetch('/SystemMessage', ['msg' => '金额(money) 格式不正确']);
         //判断金额格式 禁止那些E
@@ -204,15 +204,6 @@ class Index extends Controller
             ]);
             if (!$result)
                 return $this->fetch('/SystemMessage', ['msg' => '创建订单失败,请重试']);
-
-            if ($userPayConfig['wxpay']['apiType'] == 2) {
-                Db::table('epay_order_attr')->insert([
-                    'tradeNo'    => $tradeNo,
-                    'attrKey'    => 'rateMoney',
-                    'attrValue'  => $orderRateMoney,
-                    'createTime' => $orderCreateTime
-                ]);
-            }
 
             if ($orderDiscountMoney != 0)
                 Db::table('epay_order_attr')->insert([

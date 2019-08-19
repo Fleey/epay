@@ -211,6 +211,7 @@ class WxxApiV1Model
         if ($result['return_code'] != 'SUCCESS')
             return ['isSuccess' => false, 'msg' => $result['return_msg']];
         if ($result['result_code'] != 'SUCCESS') {
+            trace('[小微服务商]修改结算银行卡失败 ' . json_encode($result), 'warning');
             if (!empty($result['err_code_desc']))
                 return ['isSuccess' => false, 'msg' => $result['err_code'] . '  ' . $result['err_code_desc']];
             else
@@ -218,6 +219,8 @@ class WxxApiV1Model
         }
         if (self::signParam($result, $this->appKey, 'HMAC-SHA256') != $result['sign'])
             return ['isSuccess' => false, 'msg' => 'return data sign fail'];
+
+        trace('[小微服务商]修改结算银行卡成功 mch_id => ' . $result['mch_id'], 'info');
 
         return ['isSuccess' => true, 'data' => [
             'mch_id'     => $result['mch_id'],
@@ -512,7 +515,7 @@ class WxxApiV1Model
     {
         $tempBuff = '';
         foreach ($data as $key => $value) {
-            if ($key != 'sign')
+            if ($key != 'sign' && $value != '')
                 $tempBuff .= $key . '=' . $value . '&';
         }
         $tempBuff = trim($tempBuff, '&');

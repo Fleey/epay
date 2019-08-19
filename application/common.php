@@ -454,9 +454,9 @@ function arrayToXml(array $arr)
 {
     $xml = '<xml>';
     foreach ($arr as $key => $val) {
-        if (is_numeric($val)) {
-            $xml .= "<$key>$val</$key>";
-        } else
+        if (is_numeric($val))
+            $xml .= "<$key>![CDATA[$val</$key>";
+        else
             $xml .= "<$key><![CDATA[$val]]></$key>";
     }
     $xml .= '</xml>';

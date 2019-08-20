@@ -89,12 +89,13 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '平台订单ID不存在']);
         $orderInfo[0]['tradeNo'] = (string)$orderInfo[0]['tradeNo'];
 
-        $discountMoney                 = Db::table('epay_order_attr')->where([
-            'tradeNo' => $tradeNo,
-            'attrKey' => 'discountMoney'
-        ])->field('attrValue')->limit(1)->select();
+        $discountMoney                 = PayModel::getOrderAttr($tradeNo, 'discountMoney');
         $orderInfo[0]['discountMoney'] = empty($discountMoney) ? 0 : $discountMoney[0]['attrValue'];
         $orderInfo[0]['discountMoney'] /= 100;
+
+        $tradePayConfig             = PayModel::getOrderAttr($tradeNo, 'payConfig');
+        $tradePayConfig             = json_decode($tradePayConfig,true);
+        $orderInfo[0]['sub_mch_id'] = $tradePayConfig['subMchID'];
         return json(['status' => 1, 'data' => $orderInfo[0]]);
     }
 
@@ -271,8 +272,8 @@ class Index extends Controller
             $data['rateWx']     = $data['rate'] / 100;
             $data['rateQQ']     = $data['rate'] / 100;
             $data['rateAlipay'] = $data['rate'] / 100;
-        }else{
-            $payRate = unserialize($payRate);
+        } else {
+            $payRate            = unserialize($payRate);
             $data['rateWx']     = $payRate['rateWx'] / 100;
             $data['rateQQ']     = $payRate['rateQQ'] / 100;
             $data['rateAlipay'] = $payRate['rateAlipay'] / 100;

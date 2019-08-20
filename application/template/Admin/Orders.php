@@ -101,6 +101,10 @@
                         <span class="title">回调域名</span>
                         <span data-name="notify_url"></span>
                     </div>
+                    <div class="col-md-6 item">
+                        <span class="title">小微商户号</span>
+                        <span data-name="sub_mch_id"></span>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

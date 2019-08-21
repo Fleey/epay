@@ -764,14 +764,13 @@ function getServerConfig(string $key)
 
 function getIpSite(String $ip)
 {
-    $content = curl("http://ip.taobao.com/service/getIpInfo.php?ip={$ip}");
+    $content = curl("http://whois.pconline.com.cn/ipJson.jsp?json=true&ip={$ip}");
     if ($content === false)
         return '未知登陆地区';
     $json = json_decode($content, true);
     if ($json['code'] != 0)
         return '未知登陆地区';
-    $json = $json['data'];
-    return $json['country'] . '-' . $json['region'] . '-' . $json['city'] . '   ' . $json['isp'];
+    return $json['addr'];
 }
 
 function getClientIp()

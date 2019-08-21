@@ -122,8 +122,8 @@ class CenterPayModel
         $requestParam['sign_type'] = 'MD5';
         //build sign
         $header = [];
-        $header[] = 'User-Agent: '.Request::header('user-agent');
-        $header[] = 'X-FORWARDED-FOR: '.getClientIp();
+//        $header[] = 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36';
+//        $header[] = 'X-FORWARDED-FOR: '.getClientIp();
         $requestResult = curl($url, $header, 'post', $requestParam);
         if ($requestResult === false)
             return false;

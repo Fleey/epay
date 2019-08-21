@@ -134,7 +134,7 @@ $(function () {
         var accountNumber = $('#applyInfo [data-name="accountNumber"]').val();
         var accountBank = $('#applyInfo [data-name="accountBank"]').val();
 
-        var bankName = $('#applyInfo [data-name="bankName"]').val();
+        var bankName = $('#applyInfo [data-name="bankName"] option:selected').text();
 
         var merchantShortName = $('#applyInfo [data-name="merchantShortName"]').val();
         var servicePhone = $('#applyInfo [data-name="servicePhone"]').val();
@@ -503,8 +503,12 @@ $(function () {
                                 value = '';
                         } else if (key === 'bankName') {
                             if (value.length !== 0)
-                                $('#applyInfo select[data-name="bankName"]').append('<option value="' + value + '">' + value + '</option>');
+                                $('#applyInfo select[data-name="bankName"]').append('<option value="' + value + '">' + value + '</option>').val(value).trigger('change');
+                            else
+                                $('#applyInfo select[data-name="bankName"]').html('<option selected disabled>请选择开户支行全称</option>').trigger('change');
                             return;
+                            // else
+                                // $('#applyInfo select[data-name="bankName"]').html
                         }
                         setDataNameInfo(key, value);
                     }

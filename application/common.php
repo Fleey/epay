@@ -328,12 +328,12 @@ function putConfig(array $data)
 
 /**
  * @param int $uid
- * @param string $type
+ * @param int $type
  * @param string $ipv4
  * @param string $data
  * @return int|string
  */
-function addServerLog(int $uid, string $type, string $ipv4, string $data)
+function addServerLog($uid, $type, $ipv4, $data)
 {
     $insertResult = \think\Db::table('epay_log')->insert([
         'uid'        => $uid,

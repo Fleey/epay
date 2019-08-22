@@ -1,7 +1,11 @@
 $(function () {
     function decodeUnicode(str) {
-        str = str.replace(/\\/g, "%");
-        return unescape(str);
+        try{
+            str = str.replace(/\\/g, "%");
+            return unescape(str);
+        }catch (e) {
+            return '未知内容';
+        }
     }
 
     var dataTableConfig = {

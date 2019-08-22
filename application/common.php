@@ -770,9 +770,7 @@ function getIpSite(String $ip)
     $content = curl("http://whois.pconline.com.cn/ipJson.jsp?json=true&ip={$ip}");
     if ($content === false)
         return '未知登陆地区';
-    $json = json_decode($content, true);
-    if ($json['code'] != 0)
-        return '未知登陆地区';
+    $json = json_decode(mb_convert_encoding($content, 'UTF-8', 'GBK'), true);
     return $json['addr'];
 }
 

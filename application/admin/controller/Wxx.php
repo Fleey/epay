@@ -559,6 +559,8 @@ class Wxx extends Controller
             $result   = $wxxModel->reAutoWithDrawByDate($value['subMchID'], $date);
             if ($result['isSuccess'])
                 $isSuccessSettle = true;
+            else
+                trace('[微信小微商户提现失败]' . $result['msg'], 'warning');
         }
         if ($isSuccessSettle)
             return json(['status' => 1, 'msg' => '重新发起提现成功']);

@@ -128,7 +128,7 @@ class CenterPay extends Controller
         if (empty($tradeData))
             return json(['status' => 0, 'msg' => 'order data empty']);
         if ($tradeData[0]['status'])
-            return json(['status' => 0, 'msg' => 'order status paid']);
+            return json(['status' => 1, 'msg' => 'order status paid']);
         if ($tradeData[0]['money'] != $totalMoney)
             return json(['status' => 0, 'msg' => 'order money error']);
         if (!$centerPayModel->isPay($tradeNoOut))

@@ -120,12 +120,12 @@ class WxPayModel
             return [false, $result['return_msg']];
         unset($result['refund_channel']);
         if ($this->signParam($result) != $result['sign'])
-            return [false, '签名失败,可能数据被修改,请联系管理员处理'];
+            return [false, '签名失败,数据被修改,请联系管理员处理'];
         //检查是否被劫持 验签数据
         if ($result['return_code'] != 'SUCCESS')
             return [false, $result['return_msg']];
         if (!empty($result['err_code'])) {
-            if ($result['err_code_des'] == '累计退款金额大于支付金额') {
+            if ($result['err_code_des'] == '累计退款金额大于支付金额' || $result['err_code_des'] == 'refund_fee大于可退金额') {
                 return $this->orderRefund($tradeNo, $totalMoney, $refundMoney - 1, $sslData,$notifyUrl);
             }
             return [false, '[' . $result['err_code'] . ']' . $result['err_code_des']];
@@ -207,7 +207,7 @@ class WxPayModel
             'trade_type'       => $type,
             'notify_url'       => $notifyUrl,
             'nonce_str'        => getRandChar(32),
-            'product_id'       => md5(time()),
+            'product_id'       => md5($tradeData['productName']),
             'time_start'       => date('YmdHis', time()),
             'time_expire'      => date('YmdHis', time() + 360),
             'sign_type'        => $this->signType

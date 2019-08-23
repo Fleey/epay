@@ -515,7 +515,7 @@ class WxxApiV1Model
     {
         $tempBuff = '';
         foreach ($data as $key => $value) {
-            if ($key != 'sign' && $value != '')
+            if ($key != 'sign' && !empty($value))
                 $tempBuff .= $key . '=' . $value . '&';
         }
         $tempBuff = trim($tempBuff, '&');

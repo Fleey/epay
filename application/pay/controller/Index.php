@@ -3,6 +3,8 @@
 namespace app\pay\controller;
 
 use app\pay\model\PayModel;
+use app\pay\model\QQPayModel;
+use app\pay\model\WxPayModel;
 use think\App;
 use think\Controller;
 use think\Db;
@@ -290,6 +292,11 @@ class Index extends Controller
         if (empty($result))
             return json(['status' => 0, 'msg' => '未付款']);
 
+        if ($result[0]['status'] == 0) {
+            $result[0]['status'] = $this->advNotify($type, $tradeNo);
+        }
+        //高级回调模式判断
+
         if ($isMobile && $type == 1) {
             $isOpenCancelReturn = getPayUserAttr($result[0]['uid'], 'isCancelReturn');
             $isOpenCancelReturn = $isOpenCancelReturn == 'true';
@@ -307,5 +314,57 @@ class Index extends Controller
         if ($result[0]['status'])
             $returnData['url'] = buildCallBackUrl($tradeNo, 'return');
         return json($returnData);
+    }
+
+    /**
+     * 高级回调模式 0 未支付 1 已支付 自动改状态和回调
+     * @param int $orderType
+     * @param string $tradeNo
+     * @return int
+     * @throws Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     * @throws \think\exception\PDOException
+     */
+    private function advNotify(int $orderType, string $tradeNo): int
+    {
+        $isPay                                          = false;
+        $this->systemConfig['wxpay']['isOpenAdvNotify'] = empty($this->systemConfig['wxpay']['isOpenAdvNotify']) ? false : $this->systemConfig['wxpay']['isOpenAdvNotify'];
+        $this->systemConfig['qqpay']['isOpenAdvNotify'] = empty($this->systemConfig['qqpay']['isOpenAdvNotify']) ? false : $this->systemConfig['qqpay']['isOpenAdvNotify'];
+        if ($orderType == 1 && $this->systemConfig['wxpay']['isOpenAdvNotify']) {
+            if ($this->systemConfig['wxpay']['apiType'] == 3) {
+                $getPayConfig = PayModel::getOrderAttr($tradeNo, 'payConfig');
+                if(!empty($getPayConfig)){
+                    $getPayConfig = json_decode($getPayConfig, true);
+                    $wxPayModel = new WxPayModel(WxPay::buildWxxPayConfig($getPayConfig['accountID'], $getPayConfig['subMchID'],$this->systemConfig));
+                    $payResult = $wxPayModel->selectWxPayRecord($tradeNo);
+                }
+                //小微商户
+            } else if ($this->systemConfig['wxpay']['apiType'] == 2 || $this->systemConfig['wxpay']['apiType'] == 3) {
+                $wxPayModel = new WxPayModel($this->systemConfig['wxpay']);
+                $payResult = $wxPayModel->selectWxPayRecord($tradeNo);
+                //非小微商户
+            }
+            $payResult  = empty($payResult['trade_state']) ? 'FAIL' : $payResult['trade_state'];
+            $isPay      = $payResult == 'SUCCESS';
+            //微信支付
+        } else if ($orderType == 2 && $this->systemConfig['qqpay']['isOpenAdvNotify']) {
+            if ($this->systemConfig['qqpay']['apiType'] == 0) {
+                $QQPayModel = new QQPayModel($this->systemConfig['qqpay']);
+                $payResult  = $QQPayModel->selectPayRecord($tradeNo);
+                $payResult  = empty($payResult['trade_state']) ? 'FAIL' : $payResult['trade_state'];
+                $isPay      = $payResult == 'SUCCESS';
+            }
+            //QQ钱包
+        }
+        if ($isPay) {
+            Db::table('epay_order')->limit(1)->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->update([
+                'status'  => 1,
+                'endTime' => getDateTime()
+            ]);
+            processOrder($tradeNo);
+        }
+        return 0;
     }
 }

@@ -95,13 +95,24 @@
                                 </select>
                             </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="partner">是否开启接口</label>
-                        <select class="form-control" data-name="isOpen">
-                            <option value="1">开启</option>
-                            <option value="0">关闭</option>
-                        </select>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner">是否开启接口</label>
+                                <select class="form-control" data-name="isOpen">
+                                    <option value="1">开启</option>
+                                    <option value="0">关闭</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner">是否开启高级回调模式（建议被防火墙拦截情况下启动）</label>
+                                <select class="form-control" data-name="isOpenAdvNotify">
+                                    <option value="1">开启</option>
+                                    <option value="0">关闭</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="partner">关闭接口提示信息</label>
@@ -188,12 +199,25 @@
                             <option value="1">易支付中央系统</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="partner">是否开启接口</label>
-                        <select class="form-control" data-name="isOpen">
-                            <option value="1">开启</option>
-                            <option value="0">关闭</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner">是否开启接口</label>
+                                <select class="form-control" data-name="isOpen">
+                                    <option value="1">开启</option>
+                                    <option value="0">关闭</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="partner">是否开启高级回调模式（建议被防火墙拦截情况下启动）</label>
+                                <select class="form-control" data-name="isOpenAdvNotify">
+                                    <option value="1">开启</option>
+                                    <option value="0">关闭</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="partner">关闭接口提示信息</label>

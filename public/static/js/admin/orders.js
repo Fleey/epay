@@ -474,28 +474,13 @@ $(function () {
                 });
                 return true;
             }
-            var callbackList = data['data'];
-            var windows = window.open('_blank');
-            var nowSite = 0;
-            var handler = setInterval(function () {
-                swal({
-                    title: '请稍后...',
-                    text: '正在为您努力回调订单中（' + nowSite + ' / ' + callbackList.length + '）。。。',
-                    showConfirmButton: false
-                });
-                if (nowSite > callbackList.length) {
-                    windows.close();
-                    swal({
-                        title: '',
-                        text: '已经为您回调完成所有订单',
-                        showConfirmButton: false,
-                        timer: 1500,
-                        type: 'success'
-                    });
-                    clearInterval(handler)
-                }
-                windows.location = callbackList[nowSite++];
-            }, 2000);
+            swal({
+                title: '新增批量回调任务成功',
+                text: data['msg'],
+                showConfirmButton: false,
+                timer: 1500,
+                type: 'success'
+            });
 
         }, 'json');
     });

@@ -94,7 +94,7 @@ class Index extends Controller
         $orderInfo[0]['discountMoney'] /= 100;
 
         $tradePayConfig             = PayModel::getOrderAttr($tradeNo, 'payConfig');
-        $tradePayConfig             = json_decode($tradePayConfig,true);
+        $tradePayConfig             = json_decode($tradePayConfig, true);
         $orderInfo[0]['sub_mch_id'] = $tradePayConfig['subMchID'];
         return json(['status' => 1, 'data' => $orderInfo[0]]);
     }
@@ -1123,8 +1123,8 @@ class Index extends Controller
         if ($payType != 'all' && $payType != '1' && $payType != '2' && $payType != '3')
             return json(['status' => 0, 'msg' => '支付类型有误']);
 
-        $callbackList = [];
-        $filterData   = [
+        $notifyCount = 0;
+        $filterData  = [
             ['uid', '=', $uid],
             ['endTime', '>=', $startTime],
             ['endTime', '<=', $endTime],
@@ -1134,11 +1134,12 @@ class Index extends Controller
             $filterData['type'] = $payType;
         $data = Db::table('epay_order')->where($filterData)->field('tradeNo')->cursor();
         foreach ($data as $value) {
-            $callbackList[] = buildCallBackUrl($value['tradeNo'], 'notify');
+            $notifyCount++;
+            addCallBackLog($uid, buildCallBackUrl($value['tradeNo'], 'notify'));
         }
-        if (empty($callbackList))
+        if (!$notifyCount)
             return json(['status' => 0, 'msg' => '暂无查询到更多的订单']);
-        return json(['status' => 1, 'msg' => '获取到共计 ' . count($callbackList) . ' 个订单', 'data' => $callbackList]);
+        return json(['status' => 1, 'msg' => '获取到共计 ' . $notifyCount . ' 个订单，将在15秒全部回调完毕']);
     }
 
     /**

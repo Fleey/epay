@@ -106,11 +106,11 @@ class QQPayModel
         if ($result['result_code'] != 'SUCCESS') {
             if (isset($result['err_code'])) {
                 if ($result['err_code'] == 'PARAM_ERROR')
-                    return json([false, '[' . $result['err_code'] . ']参数请求错误']);
+                    return [[false, '[' . $result['err_code'] . ']参数请求错误']];
                 else if ($result['err_code'] == 'REFUND_MONEY_EXCEEDED')
-                    return json([false, '[' . $result['err_code'] . ']退款金额错误']);
+                    return [false, '[' . $result['err_code'] . ']退款金额错误'];
                 trace('[QQ钱包退款错误] data => ' . json_encode($result), 'warning');
-                return json([false, '请联系相关人员 错误 => ' . $result['err_code']]);
+                return [false, '请联系相关人员 错误 => ' . $result['err_code']];
             }
         }
         return [true, '申请退款成功'];

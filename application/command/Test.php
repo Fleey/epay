@@ -2,11 +2,10 @@
 
 namespace app\command;
 
-use app\admin\controller\Wxx;
-use app\pay\model\PayModel;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
+
 
 
 class Test extends Command
@@ -30,7 +29,6 @@ class Test extends Command
 //        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
 //        echo '4'.PHP_EOL;
 //        Db::table('epay_wxx_trade_record')->whereTime('createTime', '<=', $deleteTime)->delete();
-        exit(dump(getIpSite('127.0.0.1')));
     }
 
 

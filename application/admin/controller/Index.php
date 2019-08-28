@@ -480,7 +480,11 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '订单结算类型有误']);
         if ($result[0]['money'] <= 0)
             return json(['status' => 0, 'msg' => '订单结算金额有误']);
-
+        $userInfo = Db::table('epay_user')->where('id', $result[0]['uid'])->field('balance')->limit(1)->select();
+        if (empty($userInfo))
+            return json(['status' => 0, 'msg' => '用户不存在，无法结算金额']);
+        if ($userInfo[0]['balance'] / 10 - $result[0]['money'] <= 0)
+            return json(['status' => 0, 'msg' => '用户余额不足，无法进行结算']);
         $result = $this->confirmSettle($id, $remark);
         return json(['status' => $result ? 1 : 0, 'msg' => $result ? '操作成功' : '操作失败']);
     }

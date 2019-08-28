@@ -6,3 +6,4 @@
 /config/database.php
 /config/config.txt
 /public/static/uploads
+/nginx.htaccess

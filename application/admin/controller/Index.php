@@ -333,12 +333,12 @@ class Index extends Controller
 
         $config = $config[$keyName];
         if (isset($config['certPublic'])) {
-            $config['certPublic'] = file_get_contents(FileModel::getFilePath($config['certPublic'], false));
+            $config['certPublic'] = @file_get_contents(FileModel::getFilePath($config['certPublic'], false));
             if ($config['certPublic'] === false)
                 $config['certPublic'] = '读取证书文件失败，请重新上传';
         }
         if (isset($config['certPrivate'])) {
-            $config['certPrivate'] = file_get_contents(FileModel::getFilePath($config['certPrivate'], false));
+            $config['certPrivate'] = @file_get_contents(FileModel::getFilePath($config['certPrivate'], false));
             if ($config['certPrivate'] === false)
                 $config['certPrivate'] = '读取证书文件失败，请重新上传';
         }

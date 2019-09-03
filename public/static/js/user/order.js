@@ -59,7 +59,7 @@ $(function () {
                     } else if (value['status'] === 3) {
                         tdDom7 = $(document.createElement("td")).text("退款中").style({color: "#3b4abb"});
                     } else if (value['status'] === 4) {
-                        tdDom7 = $(document.createElement("td")).text("退款中").addClass('text-warning');
+                        tdDom7 = $(document.createElement("td")).text("已退款").addClass('text-warning');
                     }
                     trDom.append(tdDom1).append(tdDom2).append(tdDom3).append(tdDom4).append(tdDom5).append(tdDom6).append(tdDom7).append('<td><button data-type="Notified" class="btn btn-outline-primary btn-sm">重新通知</button></td>');
                     $("#orderList>tbody").append(trDom)

@@ -395,7 +395,7 @@ class Wxx extends Controller
                 foreach ($applyList as $info) {
                     $wxxModel = self::getWxxApiModel($info['accountID']);
                     if ($isModifyArchives) {
-                        $wxxModel->modifyArchives($info['subMchID'], $accountNumber, $accountBank, $bankName, $bankAddressCode);
+                        $wxxModel->modifyArchives($info['subMchID'],$bankAddressCode, $accountNumber, $accountBank, $bankName);
                     }
                     if ($isModifyContactInfo) {
                         $wxxModel->modifyContactInfo($info['subMchID'], $servicePhone, '', $merchantShortName);
@@ -485,7 +485,7 @@ class Wxx extends Controller
                 $indoorPic = $indoorPic['data']['media_id'];
             }
 
-            $businessCode = 'apply-' . substr(md5($accountID . $applyInfo['id']), 0, '20');
+            $businessCode = 'apply-' . substr(md5($accountID . $applyInfo['idCardNumber']), 0, 20);
 
             $applyResult = $wxxModel->applyMicro($idCardCopy, $idCardNational, $applyInfo['idCardName'],
                 $applyInfo['idCardNumber'], $applyInfo['idCardValidTime'], $applyInfo['accountName'],

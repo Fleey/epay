@@ -185,21 +185,25 @@ class WxxApiV1Model
      * https://pay.weixin.qq.com/wiki/doc/api/xiaowei.php?chapter=21_2
      * @return array
      */
-    public function modifyArchives(string $subMchID, string $accountNo, string $accountBank, string $bankName, string $bankAddressCode)
+    public function modifyArchives(string $subMchID, string $bankAddressCode, string $accountNo = '', string $accountBank = '', string $bankName = '')
     {
-        $requestUrl    = 'https://api.mch.weixin.qq.com/applyment/micro/modifyarchives';
-        $param         = [
+        $requestUrl = 'https://api.mch.weixin.qq.com/applyment/micro/modifyarchives';
+        $param      = [
             'version'           => '1.0',
             'mch_id'            => $this->mid,
             'nonce_str'         => getRandChar(16),
-            'account_number'    => $this->getEncrypt($accountNo),
-            'bank_name'         => $bankName,
-            'account_bank'      => $accountBank,
             'bank_address_code' => $bankAddressCode,
             'cert_sn'           => $this->certSN,
             'sign_type'         => 'HMAC-SHA256',
             'sub_mch_id'        => $subMchID
         ];
+        if (!empty($bankName))
+            $param['bank_name'] = $bankName;
+        if(!empty($accountNo))
+            $param['account_number'] = $this->getEncrypt($accountNo);
+        if(!empty($accountBank))
+            $param['account_bank'] = $accountBank;
+
         $param['sign'] = self::signParam($param, $this->appKey, 'HMAC-SHA256');
 
         $result = curl($requestUrl, [], 'post', arrayToXml($param), 'xml', false, false, [

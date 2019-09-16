@@ -2,10 +2,10 @@
 
 namespace app\command;
 
+use app\admin\model\DataModel;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
-
 
 
 class Test extends Command
@@ -29,6 +29,8 @@ class Test extends Command
 //        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
 //        echo '4'.PHP_EOL;
 //        Db::table('epay_wxx_trade_record')->whereTime('createTime', '<=', $deleteTime)->delete();
+
+        dump(DataModel::setData('test', '2019-09-16', 16));
     }
 
 

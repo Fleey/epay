@@ -10,6 +10,8 @@
 // +----------------------------------------------------------------------
 
 // 应用公共文件
+use app\admin\model\DataModel;
+
 /**
  * 获取随机字符串
  * @param int $length
@@ -31,9 +33,13 @@ function getRandChar($length = 8)
  * 返回当前时间格式 存储数据库专用
  * @return false|string
  */
-function getDateTime()
+function getDateTime($isDate = false)
 {
-    return date('Y-m-d H:i:s', time());
+    if ($isDate) {
+        return date('Y-m-d', time());
+    } else {
+        return date('Y-m-d H:i:s', time());
+    }
 }
 
 /**
@@ -139,7 +145,7 @@ function is_email($text)
     return filter_var($text, FILTER_VALIDATE_EMAIL) === false ? false : true;
 }
 
-function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlencode = true, $isProxy = false, $certData = [])
+function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlencode = true, $isProxy = false, $certData = [], $isAwait = false)
 {
     if (empty($url))
         return '';
@@ -166,8 +172,13 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+    if ($isAwait) {
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 120);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 120);
+    } else {
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+    }
 //    curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
     curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 
@@ -627,6 +638,30 @@ function processOrder($tradeNo, $notify = true)
                 }
             }
 
+            if (isset($orderPayConfig['isReservedMoneyModel'])) {
+                if ($orderPayConfig['isReservedMoneyModel']) {
+                    $today = getDateTime(true);
+
+                    DataModel::setData($orderInfo[0]['uid'].'_reservedMoney_total', $today, $orderInfo[0]['money']);
+                    DataModel::setData($orderInfo[0]['uid'].'_reservedMoney_temp', $today, $orderInfo[0]['money']);
+
+                    $userPayConfig = unserialize(getPayUserAttr($orderInfo[0]['uid'], 'payConfig'));
+                    $userPayConfig = $userPayConfig['wxpay'];
+                    if (empty($userPayConfig['wxxMeanMoney']))
+                        $userPayConfig['wxxMeanMoney'] = 200;
+                    $roundMoney = $userPayConfig['wxxMeanMoney'] * 100;
+                    //获取分批金额
+
+                    $tempMoney = DataModel::getData($orderInfo[0]['uid'] . '_reservedMoney_temp', $today);
+                    if (!$tempMoney[0])
+                        $tempMoney = 0;
+                    else
+                        $tempMoney = floatval($tempMoney[1]);
+                    if ($tempMoney > $roundMoney)
+                        DataModel::setData($orderInfo[0]['uid'] . '_reservedMoney_temp', $today, $roundMoney, 'dec');
+                }
+                //预留金额处理
+            }
             //轮询金额
         }
     }

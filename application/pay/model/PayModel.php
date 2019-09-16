@@ -40,11 +40,11 @@ class PayModel
                 if (empty($userInfo))
                     return null;
                 if (empty($userInfo[0]['rate'])) {
-                    $config               = getConfig();
+                    $config              = getConfig();
                     $userInfo[0]['rate'] = $config['defaultMoneyRate'];
                 }
                 $rate = $userInfo[0]['rate'] / 100;
-            }else{
+            } else {
                 $rate = $selectResult[0]['rate'] / 100;
             }
         }
@@ -265,6 +265,19 @@ class PayModel
             $insetID      = $insertResult ? $selectResult : 0;
         }
         return $insetID;
+    }
+
+    public static function removeOrderAttr(string $tradeNo, string $attrKey)
+    {
+        try {
+            $result = Db::table('epay_order_attr')->where([
+                'tradeNo' => $tradeNo,
+                'attrKey' => $attrKey
+            ])->limit(1)->delete();
+        } catch (\Exception $exception) {
+            $result = 0;
+        }
+        return $result != 0;
     }
 
 }

@@ -54,8 +54,10 @@ $(function () {
         var selectValue = $(this).val();
         if (selectValue === '1') {
             $('#applyInfo input[data-name="uid"]').attr("disabled", '');
+            $('#applyInfo input[data-name="reservedMoney"]').attr("disabled", '');
         } else {
             $('#applyInfo input[data-name="uid"]').removeAttr("disabled");
+            $('#applyInfo input[data-name="reservedMoney"]').removeAttr("disabled");
         }
     });
 
@@ -142,6 +144,8 @@ $(function () {
         var rate = $('#applyInfo [data-name="rate"]').val();
         var contact = $('#applyInfo [data-name="contact"]').val();
         var contactPhone = $('#applyInfo [data-name="contactPhone"]').val();
+
+        var reservedMoney = $('#applyInfo [data-name="reservedMoney"]').val();
 
         if (merchantShortName.length === 0) {
             swal('请求失败', '商户简称必须填写', 'error');
@@ -257,7 +261,8 @@ $(function () {
             productDesc: productDesc,
             rate: rate,
             contact: contact,
-            contactPhone: contactPhone
+            contactPhone: contactPhone,
+            reservedMoney:reservedMoney
         };
         if ($('#applyInfo #saveInfo').attr('data-type') !== 'add') {
             requestData['id'] = $('#applyInfo').attr('data-apply-id');
@@ -508,7 +513,7 @@ $(function () {
                                 $('#applyInfo select[data-name="bankName"]').html('<option selected disabled>请选择开户支行全称</option>').trigger('change');
                             return;
                             // else
-                                // $('#applyInfo select[data-name="bankName"]').html
+                            // $('#applyInfo select[data-name="bankName"]').html
                         }
                         setDataNameInfo(key, value);
                     }

@@ -3,6 +3,7 @@
 namespace app\pay\controller;
 
 use app\admin\controller\Wxx;
+use app\admin\model\DataModel;
 use app\pay\model\PayModel;
 use app\pay\model\WxPayModel;
 use function GuzzleHttp\Psr7\parse_query;
@@ -123,31 +124,16 @@ class WxPay extends Controller
             //手机微信内置浏览器支付 共存支付或 jsapi支付 拉起支付
             PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'jsapi');
         } else {
-            if ($wxPayMode == 2) {
-                if (empty($this->systemConfig['wxpay']['jsApiAppSecret']))
-                    return '<h1 style="margin-top: 50%;text-align: center;font-size: 18px;font-weight: 600;">支付配置参数有误,请联系站点管理员处理</h1>';
+            if ($this->request->isMobile()) {
                 $requestResult['code_url']    = shortenUrl(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s'), '', false, true));
                 $requestResult['return_code'] = 'SUCCESS';
                 $requestResult['result_code'] = 'SUCCESS';
+                PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'jsapi');
             } else {
-                //init pay model
-                if ($this->systemConfig['wxpay']['apiType'] != 3) {
-                    $wxPayModel    = new WxPayModel($this->systemConfig['wxpay'], 'h5');
-                    $requestResult = $wxPayModel->sendPayRequest($tradeData, $this->request->isMobile() ? 'MWEB' : 'NATIVE', $this->notifyUrl, '', $this->systemConfig['wxpay']['sub_mch_id']);
-                    PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'h5');
-                } else {
-                    if ($this->request->isMobile()) {
-                        $requestResult['code_url']    = shortenUrl(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s'), '', false, true));
-                        $requestResult['return_code'] = 'SUCCESS';
-                        $requestResult['result_code'] = 'SUCCESS';
-                        PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'jsapi');
-                    } else {
-                        $wxPayModel    = new WxPayModel($this->systemConfig['wxpay'], 'h5');
-                        $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE', $this->notifyUrl, '', $this->systemConfig['wxpay']['sub_mch_id']);
-                        //PC端微信支付
-                        PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'h5');
-                    }
-                }
+                $wxPayModel    = new WxPayModel($this->systemConfig['wxpay'], 'h5');
+                $requestResult = $wxPayModel->sendPayRequest($tradeData, 'NATIVE', $this->notifyUrl, '', $this->systemConfig['wxpay']['sub_mch_id']);
+                //PC端微信支付
+                PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'h5');
             }
         }
 
@@ -346,6 +332,7 @@ class WxPay extends Controller
     /**
      * @param string $tradeNo
      * @param array $systemConfig
+     * @param bool $isReservedMoneyModel
      * @return mixed
      * @throws Exception
      * @throws \think\db\exception\DataNotFoundException
@@ -353,7 +340,7 @@ class WxPay extends Controller
      * @throws \think\exception\DbException
      * @throws \think\exception\PDOException
      */
-    public static function getWxxPayConfig(string $tradeNo, array $systemConfig)
+    public static function getWxxPayConfig(string $tradeNo, array $systemConfig, bool $isReservedMoneyModel = false)
     {
         $orderInfo = Db::table('epay_order')->where('tradeNo', $tradeNo)->field('uid')->limit(1)->select();
         if (empty($orderInfo))
@@ -364,20 +351,57 @@ class WxPay extends Controller
             return self::buildWxxPayConfig($getPayConfig['accountID'], $getPayConfig['subMchID'], $systemConfig);
         }
         //存在预先配置
-        $uid                 = $orderInfo[0]['uid'];
-        $isCollectiveAccount = Db::table('epay_wxx_apply_info')->where('uid', $uid)->limit(1)->field('id')->select();
-        $isCollectiveAccount = empty($isCollectiveAccount);
-        //判断是否为集体号
+        $uid = $orderInfo[0]['uid'];
+
+        if ($isReservedMoneyModel) {
+            $isCollectiveAccount = true;
+        } else {
+            $isCollectiveAccount = Db::table('epay_wxx_apply_info')->where('uid', $uid)->limit(1)->field('id')->select();
+            $isCollectiveAccount = empty($isCollectiveAccount);
+            //判断是否为集体号
+        }
+
         if (!$isCollectiveAccount) {
             $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
                 ->leftJoin('epay_wxx_apply_list', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id')
-                ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID')->where([
+                ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID,epay_wxx_apply_list.tempMoney')->where([
                     'epay_wxx_apply_info.uid'    => $uid,
                     'epay_wxx_apply_info.type'   => 2,
                     'epay_wxx_apply_list.status' => 2
                 ])->order('epay_wxx_apply_list.rounds asc,epay_wxx_apply_list.tempMoney asc')->select();
             if (empty($userAccountList))
                 return [];
+
+            {
+                $reservedMoneyTarget = intval(getPayUserAttr($uid, 'reservedMoney'));
+                //目标预留金额
+                if (!empty($reservedMoneyTarget)) {
+                    $todayTotalReservedMoney = DataModel::getData($uid . '_reservedMoney_total', getDateTime(true));
+                    if (!$todayTotalReservedMoney[0])
+                        $todayTotalReservedMoney = 0;
+                    else
+                        $todayTotalReservedMoney = floatval($todayTotalReservedMoney[1]) / 100;
+                    //获取金额已经预留金额
+
+                    if ($todayTotalReservedMoney < $reservedMoneyTarget) {
+                        $todayTotalReservedMoneyTemp = DataModel::getData($uid . '_reservedMoney_temp', getDateTime(true));
+                        if (!$todayTotalReservedMoneyTemp[0])
+                            $todayTotalReservedMoneyTemp = 0;
+                        else
+                            $todayTotalReservedMoneyTemp = floatval($todayTotalReservedMoneyTemp[1]);
+
+                        if ($todayTotalReservedMoneyTemp < $userAccountList[0]['tempMoney']) {
+                            PayModel::removeOrderAttr($tradeNo, 'rateMoney');
+                            return self::getWxxPayConfig($tradeNo, $systemConfig, true);
+                            //已经达到预留标准
+                        }
+                        //尚未达到预留金额标准
+                    }
+                }
+            }
+
+            //独立号 判断是否需要压款部分逻辑
+
             PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 2]));
             return self::buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID'], $systemConfig);
             //独立号
@@ -389,7 +413,11 @@ class WxPay extends Controller
                     'epay_wxx_apply_list.status' => 2
                 ])->order('epay_wxx_apply_list.rounds asc,epay_wxx_apply_list.tempMoney asc')->select();
             //集体号
-            PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode(['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 1]));
+            $data = ['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 1];
+            if ($isReservedMoneyModel) {
+                $data['isReservedMoneyModel'] = true;
+            }
+            PayModel::setOrderAttr($tradeNo, 'payConfig', json_encode($data));
             return self::buildWxxPayConfig($userAccountList[0]['accountID'], $userAccountList[0]['subMchID'], $systemConfig);
         }
     }

@@ -44,7 +44,7 @@
             <div class="modal-body">
                 <div class="box-body">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="type">账号类型</label>
                                 <select data-name="type" class="form-control">
@@ -54,10 +54,16 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="uid">商户号</label>
                                 <input data-name="uid" class="form-control" placeholder="商户号" disabled>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="reservedMoney">预留金额</label>
+                                <input data-name="reservedMoney" class="form-control" placeholder="预留金额 留空不使用" disabled>
                             </div>
                         </div>
                         <div class="col-md-6">

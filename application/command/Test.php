@@ -30,7 +30,6 @@ class Test extends Command
 //        echo '4'.PHP_EOL;
 //        Db::table('epay_wxx_trade_record')->whereTime('createTime', '<=', $deleteTime)->delete();
 
-        dump(DataModel::setData('test', '2019-09-16', 16));
     }
 
 

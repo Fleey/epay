@@ -2,6 +2,7 @@
 
 namespace app\pay\controller;
 
+use app\admin\model\DataModel;
 use app\pay\model\PayModel;
 use app\pay\model\QQPayModel;
 use app\pay\model\WxPayModel;
@@ -237,6 +238,8 @@ class Index extends Controller
             //改变支付类型，注意这里可能存在问题，如果这个改变订单支付类型并且金额更新大于原先输入的金额数量
         }
         //解决用户交易号重复问题
+
+        DataModel::setData('order_total_count_' . $converPayType, date('Y-m-d H', time()), 1);
 
         if (!empty($userPayConfig)) {
             if ($type == 'tenpay')

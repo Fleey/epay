@@ -173,8 +173,8 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     if ($isAwait) {
-        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 120);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 120);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 120);
     } else {
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
         curl_setopt($ch, CURLOPT_TIMEOUT, 6);
@@ -609,6 +609,12 @@ function processOrder($tradeNo, $notify = true)
     //处理更新余额失败部分
 
     {
+        DataModel::setData('money_total_' . $orderInfo[0]['type'], date('Y-m-d H', time()), $orderInfo[0]['money']);
+        DataModel::setData('order_total_count_success_' . $orderInfo[0]['type'], date('Y-m-d H', time()),1);
+        //每小时
+    }
+
+    {
         $orderPayConfig = \app\pay\model\PayModel::getOrderAttr($tradeNo, 'payConfig');
         if (!empty($orderPayConfig)) {
             $orderPayConfig = json_decode($orderPayConfig, true);
@@ -642,8 +648,8 @@ function processOrder($tradeNo, $notify = true)
                 if ($orderPayConfig['isReservedMoneyModel']) {
                     $today = getDateTime(true);
 
-                    DataModel::setData($orderInfo[0]['uid'].'_reservedMoney_total', $today, $orderInfo[0]['money']);
-                    DataModel::setData($orderInfo[0]['uid'].'_reservedMoney_temp', $today, $orderInfo[0]['money']);
+                    DataModel::setData($orderInfo[0]['uid'] . '_reservedMoney_total', $today, $orderInfo[0]['money']);
+                    DataModel::setData($orderInfo[0]['uid'] . '_reservedMoney_temp', $today, $orderInfo[0]['money']);
 
                     $userPayConfig = unserialize(getPayUserAttr($orderInfo[0]['uid'], 'payConfig'));
                     $userPayConfig = $userPayConfig['wxpay'];

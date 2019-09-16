@@ -764,25 +764,22 @@ abstract class Connection
 
             return $this->numRows;
         } catch (\PDOException $e) {
-            trace('尝试短线重连 结果=>' . json_encode($this->isBreak($e)), 'info');
             if ($this->isBreak($e)) {
                 return $this->close()->execute($sql, $bind, $query);
             }
-
+            trace('重连结果 结果=>' . $e->getMessage(), 'info');
             throw new PDOException($e, $this->config, $this->getLastsql());
         } catch (\Throwable $e) {
-            trace('尝试短线重连 结果=>' . json_encode($this->isBreak($e)), 'info');
             if ($this->isBreak($e)) {
                 return $this->close()->execute($sql, $bind, $query);
             }
-
+            trace('重连结果 结果=>' . $e->getMessage(), 'info');
             throw $e;
         } catch (\Exception $e) {
-            trace('尝试短线重连 结果=>' . json_encode($this->isBreak($e)), 'info');
             if ($this->isBreak($e)) {
                 return $this->close()->execute($sql, $bind, $query);
             }
-
+            trace('重连结果 结果=>' . $e->getMessage(), 'info');
             throw $e;
         }
     }

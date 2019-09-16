@@ -1,21 +1,23 @@
 <?php
 
-namespace app\admin\model;
+namespace app\user\model;
 
 use think\Db;
 
-class DataModel
+class UserDataModel
 {
     /**
      * 获取数据模型数据
+     * @param int $uid
      * @param string $attrName
      * @param string $strTime
      * @return array
      */
-    public static function getData(string $attrName, string $strTime)
+    public static function getData(int $uid, string $attrName, string $strTime)
     {
         try {
-            $result = Db::table('epay_data_model')->where([
+            $result = Db::table('epay_user_data_model')->where([
+                'uid'        => $uid,
                 'attrName'   => $attrName,
                 'createTime' => $strTime
             ])->limit(1)->field('data')->select();
@@ -29,19 +31,21 @@ class DataModel
 
     /**
      * 设置数据
+     * @param int $uid
      * @param string $attrName
      * @param string $strTime
-     * @param int $data
+     * @param float $data
      * @param string $type
      * @return bool
      */
-    public static function setData(string $attrName, string $strTime, int $data, string $type = 'add')
+    public static function setData(int $uid, string $attrName, string $strTime, int $data, string $type = 'add')
     {
         if ($type != 'add' && $type != 'dec')
             return false;
         try {
-            if (self::getData($attrName, $strTime)[0]) {
-                $result = Db::table('epay_data_model')->where([
+            if (self::getData($uid, $attrName, $strTime)[0]) {
+                $result = Db::table('epay_user_data_model')->where([
+                    'uid'        => $uid,
                     'attrName'   => $attrName,
                     'createTime' => $strTime
                 ]);
@@ -52,7 +56,8 @@ class DataModel
                 }
                 $result = $result->limit(1)->update();
             } else {
-                $result = Db::table('epay_data_model')->insertGetId([
+                $result = Db::table('epay_user_data_model')->insertGetId([
+                    'uid'        => $uid,
                     'attrName'   => $attrName,
                     'createTime' => $strTime,
                     'data'       => $data
@@ -66,14 +71,16 @@ class DataModel
 
     /**
      * 删除数据
+     * @param int $uid
      * @param string $attrName
      * @param string $strTime
      * @return bool
      */
-    public static function removeData(string $attrName, string $strTime)
+    public static function removeData(int $uid, string $attrName, string $strTime)
     {
         try {
-            $result = Db::table('epay_data_model')->where([
+            $result = Db::table('epay_user_data_model')->where([
+                'uid'        => $uid,
                 'attrName'   => $attrName,
                 'createTime' => $strTime
             ])->limit(1)->delete();

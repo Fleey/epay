@@ -11,6 +11,7 @@
 
 // 应用公共文件
 use app\admin\model\DataModel;
+use app\user\model\UserDataModel;
 
 /**
  * 获取随机字符串
@@ -541,7 +542,7 @@ function buildCallBackUrl(string $tradeNo, string $type = 'return')
             break;
     }
     //兼容层
-    $args        = [
+    $args = [
         'pid'          => $orderData['uid'],
         'trade_no'     => $orderData['tradeNo'],
         'out_trade_no' => $orderData['tradeNoOut'],
@@ -550,8 +551,14 @@ function buildCallBackUrl(string $tradeNo, string $type = 'return')
         'money'        => ($orderData['money'] + $orderData['discountMoney']) / 100,
         'trade_status' => 'TRADE_' . ($orderData['status'] ? 'SUCCESS' : 'FAIL')
     ];
-    $args        = argSort(paraFilter($args));
-    $sign        = signMD5(createLinkString($args), $userKey);
+    $args = argSort(paraFilter($args));
+    $sign = signMD5(createLinkString($args), $userKey);
+
+    $parseUrl = parse_url($orderData[$type . '_url']);
+
+    if (!empty($parseUrl['host']))
+        UserDataModel::setData($orderData['uid'], 'url_' . $parseUrl['host'], date('Y-m-d', time()), 1);
+
     $callBackUrl = $orderData[$type . '_url'] . (strpos($orderData[$type . '_url'], '?') ? '&' : '?') . createLinkStringUrlEncode($args) . '&sign=' . $sign . '&sign_type=MD5';
     return $callBackUrl;
 }
@@ -610,7 +617,7 @@ function processOrder($tradeNo, $notify = true)
 
     {
         DataModel::setData('money_total_' . $orderInfo[0]['type'], date('Y-m-d H', time()), $orderInfo[0]['money']);
-        DataModel::setData('order_total_count_success_' . $orderInfo[0]['type'], date('Y-m-d H', time()),1);
+        DataModel::setData('order_total_count_success_' . $orderInfo[0]['type'], date('Y-m-d H', time()), 1);
         //每小时
     }
 

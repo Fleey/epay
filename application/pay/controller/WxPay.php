@@ -364,7 +364,7 @@ class WxPay extends Controller
         if (!$isCollectiveAccount) {
             $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
                 ->leftJoin('epay_wxx_apply_list', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id')
-                ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID,epay_wxx_apply_list.tempMoney')->where([
+                ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID,epay_wxx_apply_list.tempMoney,epay_wxx_apply_list.rounds')->where([
                     'epay_wxx_apply_info.uid'    => $uid,
                     'epay_wxx_apply_info.type'   => 2,
                     'epay_wxx_apply_list.status' => 2
@@ -384,13 +384,9 @@ class WxPay extends Controller
                     //获取金额已经预留金额
 
                     if ($todayTotalReservedMoney < $reservedMoneyTarget) {
-                        $todayTotalReservedMoneyTemp = DataModel::getData($uid . '_reservedMoney_temp', getDateTime(true));
-                        if (!$todayTotalReservedMoneyTemp[0])
-                            $todayTotalReservedMoneyTemp = 0;
-                        else
-                            $todayTotalReservedMoneyTemp = floatval($todayTotalReservedMoneyTemp[1]);
-
-                        if ($todayTotalReservedMoneyTemp < $userAccountList[0]['tempMoney']) {
+                        $randRules = ['a' => 40, 'b' => 60];
+                        //b => 独立号 a => 集体号
+                        if (getRand($randRules) == 'a') {
                             PayModel::removeOrderAttr($tradeNo, 'rateMoney');
                             return self::getWxxPayConfig($tradeNo, $systemConfig, true);
                             //已经达到预留标准

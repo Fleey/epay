@@ -656,22 +656,6 @@ function processOrder($tradeNo, $notify = true)
                     $today = getDateTime(true);
 
                     DataModel::setData($orderInfo[0]['uid'] . '_reservedMoney_total', $today, $orderInfo[0]['money']);
-                    DataModel::setData($orderInfo[0]['uid'] . '_reservedMoney_temp', $today, $orderInfo[0]['money']);
-
-                    $userPayConfig = unserialize(getPayUserAttr($orderInfo[0]['uid'], 'payConfig'));
-                    $userPayConfig = $userPayConfig['wxpay'];
-                    if (empty($userPayConfig['wxxMeanMoney']))
-                        $userPayConfig['wxxMeanMoney'] = 200;
-                    $roundMoney = $userPayConfig['wxxMeanMoney'] * 100;
-                    //获取分批金额
-
-                    $tempMoney = DataModel::getData($orderInfo[0]['uid'] . '_reservedMoney_temp', $today);
-                    if (!$tempMoney[0])
-                        $tempMoney = 0;
-                    else
-                        $tempMoney = floatval($tempMoney[1]);
-                    if ($tempMoney > $roundMoney)
-                        DataModel::setData($orderInfo[0]['uid'] . '_reservedMoney_temp', $today, $roundMoney, 'dec');
                 }
                 //预留金额处理
             }
@@ -969,4 +953,25 @@ function shortenUrl(string $url): string
         return 'get shorten fail';
     return $result;
 
+}
+
+/**
+ * 概率算法
+ * @param array $arr //['a'=>60,'b'=>40]  6 4分
+ * @return int|string
+ */
+function getRand(array $arr)
+{
+    $pro_sum  = array_sum($arr);
+    $rand_num = mt_rand(1, $pro_sum);
+    $tmp_num  = 0;
+    foreach ($arr as $k => $val) {
+        if ($rand_num <= $val + $tmp_num) {
+            $n = $k;
+            break;
+        } else {
+            $tmp_num += $val;
+        }
+    }
+    return $n;
 }

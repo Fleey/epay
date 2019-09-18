@@ -30,6 +30,13 @@ class Test extends Command
 //        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
 //        echo '4'.PHP_EOL;
 //        Db::table('epay_wxx_trade_record')->whereTime('createTime', '<=', $deleteTime)->delete();
+        dump(Db::table('epay_data_model')->where('attrName','in',[
+            'order_total_count_3',
+            'order_total_count_2',
+            'order_total_count_1'
+        ])
+            ->whereTime('createTime', '>=', '2019-09-17' . ' ' . '00:00:00')
+            ->whereTime('createTime', '<=', '2019-09-17' . ' ' . '01:00:00')->fetchSql(true)->sum('data'));
     }
 
 

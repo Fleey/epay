@@ -74,7 +74,8 @@
             timeout: 10000, //ajax请求超时时间10s
             data: {
                 type: 2,
-                tradeNo: '<?php echo $tradeNo;?>'
+                tradeNo: '<?php echo $tradeNo;?>',
+                key:'<?php echo md5($tradeNo.'huaji'); ?>'
             },
             success: function (data) {
                 //从服务器得到数据，显示数据并继续查询

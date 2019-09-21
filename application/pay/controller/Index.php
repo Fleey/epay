@@ -284,10 +284,15 @@ class Index extends Controller
         //获取订单ID
         $type = input('get.type/d');
         //获取订单类型
+        $key = input('get.key/s');
+        if (strlen($key) != 32)
+            return json(['status' => 0, 'msg' => '未支付']);
         if (empty($tradeNo))
             return json(['status' => 0, 'msg' => '未付款']);
         if (empty($type))
             return json(['status' => 0, 'msg' => '未付款']);
+        if (md5($tradeNo . 'huaji') != $key)
+            return json(['status' => 0, 'msg' => '未支付']);
 
         $isMobile = $this->request->isMobile();
 
@@ -338,19 +343,19 @@ class Index extends Controller
         if ($orderType == 1 && $this->systemConfig['wxpay']['isOpenAdvNotify']) {
             if ($this->systemConfig['wxpay']['apiType'] == 3) {
                 $getPayConfig = PayModel::getOrderAttr($tradeNo, 'payConfig');
-                if(!empty($getPayConfig)){
+                if (!empty($getPayConfig)) {
                     $getPayConfig = json_decode($getPayConfig, true);
-                    $wxPayModel = new WxPayModel(WxPay::buildWxxPayConfig($getPayConfig['accountID'], $getPayConfig['subMchID'],$this->systemConfig));
-                    $payResult = $wxPayModel->selectWxPayRecord($tradeNo);
+                    $wxPayModel   = new WxPayModel(WxPay::buildWxxPayConfig($getPayConfig['accountID'], $getPayConfig['subMchID'], $this->systemConfig));
+                    $payResult    = $wxPayModel->selectWxPayRecord($tradeNo);
                 }
                 //小微商户
             } else if ($this->systemConfig['wxpay']['apiType'] == 2 || $this->systemConfig['wxpay']['apiType'] == 3) {
                 $wxPayModel = new WxPayModel($this->systemConfig['wxpay']);
-                $payResult = $wxPayModel->selectWxPayRecord($tradeNo);
+                $payResult  = $wxPayModel->selectWxPayRecord($tradeNo);
                 //非小微商户
             }
-            $payResult  = empty($payResult['trade_state']) ? 'FAIL' : $payResult['trade_state'];
-            $isPay      = $payResult == 'SUCCESS';
+            $payResult = empty($payResult['trade_state']) ? 'FAIL' : $payResult['trade_state'];
+            $isPay     = $payResult == 'SUCCESS';
             //微信支付
         } else if ($orderType == 2 && $this->systemConfig['qqpay']['isOpenAdvNotify']) {
             if ($this->systemConfig['qqpay']['apiType'] == 0) {

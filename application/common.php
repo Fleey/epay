@@ -11,7 +11,6 @@
 
 // 应用公共文件
 use app\admin\model\DataModel;
-use app\user\model\UserDataModel;
 
 /**
  * 获取随机字符串
@@ -553,11 +552,6 @@ function buildCallBackUrl(string $tradeNo, string $type = 'return')
     ];
     $args = argSort(paraFilter($args));
     $sign = signMD5(createLinkString($args), $userKey);
-
-    $parseUrl = parse_url($orderData[$type . '_url']);
-
-    if (!empty($parseUrl['host']))
-        UserDataModel::setData($orderData['uid'], 'url_' . $parseUrl['host'], date('Y-m-d', time()), 1);
 
     $callBackUrl = $orderData[$type . '_url'] . (strpos($orderData[$type . '_url'], '?') ? '&' : '?') . createLinkStringUrlEncode($args) . '&sign=' . $sign . '&sign_type=MD5';
     return $callBackUrl;

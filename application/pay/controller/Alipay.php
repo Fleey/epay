@@ -33,14 +33,14 @@ class Alipay extends Controller
     public function getSubmit()
     {
         $tradeNo = input('get.tradeNo');
-        $sign     = input('get.sign/s');
-        if(md5($tradeNo.'huaji')!=$sign)
-            return $this->fetch('/SystemMessage', ['msg' => '签名有误！']);
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
         if (strlen($tradeNo) != 19) {
             $tradeNo = substr($tradeNo, 0, 19);
         }
+        $sign     = input('get.sign/s');
+        if(md5($tradeNo.'huaji')!=$sign)
+            return $this->fetch('/SystemMessage', ['msg' => '签名有误！']);
         //这里负责纠正一些人错误复制访问链接导致失败
         $result = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->field('uid,money,productName,status,type')->limit(1)->select();
         if (empty($result))

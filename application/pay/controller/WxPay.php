@@ -6,6 +6,7 @@ use app\admin\controller\Wxx;
 use app\admin\model\DataModel;
 use app\pay\model\PayModel;
 use app\pay\model\WxPayModel;
+use function GuzzleHttp\Psr7\build_query;
 use function GuzzleHttp\Psr7\parse_query;
 use think\App;
 use think\Controller;
@@ -45,7 +46,7 @@ class WxPay extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '系统已经冻结所有账号，请联系站点管理员处理！']);
 
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
-        $wxPayModel->getWxOpenCode(url('/Pay/WxPay/Submit?' . $wxPayModel->buildUrlParam($requestData), '', '', true));
+        $wxPayModel->getWxOpenCode(url('/Pay/WxPay/Submit?' . build_query($requestData), '', '', true));
     }
 
     /**
@@ -119,7 +120,7 @@ class WxPay extends Controller
             $wxOpenCode = input('get.code/s');
             //wx open code
             if (empty($wxOpenCode)) {
-                return redirect(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s') . '&siteName=' . input('post.siteName/s'), '', false, true));
+                return redirect(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s') . '&siteName=' . input('get.siteName/s').'&sign='.$sign, '', false, true));
             }
             $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
             //init pay model
@@ -128,7 +129,7 @@ class WxPay extends Controller
             PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'jsapi');
         } else {
             if ($this->request->isMobile()) {
-                $requestResult['code_url']    = shortenUrl(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s'), '', false, true));
+                $requestResult['code_url']    = shortenUrl(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s').'&sign='.$sign, '', false, true));
                 $requestResult['return_code'] = 'SUCCESS';
                 $requestResult['result_code'] = 'SUCCESS';
                 PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'jsapi');

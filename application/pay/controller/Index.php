@@ -241,15 +241,17 @@ class Index extends Controller
 
         DataModel::setData('order_total_count_' . $converPayType, date('Y-m-d H', time()), 1);
 
+        $sign = md5($tradeNo.'huaji');
+
         if (!empty($userPayConfig)) {
             if ($type == 'tenpay')
                 $type = 'qqpay';
             if ($userPayConfig[$type]['apiType'] == 1)
-                return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo, '', false, true));
+                return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo.'&sign='.$sign, '', false, true));
         } else {
             if (isset($this->systemConfig[$type]['apiType']))
                 if ($this->systemConfig[$type]['apiType'] == 1)
-                    return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo, '', false, true));
+                    return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo.'&sign='.$sign, '', false, true));
         }
 
         //中央支付
@@ -258,14 +260,14 @@ class Index extends Controller
             //转跳到支付宝支付
         } else if ($converPayType == 1) {
             if (!empty($this->systemConfig['notifyDomain']))
-                return redirect($this->systemConfig['notifyDomain'] . '/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName);
-            return redirect(url('/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName, '', false, true));
+                return redirect($this->systemConfig['notifyDomain'] . '/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign);
+            return redirect(url('/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));
             //转跳到微信支付
         } else if ($converPayType == 2) {
-            return redirect(url('/Pay/QQPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName, '', false, true));
+            return redirect(url('/Pay/QQPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));
             //转跳到财付通支付
         } else if ($converPayType == 4) {
-            return redirect(url('/Pay/BankPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName, '', false, true));
+            return redirect(url('/Pay/BankPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));
             //银联支付
         }
         return $this->fetch('/SystemMessage', ['msg' => '支付类型有误请重试！']);

@@ -33,6 +33,9 @@ class Alipay extends Controller
     public function getSubmit()
     {
         $tradeNo = input('get.tradeNo');
+        $sign     = input('get.sign/s');
+        if(md5($tradeNo.'huaji')!=$sign)
+            return $this->fetch('/SystemMessage', ['msg' => '签名有误！']);
         if (empty($tradeNo))
             return $this->fetch('/SystemMessage', ['msg' => '交易ID有误！']);
         if (strlen($tradeNo) != 19) {

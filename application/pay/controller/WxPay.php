@@ -59,6 +59,9 @@ class WxPay extends Controller
     {
         $tradeNo  = input('get.tradeNo/s');
         $siteName = htmlentities(base64_decode(input('get.siteName', '易支付')));
+        $sign     = input('get.sign/s');
+        if(md5($tradeNo.'huaji')!=$sign)
+            return $this->fetch('/SystemMessage', ['msg' => '签名有误！']);
         if (empty($siteName))
             $siteName = '易支付';
         if (empty($tradeNo))

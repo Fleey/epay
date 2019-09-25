@@ -68,6 +68,10 @@ class PayModel
         $badWordList = str_replace('，', ',', $systemConfig['goodsFilter']['keyWord']);
         $badWordList = str_replace('、', ',', $badWordList);
         $badWordList = explode(',', $badWordList);
+        foreach ($badWordList as $key => $value) {
+            if(empty($value))
+                unset($badWordList[$key]);
+        }
         if (!empty($badWordList)) {
             $blackReg = '/' . implode('|', $badWordList) . '/i';
             if (preg_match($blackReg, $name, $matches)) {

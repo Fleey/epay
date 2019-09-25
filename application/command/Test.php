@@ -2,10 +2,12 @@
 
 namespace app\command;
 
+use app\admin\model\DataModel;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
-
+use think\Db;
+use function GuzzleHttp\Psr7\build_query;
 
 
 class Test extends Command
@@ -29,6 +31,7 @@ class Test extends Command
 //        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
 //        echo '4'.PHP_EOL;
 //        Db::table('epay_wxx_trade_record')->whereTime('createTime', '<=', $deleteTime)->delete();
+       dump(hash('md5','dsad'));
     }
 
 

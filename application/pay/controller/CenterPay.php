@@ -32,6 +32,9 @@ class CenterPay extends Controller
 //        $siteName = htmlentities(base64_decode(input('get.siteName')));
 //        if (empty($siteName))
 //            $siteName = '易支付';
+        $sign     = input('get.sign/s');
+        if(md5($tradeNo.'huaji')!=$sign)
+            return $this->fetch('/SystemMessage', ['msg' => '签名有误！']);
         if (strlen($tradeNo) != 19) {
             $tradeNo = substr($tradeNo, 0, 19);
         }

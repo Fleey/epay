@@ -2,6 +2,7 @@
 
 namespace app\pay\controller;
 
+use app\admin\model\DataModel;
 use app\pay\model\PayModel;
 use app\pay\model\QQPayModel;
 use app\pay\model\WxPayModel;
@@ -238,15 +239,19 @@ class Index extends Controller
         }
         //解决用户交易号重复问题
 
+        DataModel::setData('order_total_count_' . $converPayType, date('Y-m-d H', time()), 1);
+
+        $sign = md5($tradeNo.'huaji');
+
         if (!empty($userPayConfig)) {
             if ($type == 'tenpay')
                 $type = 'qqpay';
             if ($userPayConfig[$type]['apiType'] == 1)
-                return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo, '', false, true));
+                return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo.'&sign='.$sign, '', false, true));
         } else {
             if (isset($this->systemConfig[$type]['apiType']))
                 if ($this->systemConfig[$type]['apiType'] == 1)
-                    return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo, '', false, true));
+                    return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo.'&sign='.$sign, '', false, true));
         }
 
         //中央支付
@@ -255,14 +260,14 @@ class Index extends Controller
             //转跳到支付宝支付
         } else if ($converPayType == 1) {
             if (!empty($this->systemConfig['notifyDomain']))
-                return redirect($this->systemConfig['notifyDomain'] . '/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName);
-            return redirect(url('/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName, '', false, true));
+                return redirect($this->systemConfig['notifyDomain'] . '/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign);
+            return redirect(url('/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));
             //转跳到微信支付
         } else if ($converPayType == 2) {
-            return redirect(url('/Pay/QQPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName, '', false, true));
+            return redirect(url('/Pay/QQPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));
             //转跳到财付通支付
         } else if ($converPayType == 4) {
-            return redirect(url('/Pay/BankPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName, '', false, true));
+            return redirect(url('/Pay/BankPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));
             //银联支付
         }
         return $this->fetch('/SystemMessage', ['msg' => '支付类型有误请重试！']);
@@ -281,10 +286,15 @@ class Index extends Controller
         //获取订单ID
         $type = input('get.type/d');
         //获取订单类型
+        $key = input('get.key/s');
+        if (strlen($key) != 32)
+            return json(['status' => 0, 'msg' => '未支付']);
         if (empty($tradeNo))
             return json(['status' => 0, 'msg' => '未付款']);
         if (empty($type))
             return json(['status' => 0, 'msg' => '未付款']);
+        if (md5($tradeNo . 'huaji') != $key)
+            return json(['status' => 0, 'msg' => '未支付']);
 
         $isMobile = $this->request->isMobile();
 
@@ -335,19 +345,19 @@ class Index extends Controller
         if ($orderType == 1 && $this->systemConfig['wxpay']['isOpenAdvNotify']) {
             if ($this->systemConfig['wxpay']['apiType'] == 3) {
                 $getPayConfig = PayModel::getOrderAttr($tradeNo, 'payConfig');
-                if(!empty($getPayConfig)){
+                if (!empty($getPayConfig)) {
                     $getPayConfig = json_decode($getPayConfig, true);
-                    $wxPayModel = new WxPayModel(WxPay::buildWxxPayConfig($getPayConfig['accountID'], $getPayConfig['subMchID'],$this->systemConfig));
-                    $payResult = $wxPayModel->selectWxPayRecord($tradeNo);
+                    $wxPayModel   = new WxPayModel(WxPay::buildWxxPayConfig($getPayConfig['accountID'], $getPayConfig['subMchID'], $this->systemConfig));
+                    $payResult    = $wxPayModel->selectWxPayRecord($tradeNo);
                 }
                 //小微商户
             } else if ($this->systemConfig['wxpay']['apiType'] == 2 || $this->systemConfig['wxpay']['apiType'] == 3) {
                 $wxPayModel = new WxPayModel($this->systemConfig['wxpay']);
-                $payResult = $wxPayModel->selectWxPayRecord($tradeNo);
+                $payResult  = $wxPayModel->selectWxPayRecord($tradeNo);
                 //非小微商户
             }
-            $payResult  = empty($payResult['trade_state']) ? 'FAIL' : $payResult['trade_state'];
-            $isPay      = $payResult == 'SUCCESS';
+            $payResult = empty($payResult['trade_state']) ? 'FAIL' : $payResult['trade_state'];
+            $isPay     = $payResult == 'SUCCESS';
             //微信支付
         } else if ($orderType == 2 && $this->systemConfig['qqpay']['isOpenAdvNotify']) {
             if ($this->systemConfig['qqpay']['apiType'] == 0) {

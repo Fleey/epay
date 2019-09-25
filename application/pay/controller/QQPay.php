@@ -36,6 +36,9 @@ class QQPay extends Controller
     {
         $tradeNo  = input('get.tradeNo/s');
         $siteName = htmlentities(base64_decode(input('get.siteName')));
+        $sign     = input('get.sign/s');
+        if(md5($tradeNo.'huaji')!=$sign)
+            return $this->fetch('/SystemMessage', ['msg' => '签名有误！']);
         if (empty($siteName))
             $siteName = '易支付';
         if (empty($tradeNo))
@@ -94,10 +97,11 @@ class QQPay extends Controller
         if ($requestResult['return_code'] == 'SUCCESS' && $requestResult['result_code'] == 'SUCCESS')
             $codeUrl = $requestResult['code_url'];
         else
-            if (!empty($requestResult['err_code']))
+            if (!empty($requestResult['err_code'])) {
                 return $this->fetch('/SystemMessage', ['msg' => 'QQ钱包支付下单失败！<br>[' . $requestResult['err_code'] . ']' . $requestResult['err_code_des']]);
-            else
+            } else {
                 return $this->fetch('/SystemMessage', ['msg' => 'QQ钱包支付下单失败！<br>[' . $requestResult['return_code'] . ']' . $requestResult['return_msg']]);
+            }
 
         $codeUrl1 = $codeUrl;
         if ($this->request->isMobile())

@@ -8,9 +8,9 @@ class WxPayModel
 {
     private $wxConfig;
     private $signType = 'MD5';
-    private $appID    = '';
-    private $mchID    = '';
-    private $key      = '';
+    private $appID = '';
+    private $mchID = '';
+    private $key = '';
 
 
     /**
@@ -126,7 +126,7 @@ class WxPayModel
             return [false, $result['return_msg']];
         if (!empty($result['err_code'])) {
             if ($result['err_code_des'] == '累计退款金额大于支付金额' || $result['err_code_des'] == 'refund_fee大于可退金额') {
-                return $this->orderRefund($tradeNo, $totalMoney, $refundMoney - 1, $sslData,$notifyUrl);
+                return $this->orderRefund($tradeNo, $totalMoney, $refundMoney - 1, $sslData, $notifyUrl);
             }
             return [false, '[' . $result['err_code'] . ']' . $result['err_code_des']];
         }
@@ -192,9 +192,10 @@ class WxPayModel
      * @param string $notifyUrl
      * @param string $openCode
      * @param String $subMid
+     * @param string $attach //附加内容返回或查询时会携带，最大127个字符
      * @return array|mixed|object
      */
-    public function sendPayRequest(array $tradeData, string $type, string $notifyUrl, string $openCode = '', String $subMid = '')
+    public function sendPayRequest(array $tradeData, string $type, string $notifyUrl, string $openCode = '', string $subMid = '', string $attach = '')
     {
         $requestUrl  = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
         $requestData = [
@@ -214,6 +215,8 @@ class WxPayModel
         ];
         if (!empty($subMid))
             $requestData['sub_mch_id'] = $subMid;
+        if(!empty($attach))
+            $requestData['attach'] = $attach;
         //订单失效6分钟
         if ($type == 'JSAPI') {
             $openID                = $this->getWxOpenID($openCode);

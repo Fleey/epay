@@ -10,6 +10,8 @@
 // +----------------------------------------------------------------------
 
 // 应用公共文件
+use app\admin\model\DataModel;
+
 /**
  * 获取随机字符串
  * @param int $length
@@ -31,9 +33,13 @@ function getRandChar($length = 8)
  * 返回当前时间格式 存储数据库专用
  * @return false|string
  */
-function getDateTime()
+function getDateTime($isDate = false)
 {
-    return date('Y-m-d H:i:s', time());
+    if ($isDate) {
+        return date('Y-m-d', time());
+    } else {
+        return date('Y-m-d H:i:s', time());
+    }
 }
 
 /**
@@ -139,7 +145,7 @@ function is_email($text)
     return filter_var($text, FILTER_VALIDATE_EMAIL) === false ? false : true;
 }
 
-function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlencode = true, $isProxy = false, $certData = [])
+function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = '', $postType = '', $urlencode = true, $isProxy = false, $certData = [], $isAwait = false)
 {
     if (empty($url))
         return '';
@@ -166,8 +172,13 @@ function curl($url = '', $addHeaders = [], $requestType = 'get', $requestData = 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+    if ($isAwait) {
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 120);
+    } else {
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+    }
 //    curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
     curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 
@@ -530,7 +541,7 @@ function buildCallBackUrl(string $tradeNo, string $type = 'return')
             break;
     }
     //兼容层
-    $args        = [
+    $args = [
         'pid'          => $orderData['uid'],
         'trade_no'     => $orderData['tradeNo'],
         'out_trade_no' => $orderData['tradeNoOut'],
@@ -539,8 +550,9 @@ function buildCallBackUrl(string $tradeNo, string $type = 'return')
         'money'        => ($orderData['money'] + $orderData['discountMoney']) / 100,
         'trade_status' => 'TRADE_' . ($orderData['status'] ? 'SUCCESS' : 'FAIL')
     ];
-    $args        = argSort(paraFilter($args));
-    $sign        = signMD5(createLinkString($args), $userKey);
+    $args = argSort(paraFilter($args));
+    $sign = signMD5(createLinkString($args), $userKey);
+
     $callBackUrl = $orderData[$type . '_url'] . (strpos($orderData[$type . '_url'], '?') ? '&' : '?') . createLinkStringUrlEncode($args) . '&sign=' . $sign . '&sign_type=MD5';
     return $callBackUrl;
 }
@@ -598,6 +610,12 @@ function processOrder($tradeNo, $notify = true)
     //处理更新余额失败部分
 
     {
+        DataModel::setData('money_total_' . $orderInfo[0]['type'], date('Y-m-d H', time()), $orderInfo[0]['money']);
+        DataModel::setData('order_total_count_success_' . $orderInfo[0]['type'], date('Y-m-d H', time()), 1);
+        //每小时
+    }
+
+    {
         $orderPayConfig = \app\pay\model\PayModel::getOrderAttr($tradeNo, 'payConfig');
         if (!empty($orderPayConfig)) {
             $orderPayConfig = json_decode($orderPayConfig, true);
@@ -627,6 +645,14 @@ function processOrder($tradeNo, $notify = true)
                 }
             }
 
+            if (isset($orderPayConfig['isReservedMoneyModel'])) {
+                if ($orderPayConfig['isReservedMoneyModel']) {
+                    $today = getDateTime(true);
+
+                    DataModel::setData($orderInfo[0]['uid'] . '_reservedMoney_total', $today, $orderInfo[0]['money']);
+                }
+                //预留金额处理
+            }
             //轮询金额
         }
     }
@@ -921,4 +947,25 @@ function shortenUrl(string $url): string
         return 'get shorten fail';
     return $result;
 
+}
+
+/**
+ * 概率算法
+ * @param array $arr //['a'=>60,'b'=>40]  6 4分
+ * @return int|string
+ */
+function getRand(array $arr)
+{
+    $pro_sum  = array_sum($arr);
+    $rand_num = mt_rand(1, $pro_sum);
+    $tmp_num  = 0;
+    foreach ($arr as $k => $val) {
+        if ($rand_num <= $val + $tmp_num) {
+            $n = $k;
+            break;
+        } else {
+            $tmp_num += $val;
+        }
+    }
+    return $n;
 }

@@ -79,6 +79,11 @@ class Wxx extends Controller
             $returnData['bankAddressAreaData'] = [];
         }
 
+        if (isset($returnData['uid']))
+            $returnData['reservedMoney'] = getPayUserAttr($returnData['uid'], 'reservedMoney');
+        else
+            $returnData['reservedMoney'] = '0';
+
         return json(['status' => 1, 'data' => $returnData]);
     }
 
@@ -336,6 +341,9 @@ class Wxx extends Controller
         $contact           = input('post.contact/s', '');
         $contactPhone      = input('post.contactPhone/s', '');
 
+        $reservedMoney = input('post.reservedMoney/d', '');
+        //预留金额
+
         $act = input('post.act/s');
         $id  = input('post.id/s');
 
@@ -344,6 +352,9 @@ class Wxx extends Controller
 
         if (empty($idCardName) || empty($idCardNumber))
             return json(['status' => 0, 'msg' => '身份证或身份证号码不能为空']);
+
+        if ($bankName == '请选择开户支行全称')
+            $bankName = '';
 
         if ($act == 'add') {
             $selectResult = Db::table('epay_wxx_apply_info')->where('idCardName', $idCardName)
@@ -372,6 +383,8 @@ class Wxx extends Controller
                 'contactPhone'      => $contactPhone,
                 'createTime'        => getDateTime()
             ]);
+            setPayUserAttr($uid, 'reservedMoney', $reservedMoney);
+            //设置预留金额
             if (!$insertResult)
                 return json(['status' => 0, 'msg' => '新增用户信息失败，数据库异常，请重试。']);
             return json(['status' => 1, 'msg' => '新增用户信息成功']);
@@ -395,17 +408,37 @@ class Wxx extends Controller
                 foreach ($applyList as $info) {
                     $wxxModel = self::getWxxApiModel($info['accountID']);
                     if ($isModifyArchives) {
-                        $wxxModel->modifyArchives($info['subMchID'], $accountNumber, $accountBank, $bankName, $bankAddressCode);
+                        $result = $wxxModel->modifyArchives($info['subMchID'], $bankAddressCode, $accountNumber, $accountBank, $bankName);
+                        if (!$result['isSuccess'])
+                            return json(['status' => 0, 'msg' => $result['msg']]);
                     }
                     if ($isModifyContactInfo) {
-                        $wxxModel->modifyContactInfo($info['subMchID'], $servicePhone, '', $merchantShortName);
+                        $result = $wxxModel->modifyContactInfo($info['subMchID'], $servicePhone, '', $merchantShortName);
+                        if (!$result['isSuccess'])
+                            return json(['status' => 0, 'msg' => $result['msg']]);
                     }
                 }
             }
         }
         //diff change
-
-        $updateResult = Db::table('epay_wxx_apply_info')->where('id', $id)->update([
+        if ($type == 2) {
+            setPayUserAttr($uid, 'reservedMoney', $reservedMoney);
+            if (!empty($reservedMoney)) {
+                $temp = getPayUserAttr($uid, 'reservedMoney');
+                if ($temp != $reservedMoney) {
+                    Db::table('epay_wxx_apply_list')->where('applyInfoID', $id)->update([
+                        'tempMoney' => 0,
+                        'rounds'    => 0
+                    ]);
+                    Db::table('epay_data_model')->limit(1)->where([
+                        'attrName'   => $uid . '_reservedMoney_temp',
+                        'createTime' => getDateTime(true)
+                    ])->update(['data' => 0]);
+                }
+            }
+        }
+        //设置预留金额
+        Db::table('epay_wxx_apply_info')->where('id', $id)->update([
             'uid'               => $uid,
             'type'              => $type,
             'idCardCopy'        => $idCardCopy,
@@ -425,8 +458,6 @@ class Wxx extends Controller
             'contact'           => $contact,
             'contactPhone'      => $contactPhone,
         ]);
-        if (!$updateResult)
-            return json(['status' => 0, 'msg' => '更新用户信息失败，数据库异常，请重试。']);
         return json(['status' => 1, 'msg' => '更新用户信息成功']);
     }
 
@@ -485,7 +516,7 @@ class Wxx extends Controller
                 $indoorPic = $indoorPic['data']['media_id'];
             }
 
-            $businessCode = 'apply-' . substr(md5($accountID . $applyInfo['id']), 0, '20');
+            $businessCode = 'apply-' . substr(md5($accountID . $applyInfo['idCardNumber']), 0, 20);
 
             $applyResult = $wxxModel->applyMicro($idCardCopy, $idCardNational, $applyInfo['idCardName'],
                 $applyInfo['idCardNumber'], $applyInfo['idCardValidTime'], $applyInfo['accountName'],
@@ -588,6 +619,19 @@ class Wxx extends Controller
                     'tempMoney' => 0,
                     'rounds'    => 0
                 ]);
+
+                {
+                    $result = Db::table('epay_wxx_apply_info')->where('id', $applyInfoID)->field('uid,type')->limit(1)->select();
+                    if (!empty($result)) {
+                        $uid = $result[0]['uid'];
+                        if ($result[0]['type'] == 2) {
+                            Db::table('epay_data_model')->limit(1)->where([
+                                'attrName'   => $uid . '_reservedMoney_temp',
+                                'createTime' => getDateTime(true)
+                            ])->update(['data' => 0]);
+                        }
+                    }
+                }
             }
         }
         //重置数据 让金额均分均匀

@@ -34,9 +34,9 @@
             <div class="list-group-item">
                 <a href="#" target="_blank">
                     <small>
-                        <marquee style="font-weight: bold;line-height: 20px;font-size: 20px;color: #FF0000;">
-                            投诉QQ：<?php echo htmlentities($qq); ?>-或进入网站首页进行投诉，有任何问题请联系我们.点我跳转
-                        </marquee>
+                        <span style="font-weight: bold;line-height: 20px;font-size: 20px;color: #FF0000;">
+                            投诉QQ：<?php echo htmlentities($qq); ?>
+                        </span>
                     </small>
                 </a>
             </div>
@@ -85,7 +85,8 @@
             timeout: 10000, //ajax请求超时时间10s
             data: {
                 type: 1,
-                tradeNo: '<?php echo $tradeNo;?>'
+                tradeNo: '<?php echo $tradeNo;?>',
+                key:'<?php echo md5($tradeNo.'huaji'); ?>'
             },
             success: function (data) {
                 //从服务器得到数据，显示数据并继续查询

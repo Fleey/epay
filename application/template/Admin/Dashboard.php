@@ -319,7 +319,7 @@
                 $tempData = '';
 
                 foreach ($value as $value1){
-                    $tempData.='"'.($value1/100).'",';
+                    $tempData.='"'.($value1).'",';
                 }
                 echo $tempData;
 

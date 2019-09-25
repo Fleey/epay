@@ -333,12 +333,12 @@ class Index extends Controller
 
         $config = $config[$keyName];
         if (isset($config['certPublic'])) {
-            $config['certPublic'] = file_get_contents(FileModel::getFilePath($config['certPublic'], false));
+            $config['certPublic'] = @file_get_contents(FileModel::getFilePath($config['certPublic'], false));
             if ($config['certPublic'] === false)
                 $config['certPublic'] = '读取证书文件失败，请重新上传';
         }
         if (isset($config['certPrivate'])) {
-            $config['certPrivate'] = file_get_contents(FileModel::getFilePath($config['certPrivate'], false));
+            $config['certPrivate'] = @file_get_contents(FileModel::getFilePath($config['certPrivate'], false));
             if ($config['certPrivate'] === false)
                 $config['certPrivate'] = '读取证书文件失败，请重新上传';
         }
@@ -480,7 +480,11 @@ class Index extends Controller
             return json(['status' => 0, 'msg' => '订单结算类型有误']);
         if ($result[0]['money'] <= 0)
             return json(['status' => 0, 'msg' => '订单结算金额有误']);
-
+        $userInfo = Db::table('epay_user')->where('id', $result[0]['uid'])->field('balance')->limit(1)->select();
+        if (empty($userInfo))
+            return json(['status' => 0, 'msg' => '用户不存在，无法结算金额']);
+        if ($userInfo[0]['balance'] / 10 - $result[0]['money'] <= 0)
+            return json(['status' => 0, 'msg' => '用户余额不足，无法进行结算']);
         $result = $this->confirmSettle($id, $remark);
         return json(['status' => $result ? 1 : 0, 'msg' => $result ? '操作成功' : '操作失败']);
     }
@@ -1296,8 +1300,16 @@ class Index extends Controller
             }
             {
                 $buildOrderStatistics = function (string $date) {
-                    $totalOrder   = Db::table('epay_order')->whereBetweenTime('createTime', $date)->count('id');
-                    $successOrder = Db::table('epay_order')->whereBetweenTime('createTime', $date)->where('status', 1)->count('id');
+                    $totalOrder   = Db::table('epay_data_model')->where('attrName','in',[
+                        'order_total_count_3',
+                        'order_total_count_2',
+                        'order_total_count_1'
+                    ])->whereBetweenTime('createTime', $date)->sum('data');
+                    $successOrder = Db::table('epay_data_model')->where('attrName','in',[
+                        'order_total_count_success_3',
+                        'order_total_count_success_2',
+                        'order_total_count_success_1'
+                    ])->whereBetweenTime('createTime', $date)->sum('data');
                     if ($successOrder == 0 || $totalOrder == 0)
                         $ratio = '0';
                     else
@@ -1322,61 +1334,37 @@ class Index extends Controller
                 'yesterday' => [
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 1,
-                            'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->sum('money')
+                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_1')->whereTime('createTime', 'yesterday')->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 2,
-                            'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->sum('money')
+                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_2')->whereTime('createTime', 'yesterday')->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 3,
-                            'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->sum('money')
+                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_3')->whereTime('createTime', 'yesterday')->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 4,
-                            'status' => 1
-                        ])->whereTime('endTime', 'yesterday')->sum('money')
+                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_4')->whereTime('createTime', 'yesterday')->sum('data')
                     ]
                 ],
                 'today'     => [
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 1,
-                            'status' => 1
-                        ])->whereTime('endTime', 'today')->sum('money')
+                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_1')->whereTime('createTime', 'today')->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 2,
-                            'status' => 1
-                        ])->whereTime('endTime', 'today')->sum('money')
+                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_2')->whereTime('createTime', 'today')->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 3,
-                            'status' => 1
-                        ])->whereTime('endTime', 'today')->sum('money')
+                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_3')->whereTime('createTime', 'today')->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_order')->where([
-                            'type'   => 4,
-                            'status' => 1
-                        ])->whereTime('endTime', 'today')->sum('money')
+                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_4')->whereTime('createTime', 'today')->sum('data')
                     ]
                 ]
             ];
@@ -1393,15 +1381,23 @@ class Index extends Controller
                         $o                                               = $i + 1;
                         $hoursStartStr                                   = ($i >= 10 ? $i . '' : '0' . $i) . ':00:00';
                         $hoursEndStr                                     = ($o >= 10 ? $o . '' : '0' . $o) . ':00:00';
-                        $orderDataComparison[$yesterday][$hoursStartStr] = Db::table('epay_order')->cache(7200)->where('status', 1)
-                            ->whereTime('endTime', '>=', $yesterday . ' ' . $hoursStartStr)
-                            ->whereTime('endTime', '<=', $yesterday . ' ' . $hoursEndStr)->sum('money');
-                        $orderDataComparison[$today][$hoursStartStr]     = Db::table('epay_order')->cache(3600)->where('status', 1)
-                            ->whereTime('endTime', '>=', $today . ' ' . $hoursStartStr)
-                            ->whereTime('endTime', '<=', $today . ' ' . $hoursEndStr)->sum('money');
+                        $orderDataComparison[$yesterday][$hoursStartStr] = Db::table('epay_data_model')->where('attrName','in',[
+                            'order_total_count_3',
+                            'order_total_count_2',
+                            'order_total_count_1'
+                        ])
+                            ->whereTime('createTime', '>=', $yesterday . ' ' . $hoursStartStr)
+                            ->whereTime('createTime', '<=', $yesterday . ' ' . $hoursEndStr)->sum('data');
+                        $orderDataComparison[$today][$hoursStartStr]     = Db::table('epay_data_model')->where('attrName','in',[
+                            'order_total_count_3',
+                            'order_total_count_2',
+                            'order_total_count_1'
+                        ])
+                            ->whereTime('createTime', '>=', $today . ' ' . $hoursStartStr)
+                            ->whereTime('createTime', '<=', $today . ' ' . $hoursEndStr)->sum('data');
                     }
                     $data['orderDataComparison'] = $orderDataComparison;
-                    cache('orderDataComparison', json_encode($orderDataComparison), 3600);
+                    cache('orderDataComparison', json_encode($orderDataComparison), 600);
                 } else {
                     $data['orderDataComparison'] = json_decode($cacheOrderDataComparison, true);
                 }

@@ -58,11 +58,12 @@ $(function () {
                         } else if (row[5] === -3) {
                             html += '<button type="button" class="btn btn-sm btn-secondary" data-type="changeStatus" data-status="unfreeze">解冻账号</button>';
                         }
+                        html += '<button type="button" class="btn btn-sm btn-secondary" data-type="remark">设置备注</button>';
                         html += '<button type="button" class="btn btn-sm btn-secondary" data-type="more">查看更多</button>';
                         html += '</div>';
                         return html;
                     },
-                    'targets': 7
+                    'targets': 8
                 }
             ],
             'fnDrawCallback': function (obj) {
@@ -485,6 +486,26 @@ $(function () {
                     swal('请求成功', data['msg'], 'success');
                     $('#orderList1').dataTable().fnDraw(false);
                 }, 'json');
+            } else if (clickType === 'remark') {
+                swal({
+                    title: "设置小微商户号备注",
+                    text: "这里可以输入并确认:",
+                    type: "input",
+                    showCancelButton: true,
+                    closeOnConfirm: false,
+                    animation: "slide-from-top",
+                    inputPlaceholder: "请填写备注"
+                }, function(inputValue){
+                    if (inputValue === false) return false;
+                    $.post('/cy2018/api/Wxx/ApplyListRemark', {id: id, remark: inputValue}, function (data) {
+                        if (data['status'] !== 1) {
+                            swal('请求失败', data['msg'], 'error');
+                            return true;
+                        }
+                        swal('请求成功', data['msg'], 'success');
+                        $('#orderList1').dataTable().fnDraw(false);
+                    }, 'json');
+                });
             }
         });
 

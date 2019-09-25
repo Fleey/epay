@@ -598,9 +598,26 @@ class Wxx extends Controller
         return json(['status' => 0, 'msg' => '发起结算失败，有可能当日交易额为零']);
     }
 
+    public function postApplyListRemark()
+    {
+        $id     = input('post.id/d');
+        $remark = input('post.remark/s');
+
+        if (empty($id))
+            return json(['status' => 0, 'msg' => '请求参数不能为空']);
+
+        $result = Db::table('epay_wxx_apply_list')->where('id', $id)->limit(1)->update([
+            'remark' => $remark
+        ]);
+
+        if($result)
+            return json(['status'=>1,'msg'=>'保存备注成功']);
+        return json(['status'=>0,'msg'=>'保存备注失败']);
+    }
+
     public function postApplyListStatus()
     {
-        $id     = input('post.id/s');
+        $id     = input('post.id/d');
         $status = input('post.status/d', 0);
 
         if (empty($id))

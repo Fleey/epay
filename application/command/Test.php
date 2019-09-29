@@ -31,7 +31,7 @@ class Test extends Command
 //        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
 //        echo '4'.PHP_EOL;
 //        Db::table('epay_wxx_trade_record')->whereTime('createTime', '<=', $deleteTime)->delete();
-       dump(hash('md5','dsad'));
+        dump(date('Y-m-d', strtotime('-1 day')));
     }
 
 

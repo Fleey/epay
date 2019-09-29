@@ -52,7 +52,14 @@
 <script src="/static/js/qq/qcloud_util.js"></script>
 <script src="/static/js/layer/layer.js"></script>
 <script>
-    var qrcode = new QRCode('dwhqihdiwq', {text: '<?php echo $codeUrl?>', width: 230, height: 230, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H});
+    var qrcode = new QRCode('dwhqihdiwq', {
+        text: '<?php echo $codeUrl?>',
+        width: 230,
+        height: 230,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
     // 订单详情
     $('#orderDetail .arrow').click(function (event) {
         if ($('#orderDetail').hasClass('detail-open')) {
@@ -76,7 +83,7 @@
             data: {
                 type: 1,
                 tradeNo: '<?php echo $tradeNo;?>',
-                key:'<?php echo md5($tradeNo.'huaji'); ?>'
+                key: '<?php echo md5($tradeNo . 'huaji'); ?>'
             },
             success: function (data) {
                 //从服务器得到数据，显示数据并继续查询

@@ -30,6 +30,10 @@ class Settle extends Command
             $this->optimizeDatabase();
             $output->info('end optimize mysql');
         } else if ($nowHour == 0) {
+            $output->info('start add cron record user balance data');
+            $this->cronUserBalanceRecord();
+            $output->info('end add cron record user balance data');
+
             $output->info('start add settle data');
             $this->addSettleData();
             $output->info('end add settle data');
@@ -41,6 +45,21 @@ class Settle extends Command
         //凌晨4点执行本任务优化数据库
 
     }
+
+    private function cronUserBalanceRecord()
+    {
+        $userList = Db::table('epay_user')->field('id,balance')->cursor();
+        $time     = getDateTime(true);
+        foreach ($userList as $content) {
+            Db::table('epay_user_data_model')->insertGetId([
+                'uid'        => $content['id'],
+                'data'      => $content['balance'],
+                'attrName'       => 'moneyRecord',
+                'createTime' => $time
+            ]);
+        }
+    }
+
 
     private function cronWxxTradeRecord()
     {

@@ -26,7 +26,7 @@ class SyncWxxStatus extends Command
             return;
         }
         setServerConfig('isRunningSyncWxxApply', 'true');
-        $selectResult = Db::table('epay_wxx_apply_list')->where('status', 0)->whereOr('status', 1)->field('accountID,businessCode,id')->cursor();
+        $selectResult = Db::table('epay_wxx_apply_list')->where('status', 2)->field('accountID,businessCode,id')->cursor();
         foreach ($selectResult as $data) {
             $wxxModel = Wxx::getWxxApiModel($data['accountID']);
             if ($wxxModel == null)
@@ -46,6 +46,8 @@ class SyncWxxStatus extends Command
                 case 'FROZEN':
                     $updateData['status'] = -2;
                     $updateData['desc']   = $statusResult['data']['applyStateDesc'];
+                    if(empty($updateData['desc']))
+                        $updateData['desc'] = '微信封';
                     break;
                 case 'REJECTED':
                     $updateData['status']    = -1;

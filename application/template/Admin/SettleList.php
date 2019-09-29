@@ -92,6 +92,8 @@
                         <span data-name="updateTime"></span>
                     </div>
                 </div>
+                <p class="header" style="margin-top: 15px;">近七天余额变动情况</p>
+                <div class="balanceInfo row" style="margin-bottom: 15px;"></div>
                 <div class="row" id="settleQr" style="display: block;">
                     <div class="col-md-4 item">
                         <span class="title">转账二维码</span>

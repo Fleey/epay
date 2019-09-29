@@ -60,9 +60,9 @@ class WxPay extends Controller
     {
         $tradeNo  = input('get.tradeNo/s');
         $siteName = htmlentities(base64_decode(input('get.siteName', '易支付')));
-        $sign     = input('get.sign/s');
-        if(md5($tradeNo.'huaji')!=$sign)
-            return $this->fetch('/SystemMessage', ['msg' => '签名有误！']);
+//        $sign     = input('get.sign/s');
+//        if(md5($tradeNo.'huaji')!=$sign)
+//            return $this->fetch('/SystemMessage', ['msg' => '签名有误！']);
         if (empty($siteName))
             $siteName = '易支付';
         if (empty($tradeNo))
@@ -120,7 +120,7 @@ class WxPay extends Controller
             $wxOpenCode = input('get.code/s');
             //wx open code
             if (empty($wxOpenCode)) {
-                return redirect(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s') . '&siteName=' . input('get.siteName/s').'&sign='.$sign, '', false, true));
+                return redirect(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s') . '&siteName=' . input('get.siteName/s'), '', false, true));
             }
             $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
             //init pay model
@@ -129,7 +129,7 @@ class WxPay extends Controller
             PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'jsapi');
         } else {
             if ($this->request->isMobile()) {
-                $requestResult['code_url']    = shortenUrl(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s').'&sign='.$sign, '', false, true));
+                $requestResult['code_url']    = shortenUrl(url('/Pay/WxPay/WxOpenCode?tradeNo=' . input('get.tradeNo/s'), '', false, true));
                 $requestResult['return_code'] = 'SUCCESS';
                 $requestResult['result_code'] = 'SUCCESS';
                 PayModel::setOrderAttr($tradeNo, 'wxTradeMode', 'jsapi');
@@ -376,29 +376,29 @@ class WxPay extends Controller
             if (empty($userAccountList))
                 return [];
 
-            {
-                $reservedMoneyTarget = intval(getPayUserAttr($uid, 'reservedMoney'));
-                //目标预留金额
-                if (!empty($reservedMoneyTarget)) {
-                    $todayTotalReservedMoney = DataModel::getData($uid . '_reservedMoney_total', getDateTime(true));
-                    if (!$todayTotalReservedMoney[0])
-                        $todayTotalReservedMoney = 0;
-                    else
-                        $todayTotalReservedMoney = floatval($todayTotalReservedMoney[1]) / 100;
-                    //获取金额已经预留金额
-
-                    if ($todayTotalReservedMoney < $reservedMoneyTarget) {
-                        $randRules = ['a' => 40, 'b' => 60];
-                        //b => 独立号 a => 集体号
-                        if (getRand($randRules) == 'a') {
-                            PayModel::removeOrderAttr($tradeNo, 'rateMoney');
-                            return self::getWxxPayConfig($tradeNo, $systemConfig, true);
-                            //已经达到预留标准
-                        }
-                        //尚未达到预留金额标准
-                    }
-                }
-            }
+//            {
+//                $reservedMoneyTarget = intval(getPayUserAttr($uid, 'reservedMoney'));
+//                //目标预留金额
+//                if (!empty($reservedMoneyTarget)) {
+//                    $todayTotalReservedMoney = DataModel::getData($uid . '_reservedMoney_total', getDateTime(true));
+//                    if (!$todayTotalReservedMoney[0])
+//                        $todayTotalReservedMoney = 0;
+//                    else
+//                        $todayTotalReservedMoney = floatval($todayTotalReservedMoney[1]) / 100;
+//                    //获取金额已经预留金额
+//
+//                    if ($todayTotalReservedMoney < $reservedMoneyTarget) {
+//                        $randRules = ['a' => 40, 'b' => 60];
+//                        //b => 独立号 a => 集体号
+//                        if (getRand($randRules) == 'a') {
+//                            PayModel::removeOrderAttr($tradeNo, 'rateMoney');
+//                            return self::getWxxPayConfig($tradeNo, $systemConfig, true);
+//                            //已经达到预留标准
+//                        }
+//                        //尚未达到预留金额标准
+//                    }
+//                }
+//            }
 
             //独立号 判断是否需要压款部分逻辑
 
@@ -413,6 +413,8 @@ class WxPay extends Controller
                     'epay_wxx_apply_list.status' => 2
                 ])->order('epay_wxx_apply_list.rounds asc,epay_wxx_apply_list.tempMoney asc')->select();
             //集体号
+            if(empty($userAccountList))
+                return [];
             $data = ['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 1];
             if ($isReservedMoneyModel) {
                 $data['isReservedMoneyModel'] = true;

@@ -30,7 +30,17 @@ $(function () {
                         return '未知'
                     }
                 }
-            }
+            }, {
+                'orderable': false,
+                'render': function (data) {
+                    return data / 100;
+                }
+            }, {
+                'orderable': false,
+                'render': function (data) {
+                    return data / 100;
+                }
+            }, {}
         ],
         'columnDefs': [
             {
@@ -41,7 +51,7 @@ $(function () {
                     html += '</div>';
                     return html;
                 },
-                'targets': 5
+                'targets': 7
             }
         ],
         'fnDrawCallback': function (obj) {
@@ -262,7 +272,7 @@ $(function () {
             rate: rate,
             contact: contact,
             contactPhone: contactPhone,
-            reservedMoney:reservedMoney
+            reservedMoney: reservedMoney
         };
         if ($('#applyInfo #saveInfo').attr('data-type') !== 'add') {
             requestData['id'] = $('#applyInfo').attr('data-apply-id');

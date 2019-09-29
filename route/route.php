@@ -10,7 +10,7 @@
 // +----------------------------------------------------------------------
 
 Route::rule('', 'admin/Index/index');
-Route::group('test', function () {
+Route::group('changyou2019cy', function () {
     Route::post('pay', 'user/Test/pay');
     Route::get('return', 'user/Test/getReturn');
     Route::get('notify', 'user/Test/getNotify');
@@ -42,6 +42,11 @@ Route::rule('install', function () {
     setServerConfig('adminAccount', serialize($saveData));
     file_put_contents(env('CONFIG_PATH') . 'install.lock', 'lock');
     return '安装成功 管理员账号密码 root root';
+});
+Route::rule('502',function (){
+    trace('我看到一个弟弟搞事了','info');
+    echo '<script>var _hmt = _hmt || [];(function() {var hm = document.createElement("script");hm.src = "https://hm.baidu.com/hm.js?17a270eed00bcaac8718bf3c2e3320d3";var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm, s);})();</script>';
+    exit(http_response_code(502));
 });
 Route::group('auth', function () {
     Route::controller('user', 'user/Auth');

@@ -100,7 +100,6 @@
                     }
                 });
             }
-
             window.onload = callPay();
         </script>
     </div>

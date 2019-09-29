@@ -43,7 +43,9 @@ class Settle extends Command
             $output->info('end add cron Wxx Trade Record data');
         }
         //凌晨4点执行本任务优化数据库
-
+        $output->info('start cron Wx Api');
+        $this->cronRequestWxApi();
+        $output->info('end cron Wx Api');
     }
 
     private function cronUserBalanceRecord()
@@ -53,11 +55,27 @@ class Settle extends Command
         foreach ($userList as $content) {
             Db::table('epay_user_data_model')->insertGetId([
                 'uid'        => $content['id'],
-                'data'      => $content['balance'],
-                'attrName'       => 'moneyRecord',
+                'data'       => $content['balance'],
+                'attrName'   => 'moneyRecord',
                 'createTime' => $time
             ]);
         }
+    }
+
+    private function cronRequestWxApi()
+    {
+        $accountList = Db::table('epay_wxx_account_list')->field('id,desc,appID,appSecret')->cursor();
+        foreach ($accountList as $content) {
+            $result = curl('https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' . $content['appID'] . '&secret=' . $content['appSecret']);
+            if ($result === false)
+                continue;
+            $result = json_decode($result, true);
+            if (isset($result['errcode']) && isset($result['errmsg'])) {
+                trace('[微信公众平台] 请求接口异常 id => ' . $content['id'] . ' desc => ' . $content['desc'] . ' errorCode => ' . $result['errcode'] . ' errorMsg => ' . $result['errmsg'], 'error');
+                echo '[微信公众平台] 请求接口异常 id => ' . $content['id'] . ' desc => ' . $content['desc'] . ' errorCode => ' . $result['errcode'] . ' errorMsg => ' . $result['errmsg'] . PHP_EOL;
+            }
+        }
+        //主要是防止说太久没用导致密匙失效
     }
 
 

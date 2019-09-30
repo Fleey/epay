@@ -307,18 +307,18 @@ class Index extends Controller
         }
         //高级回调模式判断
 
-        if ($isMobile && $type == 1) {
-            $isOpenCancelReturn = getPayUserAttr($result[0]['uid'], 'isCancelReturn');
-            $isOpenCancelReturn = $isOpenCancelReturn == 'true';
-            if ($isOpenCancelReturn) {
-                $returnData = [
-                    'status' => 1,
-                    'msg'    => $result[0]['status'] ? '已付款' : '未付款',
-                    'url'    => buildCallBackUrl($tradeNo, 'return')
-                ];
-                return json($returnData);
-            }
-        }
+//        if ($isMobile && $type == 1) {
+//            $isOpenCancelReturn = getPayUserAttr($result[0]['uid'], 'isCancelReturn');
+//            $isOpenCancelReturn = $isOpenCancelReturn == 'true';
+//            if ($isOpenCancelReturn) {
+//                $returnData = [
+//                    'status' => 1,
+//                    'msg'    => $result[0]['status'] ? '已付款' : '未付款',
+//                    'url'    => buildCallBackUrl($tradeNo, 'return')
+//                ];
+//                return json($returnData);
+//            }
+//        }
 
         $returnData = ['status' => $result[0]['status'], 'msg' => $result[0]['status'] ? '已付款' : '未付款'];
         if ($result[0]['status'])

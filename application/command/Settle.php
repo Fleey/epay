@@ -55,7 +55,7 @@ class Settle extends Command
         foreach ($userList as $content) {
             Db::table('epay_user_data_model')->insertGetId([
                 'uid'        => $content['id'],
-                'data'       => $content['balance'],
+                'data'       => intval($content['balance']),
                 'attrName'   => 'moneyRecord',
                 'createTime' => $time
             ]);

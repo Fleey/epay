@@ -2,7 +2,12 @@
 
 namespace app\command;
 
+use app\admin\controller\Wxx;
 use app\admin\model\DataModel;
+use app\pay\controller\WxPay;
+use app\pay\model\PayModel;
+use app\pay\model\QQPayModel;
+use app\pay\model\WxPayModel;
 use think\console\Command;
 use think\console\Input;
 use think\console\Output;
@@ -31,7 +36,54 @@ class Test extends Command
 //        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
 //        echo '4'.PHP_EOL;
 //        Db::table('epay_wxx_trade_record')->whereTime('createTime', '<=', $deleteTime)->delete();
-        dump(date('Y-m-d', strtotime('-1 day')));
+        $fileContent = file_get_contents('./id.txt');
+        $row         = explode(PHP_EOL, $fileContent);
+        $a = [];
+        foreach ($row as $tradeNoOut) {
+            $orderData    = Db::table('epay_order')->where('tradeNoOut', $tradeNoOut)->field('tradeNo,money,uid,type,status')->limit(1)->select();
+            $systemConfig = getConfig();
+            $tradeNo = $orderData[0]['tradeNo'];
+            if($orderData[0]['status'] != 1)
+                continue;
+            if ($orderData[0]['type'] == 1) {
+                try {
+                    $payConfig = json_decode(PayModel::getOrderAttr($tradeNo, 'payConfig'), true);
+                    $wxPay     = new WxPayModel(WxPay::getWxxPayConfig($tradeNo, $systemConfig));
+                    $result    = $wxPay->orderRefund($tradeNo, $orderData[0]['money'], $orderData[0]['money'], Wxx::getWxxCertFilePath($payConfig['accountID']), 'https://ceo.st227.com/Pay/WxPay/RefundNotify', '数据丢失，请重新下单');
+                    if (!$result[0]){
+                        echo  'wx tradeNo => '.$tradeNo .' error => '.$result[1].PHP_EOL;
+                        continue;
+                    }
+                    if ($payConfig['configType'] == 1)
+                        Db::table('epay_user')->where('id', $orderData[0]['uid'])->limit(1)->dec('balance', $orderData[0]['money'] * 10)->update();
+                    Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
+                        'status' => 3
+                    ]);
+                } catch (\Exception $e) {
+                    trace('[订单退款异常]微信支付 tradeNo => ' . $tradeNo . '  ' . $e->getMessage(), 'error');
+                    echo '[订单退款异常]微信支付 tradeNo => ' . $tradeNo . '  ' . $e->getMessage().PHP_EOL;
+                }
+            } else if ($orderData[0]['type'] == 2) {
+                $QQPayModel = new QQPayModel($systemConfig['qqpay']);
+                try {
+                    $result = $QQPayModel->orderRefund($tradeNo, $orderData[0]['money']);
+                    if (!$result[0]){
+                        echo  'qq tradeNo => '.$tradeNo .' error => '.$result[1].PHP_EOL;
+                        continue;
+                    }
+                    Db::table('epay_user')->where('id', $orderData[0]['uid'])->limit(1)->dec('balance', $orderData[0]['money'] * 10)->update();
+                    Db::table('epay_order')->where('tradeNo', $tradeNo)->limit(1)->update([
+                        'status' => 4
+                    ]);
+                } catch (\Exception $e) {
+                    trace('[订单退款异常]QQ钱包 tradeNo => ' . $tradeNo . '  ' . $e->getMessage(), 'error');
+                    echo '[订单退款异常]微信支付 tradeNo => ' . $tradeNo . '  ' . $e->getMessage().PHP_EOL;
+                }
+            }else{
+                $a[] = $tradeNo;
+            }
+        }
+        dump($a);
     }
 
 

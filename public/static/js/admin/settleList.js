@@ -367,14 +367,6 @@ $(function () {
                     $('input[data-name="settleRemark"]').attr("disabled", "disabled");
                     $('#settleRemark button').hide();
                 }
-                var tempHtml = '';
-                $.each(data['balanceData'], function (key, value) {
-                    tempHtml+='     <div class="col-md-3 item">\n' +
-                        '                        <span class="title">'+value['time']+'</span>\n' +
-                        '                        <span data-name="">'+value['money']+'</span>\n' +
-                        '                    </div>';
-                });
-                $('.balanceInfo').html(tempHtml);
                 $('#orderInfo').modal('show');
                 bindClickImg();
             });

@@ -86,9 +86,10 @@ class WxPayModel
      * @param int $refundMoney //退款金额  单位分
      * @param array $sslData //sslCertPath and sslKeyPath
      * @param string $notifyUrl //申请退款回调地址
+     * @param string $refundDesc //退款原因
      * @return array //成功返回 [true] 失败[false,(String)失败原因]
      */
-    public function orderRefund(string $tradeNo, int $totalMoney, int $refundMoney, array $sslData, string $notifyUrl = '')
+    public function orderRefund(string $tradeNo, int $totalMoney, int $refundMoney, array $sslData, string $notifyUrl = '', string $refundDesc = '商品退款，详细联系首页客服')
     {
         $requestUrl  = 'https://api.mch.weixin.qq.com/secapi/pay/refund';
         $requestData = [
@@ -106,6 +107,11 @@ class WxPayModel
             if (strlen($notifyUrl) > 256)
                 return [false, '回调地址长度不能超过 256 个字符'];
             $requestData['notify_url'] = $notifyUrl;
+        }
+        if (!empty($refundDesc)) {
+            if (mb_strlen($refundDesc) > 80)
+                return [false, '退款描述不能超过80个字符'];
+            $requestData['refund_desc'] = $refundDesc;
         }
         $requestData['sign_type'] = $this->signType;
         $requestData['sign']      = $this->signParam($requestData);
@@ -215,7 +221,7 @@ class WxPayModel
         ];
         if (!empty($subMid))
             $requestData['sub_mch_id'] = $subMid;
-        if(!empty($attach))
+        if (!empty($attach))
             $requestData['attach'] = $attach;
         //订单失效6分钟
         if ($type == 'JSAPI') {

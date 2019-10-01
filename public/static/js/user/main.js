@@ -5,11 +5,11 @@ $(function ($) {
     } else {
         route(hashPath, true);
     }
-    $('a[data-href]').bind('click', function () {
+    $('a[data-href]').off("click").on('click', function () {
         var url = $(this).attr('data-href');
         route(url, false);
     });
-    $('.exit').click(function () {
+    $('.exit').off("click").on('click', function () {
         $.getJSON('/auth/user/exit', function (data) {
             swal({
                 title: '',
@@ -30,7 +30,7 @@ $(function ($) {
         }
     }
 });
-
+var isAwaitRoute = false;
 function route(url, isFirst, args, isGetPageData) {
     isGetPageData = isGetPageData !== undefined;
     var html = '';
@@ -40,6 +40,10 @@ function route(url, isFirst, args, isGetPageData) {
         if (clickDom.parent().is('.selected') && !isFirst) {
             return;
         }
+        if (isAwaitRoute)
+            return;
+        isAwaitRoute = true;
+
         location.hash = url;
         sidebarDom.find('li.selected').removeClass('selected');
 
@@ -58,6 +62,7 @@ function route(url, isFirst, args, isGetPageData) {
             window.history.pushState(null, null, baseUrl + 'user/Index#' + url);
             //增加历史地址
             $('.page-wrapper').html(data);
+            isAwaitRoute = false;
         },
         error: function (XMLHttpRequest, textStatus, errorThrown) {
             if (isGetPageData)
@@ -89,4 +94,107 @@ function route(url, isFirst, args, isGetPageData) {
     });
     if (isGetPageData)
         return html;
+}
+
+function getObjectURL(file) {
+    var url = null;
+    if (window.createObjectURL !== undefined) { // basic
+        url = window.createObjectURL(file);
+    } else if (window.URL !== undefined) {
+        // mozilla(firefox)
+        url = window.URL.createObjectURL(file);
+    } else if (window.webkitURL !== undefined) {
+        // webkit or chrome
+        url = window.webkitURL.createObjectURL(file);
+    }
+    return url;
+}
+
+//上传文件转连接 本地
+function readFileHash(file, callBack, args) {
+    if (args === undefined)
+        args = [];
+    args['fileInfo'] = file;
+    var fileReader = new FileReader();
+    fileReader.readAsArrayBuffer(file);
+    fileReader.onload = function () {
+        var wordArray = CryptoJS.lib.WordArray.create(fileReader.result);
+        var hash = CryptoJS.SHA256(wordArray).toString();
+        callBack(hash, args); // Compute hash
+    };
+
+    fileReader.onerror = function () {
+        swal('程序异常', '读取文件异常，请重试', 'error');
+    };
+}
+
+//读取文件SHA256
+function getServerFileID(hash) {
+    if (hash === undefined || hash.length === 0)
+        return false;
+    var fileID = 0;
+    $.ajax({
+        url: '/user/file/FileID',
+        type: 'get',
+        dataType: 'json',
+        async: false,
+        data: {
+            hash: hash
+        },
+        success: function (data) {
+            if (data['status'])
+                fileID = data['fileID'];
+        }
+    });
+    return fileID;
+}
+
+//获取文件路径 意在减少重复上传文件数量
+function uploadFileCloud(file, folder) {
+    var fileID, data = new FormData();
+    data.append('folderName', folder);
+    data.append('file', file);
+    swal({
+        title: '正在上传文件',
+        text: '请耐心等候，服务器正在拼命干活...',
+        showConfirmButton: false
+    });
+    $.ajax({
+        url: '/user/file/UploadFile',
+        type: 'post',
+        data: data,
+        contentType: false,
+        processData: false,
+        dataType: 'json',
+        async: false,
+        success: function (data) {
+            if (data['status'] === 0) {
+                swal('上传失败', data['msg'], 'error');
+                return true;
+            }
+            swal.close();
+            fileID = data['fileID'];
+        },
+        error: function () {
+            fileID = 0;
+            swal('遇到错误', '请与技术人员联系解决问题', 'error');
+        }
+    });
+    return fileID;
+}
+
+//利用文件ID获取文件路径
+function getFilePath(fileID) {
+    var path = '';
+    $.ajax({
+        url: '/user/file/filePath/' + fileID + '.json',
+        type: 'get',
+        dataType: 'json',
+        async: false,
+        success: function (data) {
+            if (data['status'])
+                path = data['path'];
+        }
+    });
+    return path;
 }

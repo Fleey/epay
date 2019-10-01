@@ -9,20 +9,24 @@ use think\Db;
 
 class File extends Controller
 {
+    private $uid = 1;
+
     public function __construct(App $app = null)
     {
         parent::__construct($app);
 
-        $isAjax   = $this->request->isAjax();
-        $username = session('username', '', 'admin');
-
-        if (empty($username)) {
+        $isAjax        = $this->request->isAjax();
+        $usernameAdmin = session('username', '', 'admin');
+        $usernameUser  = session('uid', '', 'user');;
+        if (empty($usernameUser) && empty($usernameAdmin)) {
             if ($isAjax)
                 json(['status' => 0, 'msg' => '您需要登录后才能操作'])->send();
             else
                 redirect(url('/Login', '', false))->send();
             exit();
         }
+        if (!empty($usernameUser))
+            $this->uid = $usernameUser;
     }
 
     /**
@@ -62,7 +66,7 @@ class File extends Controller
         $suffix        = $suffix[count($suffix) - 1];
         $hash          = $fileInfo->hash('sha256');
         $fileID        = Db::table('epay_file_info')->insertGetId([
-            'uid'        => 1,
+            'uid'        => $this->uid,
             'hash'       => $hash,
             'path'       => $filePath,
             'fileType'   => $suffix,
@@ -85,7 +89,11 @@ class File extends Controller
     {
         if (empty($fileID))
             return json(['status' => 0, 'msg' => '文件ID不存在']);
-        $result = Db::table('epay_file_info')->where('id', $fileID)->field('path')->limit(1)->select();
+        $result = Db::table('epay_file_info')->where('id', $fileID)->field('path')->limit(1);
+        if ($this->uid != 1)
+            $result = $result->where('uid', $this->uid);
+        //防止越权
+        $result = $result->select();
         if (empty($result))
             return json(['status' => 0, 'msg' => '文件ID不存在']);
         return json(['status' => 1, 'path' => $result[0]['path']]);

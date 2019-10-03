@@ -213,13 +213,13 @@ class SyncOrder extends Command
                             ->whereTime('createTime', '<=', $today . ' ' . $hoursEndStr)->sum('data');
                     }
                     $data['orderDataComparison'] = $orderDataComparison;
-                    cache('orderDataComparison', json_encode($orderDataComparison), 600);
+                    cache('orderDataComparison', json_encode($orderDataComparison), 120);
                 } else {
                     $data['orderDataComparison'] = json_decode($cacheOrderDataComparison, true);
                 }
             }
             //获取分时订单
-            cache('DashboardData', json_encode($data), 600);
+            cache('DashboardData', json_encode($data), 120);
         }
     }
 

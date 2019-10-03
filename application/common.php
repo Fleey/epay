@@ -711,6 +711,7 @@ function addCallBackLog(int $uid, string $url, string $method = 'get', array $re
         'body'  => json_encode($data),
     ]);
     $client->push($message, 15, 86400);
+    $client->close();
 }
 
 /**

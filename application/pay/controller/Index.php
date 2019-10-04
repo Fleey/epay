@@ -260,8 +260,8 @@ class Index extends Controller
             //转跳到支付宝支付
         } else if ($converPayType == 1) {
             if (!empty($this->systemConfig['notifyDomain']))
-                return redirect($this->systemConfig['notifyDomain'] . '/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign);
-            return redirect(url('/Pay/WxPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));
+                return redirect($this->systemConfig['notifyDomain'] . '/Pay/WxPay/Pay?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign);
+            return redirect(url('/Pay/WxPay/Pay?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));
             //转跳到微信支付
         } else if ($converPayType == 2) {
             return redirect(url('/Pay/QQPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));

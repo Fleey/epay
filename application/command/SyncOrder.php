@@ -146,41 +146,77 @@ class SyncOrder extends Command
                     $data['orderDataStatistics'][$time] = $buildOrderStatistics($time);
                 }
             }
+            $createTimeList     = [
+                date('Y-m-d', strtotime('- 1 day')),
+                date('Y-m-d', strtotime('now'))
+            ];
             $data['statistics'] = [
                 'yesterday' => [
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_1')->whereTime('createTime', 'yesterday')->sum('data')
+                        'totalMoney' => Db::table('epay_data_model')->where([
+                            ['attrName', '=', 'money_total_1'],
+                            ['createTime', '>=', $createTimeList[0] . ' 00:00:00'],
+                            ['createTime', '<=', $createTimeList[0] . ' 23:59:59']
+                        ])->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_2')->whereTime('createTime', 'yesterday')->sum('data')
+                        'totalMoney' => Db::table('epay_data_model')->where([
+                            ['attrName', '=', 'money_total_2'],
+                            ['createTime', '>=', $createTimeList[0] . ' 00:00:00'],
+                            ['createTime', '<=', $createTimeList[0] . ' 23:59:59']
+                        ])->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_3')->whereTime('createTime', 'yesterday')->sum('data')
+                        'totalMoney' => Db::table('epay_data_model')->where([
+                            ['attrName', '=', 'money_total_3'],
+                            ['createTime', '>=', $createTimeList[0] . ' 00:00:00'],
+                            ['createTime', '<=', $createTimeList[0] . ' 23:59:59']
+                        ])->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_4')->whereTime('createTime', 'yesterday')->sum('data')
+                        'totalMoney' => Db::table('epay_data_model')->where([
+                            ['attrName', '=', 'money_total_4'],
+                            ['createTime', '>=', $createTimeList[0] . ' 00:00:00'],
+                            ['createTime', '<=', $createTimeList[0] . ' 23:59:59']
+                        ])->sum('data')
                     ]
                 ],
                 'today'     => [
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_1')->whereTime('createTime', 'today')->sum('data')
+                        'totalMoney' => Db::table('epay_data_model')->where([
+                            ['attrName', '=', 'money_total_1'],
+                            ['createTime', '>=', $createTimeList[1] . ' 00:00:00'],
+                            ['createTime', '<=', $createTimeList[1] . ' 23:59:59']
+                        ])->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_2')->whereTime('createTime', 'today')->sum('data')
+                        'totalMoney' => Db::table('epay_data_model')->where([
+                            ['attrName', '=', 'money_total_2'],
+                            ['createTime', '>=', $createTimeList[1] . ' 00:00:00'],
+                            ['createTime', '<=', $createTimeList[1] . ' 23:59:59']
+                        ])->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_3')->whereTime('createTime', 'today')->sum('data')
+                        'totalMoney' => Db::table('epay_data_model')->where([
+                            ['attrName', '=', 'money_total_3'],
+                            ['createTime', '>=', $createTimeList[1] . ' 00:00:00'],
+                            ['createTime', '<=', $createTimeList[1] . ' 23:59:59']
+                        ])->sum('data')
                     ],
                     [
                         'type'       => 1,
-                        'totalMoney' => Db::table('epay_data_model')->where('attrName','money_total_4')->whereTime('createTime', 'today')->sum('data')
+                        'totalMoney' => Db::table('epay_data_model')->where([
+                            ['attrName', '=', 'money_total_4'],
+                            ['createTime', '>=', $createTimeList[1] . ' 00:00:00'],
+                            ['createTime', '<=', $createTimeList[1] . ' 23:59:59']
+                        ])->sum('data')
                     ]
                 ]
             ];

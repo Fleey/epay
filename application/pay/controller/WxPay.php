@@ -46,7 +46,7 @@ class WxPay extends Controller
             return $this->fetch('/SystemMessage', ['msg' => '系统已经冻结所有账号，请联系站点管理员处理！']);
 
         $wxPayModel = new WxPayModel($this->systemConfig['wxpay'], 'jsapi');
-        $wxPayModel->getWxOpenCode(url('/Pay/WxPay/Submit?' . build_query($requestData), '', '', true));
+        $wxPayModel->getWxOpenCode(url('/Pay/WxPay/Pay?' . build_query($requestData), '', '', true));
     }
 
     /**
@@ -56,7 +56,7 @@ class WxPay extends Controller
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public function getSubmit()
+    public function getPay()
     {
         $tradeNo  = input('get.tradeNo/s');
         $siteName = htmlentities(base64_decode(input('get.siteName', '易支付')));

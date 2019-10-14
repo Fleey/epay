@@ -199,9 +199,9 @@ class WxxApiV1Model
         ];
         if (!empty($bankName))
             $param['bank_name'] = $bankName;
-        if(!empty($accountNo))
+        if (!empty($accountNo))
             $param['account_number'] = $this->getEncrypt($accountNo);
-        if(!empty($accountBank))
+        if (!empty($accountBank))
             $param['account_bank'] = $accountBank;
 
         $param['sign'] = self::signParam($param, $this->appKey, 'HMAC-SHA256');
@@ -282,6 +282,107 @@ class WxxApiV1Model
     }
 
     /**
+     * 小微商户进阶升级
+     * https://pay.weixin.qq.com/wiki/doc/api/mch_xiaowei.php?chapter=28_2&index=2
+     * @param string $subMchID //小微商户号
+     * @param string $organizationType //2-企业 4-个体工商户  3-党政、机关及事业单位  1708-其他组织
+     * @param string $businessLicenseCopy //营业执照扫描件 需要预先上传好的图片ID
+     * @param string $businessLicenseNumber // 请填写营业执照上的营业执照注册号
+     * @param string $merchantName //支持括号 个体工商户不能以“公司”结尾
+     * @param string $companyAddress //注册地址
+     * @param string $legalPerson //经营者姓名/法定代表人
+     * @param string $businessTime //营业期限 ["1970-01-01","长期"]
+     * @param string $businessLicenceType //1762-已三证合一    1763-未三证合一
+     * @param string $merchantShortName //商户名称
+     * @param string $business //费率结算规则ID https://pay.weixin.qq.com/wiki/doc/api/xiaowei.php?chapter=22_1
+     * @param string $contactEmail //联系邮箱 必填
+     * @param string $accountName //开户名称 这里开始 企业必填
+     * @param string $accountBank //开户银行
+     * @param string $bankAddressCode //开户银行省市编码
+     * @param string $bankName //开户银行全称
+     * @param string $accountNumber //银行卡号
+     * @param string $organizationCopy //组织机构代码证照片
+     * @param string $organizationNumber //组织机构代码
+     * @param string $organizationTime //组织机构代码有效期限 ["1970-01-01","长期"]
+     * @return array|mixed
+     */
+    public function applyMicroUpgrade(string $subMchID, string $organizationType, string $businessLicenseCopy,
+                                      string $businessLicenseNumber, string $merchantName, string $companyAddress,
+                                      string $legalPerson, string $businessTime, string $businessLicenceType,
+                                      string $merchantShortName, string $business, string $contactEmail,
+                                      string $accountName = '', string $accountBank = '', string $bankAddressCode = '',
+                                      string $bankName = '', string $accountNumber = '', string $organizationCopy = '',
+                                      string $organizationNumber = '', string $organizationTime = '')
+    {
+        $requestUrl = 'https://api.mch.weixin.qq.com/applyment/micro/submitupgrade';
+
+        $certSN = $this->getCertificates();
+        if (!$certSN['isSuccess']) {
+            return $certSN;
+        }
+        $certSN = $certSN['data']['serial_no'];
+
+        $param = [
+            'version'                 => '1.0',
+            'mch_id'                  => $this->mid,
+            'nonce_str'               => getRandChar(16),
+            'sign_type'               => 'HMAC-SHA256',
+            'cert_sn'                 => $certSN,
+            'sub_mch_id'              => $subMchID,
+            'organization_type'       => $organizationType,
+            'business_license_copy'   => $businessLicenseCopy,
+            'business_license_number' => $businessLicenseNumber,
+            'merchant_name'           => $merchantName,
+            'company_address'         => $companyAddress,
+            'legal_person'            => $this->getEncrypt($legalPerson),
+            'business_time'           => $businessTime,
+            'business_licence_type'   => $businessLicenceType,
+            'merchant_shortname'      => $merchantShortName,
+            'business'                => $business,
+            'business_scene'          => '[1721]',
+            'contact_email'           => $this->getEncrypt($contactEmail)
+        ];
+        if (!empty($organizationCopy))
+            $param['organization_copy'] = $organizationCopy;
+        if (!empty($organizationNumber))
+            $param['organization_number'] = $organizationNumber;
+        if (!empty($organizationTime))
+            $param['organization_time'] = $organizationTime;
+
+        if (!empty($accountName))
+            $param['account_name'] = $this->getEncrypt($accountName);
+        if (!empty($accountBank))
+            $param['account_bank'] = $accountBank;
+        if (!empty($bankAddressCode))
+            $param['bank_address_code'] = $bankAddressCode;
+        if (!empty($bankName))
+            $param['bank_name'] = $bankName;
+        if (!empty($accountNumber))
+            $param['account_number'] = $accountNumber;
+
+
+        $param['sign'] = self::signParam($param, $this->appKey, 'HMAC-SHA256');
+
+        $result = curl($requestUrl, [], 'post', arrayToXml($param), 'xml', false, false, [
+            'sslCertPath' => $this->sslCertPath,
+            'sslKeyPath'  => $this->sslKeyPath
+        ]);
+        $result = xmlToArray($result);
+        if ($result['return_code'] != 'SUCCESS')
+            return ['isSuccess' => false, 'msg' => $result['return_msg']];
+        if ($result['result_code'] != 'SUCCESS') {
+            if ($result['err_code'] == 'PARAM_ERROR')
+                return ['isSuccess' => false, 'msg' => $result['err_code'] . '  ' . $result['err_code_des']];
+            else
+                return ['isSuccess' => false, 'msg' => $result['err_code'] . '  ' . $result['err_param']];
+        }
+        if (self::signParam($result, $this->appKey, 'HMAC-SHA256') != $result['sign'])
+            return ['isSuccess' => false, 'msg' => 'return data sign fail'];
+
+        return ['isSuccess' => true, 'data' => $result];
+    }
+
+    /**
      * 申请微信小微商户
      * https://pay.weixin.qq.com/wiki/doc/api/xiaowei.php?chapter=19_2
      * @param String $idCardCopy //身份证人像面照片
@@ -313,7 +414,7 @@ class WxxApiV1Model
                                String $bankAddressCode, String $accountNumber, String $storeName, String $storeAddressCode,
                                String $storeStreet, String $storeEntrancePic, String $indoorPic, String $merchantShortName,
                                String $servicePhone, String $productDesc, String $rate, String $contact, String $contactPhone,
-                               String $bankName = '', string $businessCode = '')
+                               string $bankName = '', string $businessCode = '')
     {
         $requestUrl = 'https://api.mch.weixin.qq.com/applyment/micro/submit';
 
@@ -378,6 +479,39 @@ class WxxApiV1Model
             'applymentID'  => $result['applyment_id'],
             'businessCode' => $businessCode
         ]];
+    }
+
+    public function applyStatusUpgrade(string $subMchID)
+    {
+        $requestUrl = 'https://api.mch.weixin.qq.com/applyment/micro/getupgradestate';
+
+        $param = [
+            'version'    => '1.0',
+            'mch_id'     => $this->mid,
+            'nonce_str'  => getRandChar(16),
+            'sign_type'  => 'HMAC-SHA256',
+            'sub_mch_id' => $subMchID
+        ];
+
+        $param['sign'] = self::signParam($param, $this->appKey, 'HMAC-SHA256');
+        $result        = curl($requestUrl, [], 'post', arrayToXml($param), 'xml', false, false, [
+            'sslCertPath' => $this->sslCertPath,
+            'sslKeyPath'  => $this->sslKeyPath
+        ]);
+
+        $result        = xmlToArray($result);
+        if ($result['return_code'] != 'SUCCESS')
+            return ['isSuccess' => false, 'msg' => $result['return_msg']];
+        if ($result['result_code'] != 'SUCCESS') {
+            if (!empty($result['err_code_desc']))
+                return ['isSuccess' => false, 'msg' => $result['err_code'] . '  ' . $result['err_code_desc']];
+            else
+                return ['isSuccess' => false, 'msg' => $result['err_code'] . '  ' . $result['err_code_des']];
+        }
+//        if (self::signParam($result, $this->appKey, 'HMAC-SHA256') != $result['sign'])
+//            return ['isSuccess' => false, 'msg' => 'return data sign fail'];
+
+        exit(dump($result));
     }
 
     /**

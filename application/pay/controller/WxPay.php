@@ -368,10 +368,11 @@ class WxPay extends Controller
         if (!$isCollectiveAccount) {
             $userAccountList = Db::table('epay_wxx_apply_info')->limit(1)
                 ->leftJoin('epay_wxx_apply_list', 'epay_wxx_apply_list.applyInfoID = epay_wxx_apply_info.id')
+                ->leftJoin('epay_wxx_apply_info_relate', '`epay_wxx_apply_info_relate`.applyInfoID = `epay_wxx_apply_info`.`id`')
                 ->field('epay_wxx_apply_list.accountID,epay_wxx_apply_info.idCardName,epay_wxx_apply_list.subMchID,epay_wxx_apply_list.tempMoney,epay_wxx_apply_list.rounds')->where([
-                    'epay_wxx_apply_info.uid'    => $uid,
-                    'epay_wxx_apply_info.type'   => 2,
-                    'epay_wxx_apply_list.status' => 2
+                    'epay_wxx_apply_info_relate.uid' => $uid,
+                    'epay_wxx_apply_info.type'       => 2,
+                    'epay_wxx_apply_list.status'     => 2
                 ])->order('epay_wxx_apply_list.rounds asc,epay_wxx_apply_list.tempMoney asc')->select();
             if (empty($userAccountList))
                 return [];
@@ -413,7 +414,7 @@ class WxPay extends Controller
                     'epay_wxx_apply_list.status' => 2
                 ])->order('epay_wxx_apply_list.rounds asc,epay_wxx_apply_list.tempMoney asc')->select();
             //集体号
-            if(empty($userAccountList))
+            if (empty($userAccountList))
                 return [];
             $data = ['accountID' => $userAccountList[0]['accountID'], 'subMchID' => $userAccountList[0]['subMchID'], 'configType' => 1];
             if ($isReservedMoneyModel) {

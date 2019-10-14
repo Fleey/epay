@@ -59,7 +59,7 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="uid">商户号</label>
-                                <input data-name="uid" class="form-control" placeholder="商户号" disabled>
+                                <button class="btn btn-primary form-control" id="relate">设置关联商户号</button>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -290,6 +290,58 @@
                 <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
                 <button class="btn btn-default w96" style="display: none;" id="cancelSearchFilter">取消过滤</button>
                 <button type="button" class="btn btn-primary w96" id="searchContent">搜索</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="setApplyInfoRelate" role="dialog" aria-labelledby="setApplyInfoRelate" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">设置商户号关联</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="box-body">
+                        <div class="form-group">
+                            <label for="uid" class="control-label">请输入关联商户号</label>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <input type="text" class="form-control" data-name="uid"
+                                           placeholder="请输入关联商户号">
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-info btn-block addRelateUid" type="button"
+                                            style="margin-right: 10px;">添加
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <label for="uid" class=" control-label">已关联用户列表</label>
+                                <div class="table-responsive">
+                                    <table id="relateList" class="table no-wrap user-table mb-0 table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>商户号</th>
+                                            <th>操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary w96" data-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>

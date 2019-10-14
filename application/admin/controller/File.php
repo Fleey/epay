@@ -97,6 +97,5 @@ class File extends Controller
         if (empty($result))
             return json(['status' => 0, 'msg' => '文件ID不存在']);
         return json(['status' => 1, 'path' => $result[0]['path']]);
-
     }
 }

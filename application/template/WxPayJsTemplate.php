@@ -31,9 +31,10 @@
                     function (res) {
                         if (res['err_msg'] === 'get_brand_wcpay_request:ok') {
                             getOrderStatus();
-                        } else if (res['err_msg'] === 'get_brand_wcpay_request:cancel' || res['err_msg'] === 'get_brand_wcpay_request:fail') {
-                            layer.msg('取消支付，正在转跳回商户页面...', {icon: 16, shade: 0.01, time: 15000});
-                            setTimeout(window.location.href = '<?php echo $cancelCallback; ?>', 1000);
+                        } else if (res['err_msg'] === 'get_brand_wcpay_request:fail') {
+                            // layer.msg('取消支付，正在转跳回商户页面...', {icon: 16, shade: 0.01, time: 15000});
+                            //setTimeout(window.location.href = '<?php //echo $cancelCallback; ?>//', 1000);
+                            jsApiCall();
                         } else {
                             WeixinJSBridge.log('您似乎遇到了错误,请截图本页面联系管理员 ' + res.err_msg);
                         }
@@ -77,7 +78,7 @@
                     data: {
                         type: 1,
                         tradeNo: '<?php echo $tradeNo;?>',
-                        key:'<?php echo md5($tradeNo.'huaji'); ?>'
+                        key: '<?php echo md5($tradeNo . 'huaji'); ?>'
                     },
                     success: function (data) {
                         //从服务器得到数据，显示数据并继续查询
@@ -100,6 +101,7 @@
                     }
                 });
             }
+
             window.onload = callPay();
         </script>
     </div>

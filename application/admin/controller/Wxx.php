@@ -516,7 +516,7 @@ class Wxx extends Controller
                 $indoorPic = $indoorPic['data']['media_id'];
             }
 
-            $businessCode = 'apply-' . substr(md5($accountID . $applyInfo['idCardNumber']), 0, 20);
+            $businessCode = 'apply-' . substr(md5($accountID . $applyInfo['idCardNumber'] . $applyInfo['servicePhone']), 0, 20);
 
             $applyResult = $wxxModel->applyMicro($idCardCopy, $idCardNational, $applyInfo['idCardName'],
                 $applyInfo['idCardNumber'], $applyInfo['idCardValidTime'], $applyInfo['accountName'],
@@ -610,9 +610,9 @@ class Wxx extends Controller
             'remark' => $remark
         ]);
 
-        if($result)
-            return json(['status'=>1,'msg'=>'保存备注成功']);
-        return json(['status'=>0,'msg'=>'保存备注失败']);
+        if ($result)
+            return json(['status' => 1, 'msg' => '保存备注成功']);
+        return json(['status' => 0, 'msg' => '保存备注失败']);
     }
 
     public function postApplyListStatus()
@@ -750,6 +750,60 @@ class Wxx extends Controller
 //        return
     }
 
+    public function postAddWxxApplyInfoRelateUID()
+    {
+        $applyID = input('post.applyID/d');
+        $uid     = input('post.uid/d');
+
+        if (empty($applyID) || empty($uid))
+            return json(['status' => 0, 'msg' => '请求参数不能为空']);
+
+        $result = Db::table('epay_wxx_apply_info_relate')->where([
+            'applyInfoID' => $applyID,
+            'uid'         => $uid
+        ])->limit(1)->field('id')->select();
+        if (!empty($result))
+            return json(['status' => 0, 'msg' => '此商户号已经关联，无法再次关联']);
+
+        $result = Db::table('epay_wxx_apply_info_relate')->insertGetId([
+            'applyInfoID' => $applyID,
+            'uid'         => $uid,
+            'createTime'  => getDateTime()
+        ]);
+        if (empty($result))
+            return json(['status' => 0, 'msg' => '关联商户号失败，请重试']);
+        return json(['status' => 1, 'msg' => '关联商户号成功', 'id' => $result]);
+    }
+
+    public function postRemoveWxxApplyInfoRelateUID()
+    {
+        $applyID = input('post.applyID/d');
+        $uid     = input('post.uid/d');
+
+        if (empty($applyID) || empty($uid))
+            return json(['status' => 0, 'msg' => '请求参数不能为空']);
+
+        $result = Db::table('epay_wxx_apply_info_relate')->where([
+            'applyInfoID' => $applyID,
+            'uid'         => $uid
+        ])->limit(1)->delete();
+        if (!$result)
+            return json(['status' => 0, 'msg' => '删除关联商户号失败，请重试']);
+        return json(['status' => 1, 'msg' => '删除关联商户号成功']);
+    }
+
+    public function getWxxApplyInfoRelateUIDList()
+    {
+        $applyID = input('get.applyID/d');
+        if (empty($applyID))
+            return json(['status' => 0, 'msg' => '请求参数不能为空']);
+
+        $result = Db::table('epay_wxx_apply_info_relate')->field('id,uid')->where('applyInfoID', $applyID)->order('id desc')->select();
+        if (empty($result))
+            $result = [];
+        return json(['status' => 1, 'data' => $result]);
+    }
+
     /**
      * @param int $accountID
      * @return WxxApiV1Model|null
@@ -788,7 +842,6 @@ class Wxx extends Controller
             'sslCertPath' => FileModel::getFilePath($selectResult[0]['apiCertID'])
         ];
     }
-
 
     /**
      * 重新构建图片 专门为小微商户申请使用 保存后记得删除

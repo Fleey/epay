@@ -63,10 +63,10 @@ $(function () {
     $('#applyInfo select[data-name="type"]').change(function () {
         var selectValue = $(this).val();
         if (selectValue === '1') {
-            $('#applyInfo input[data-name="uid"]').attr("disabled", '');
+            $('#applyInfo #relate').attr("disabled", '');
             $('#applyInfo input[data-name="reservedMoney"]').attr("disabled", '');
         } else {
-            $('#applyInfo input[data-name="uid"]').removeAttr("disabled");
+            $('#applyInfo #relate').removeAttr("disabled");
             $('#applyInfo input[data-name="reservedMoney"]').removeAttr("disabled");
         }
     });
@@ -132,7 +132,6 @@ $(function () {
         if (isRequest)
             return;
         var type = $('#applyInfo [data-name="type"]').val();
-        var uid = $('#applyInfo [data-name="uid"]').val();
         var idCardName = $('#applyInfo [data-name="idCardName"]').val();
         var idCardNumber = $('#applyInfo [data-name="idCardNumber"]').val();
 
@@ -233,10 +232,6 @@ $(function () {
             swal('请求失败', '账号类型必须选择', 'error');
             return true;
         }
-        if (type === '2' && uid.length === 0) {
-            swal('请求失败', '商户号必须填写', 'error');
-            return true;
-        }
         if (accountBank === null) {
             swal('请求失败', '开户银行必须选择', 'error');
             return true;
@@ -254,7 +249,6 @@ $(function () {
         });
         isRequest = true;
         var requestData = {
-            uid: uid,
             type: type,
             idCardCopy: idCardCopy,
             idCardNational: idCardNational,
@@ -531,6 +525,59 @@ $(function () {
                 initSelect();
             });
         }
+    });
+    $('#relate').click(function () {
+        var saveInfoType = $('#saveInfo').attr('data-type');
+        if(saveInfoType === 'add'){
+            alert('关联流程 -> 新增完信息 -> 查看更多 -> 关联商户号');
+            return;
+        }
+        var applyID = $('#applyInfo').attr('data-apply-id');
+        $.getJSON('/cy2018/api/Wxx/WxxApplyInfoRelateUIDList', {applyID: applyID}, function (data) {
+            if (data['status'] !== 1) {
+                console.log(data['msg']);
+                return;
+            }
+            var tempDom = $('#relateList>tbody').html('');
+            $.each(data['data'], function (key, value) {
+                tempDom.append('<tr><td>' + value['id'] + '</td><td>' + value['uid'] + '</td><td><button type="button" class="btn btn-sm btn-danger removeRelate"  data-apply-id="' + applyID + '" data-uid="' + value['uid'] + '">删除</button></td></tr>');
+            });
+        });
+        $('#setApplyInfoRelate').modal('show').attr('data-apply-id', applyID);
+    });
+    $('.addRelateUid').click(function () {
+        var uid = parseInt($('#setApplyInfoRelate [data-name="uid"]').val());
+        var applyID = parseInt($('#setApplyInfoRelate').attr('data-apply-id'));
+        if (isNaN(uid)) {
+            alert('商户号不能为空');
+            return;
+        }
+        $.post('/cy2018/api/Wxx/AddWxxApplyInfoRelateUID', {
+            applyID: applyID,
+            uid: uid
+        }, function (data) {
+            if (data['status'] !== 1) {
+                alert('[错误] ' + data['msg']);
+                return;
+            }
+            $('#relateList>tbody').append('<tr><td>' + data['id'] + '</td><td>' + uid + '</td><td><button type="button" class="btn btn-sm btn-danger removeRelate"  data-apply-id="' + applyID + '" data-uid="' + uid + '">删除</button></td></tr>');
+            alert('[成功] ' + data['msg']);
+        });
+    });
+    $('#relateList>tbody').on('click', '.removeRelate', function () {
+        var clickDom = $(this);
+        var uid = clickDom.attr('data-uid');
+        var applyID = clickDom.attr('data-apply-id');
+        $.post('/cy2018/api/Wxx/RemoveWxxApplyInfoRelateUID', {
+            applyID: applyID,
+            uid: uid
+        }, function (data) {
+            if (data['status'] !== 1) {
+                alert('[错误] ' + data['msg']);
+                return;
+            }
+            clickDom.parent().parent().remove();
+        });
     });
 });
 

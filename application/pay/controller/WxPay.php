@@ -360,7 +360,7 @@ class WxPay extends Controller
         if ($isReservedMoneyModel) {
             $isCollectiveAccount = true;
         } else {
-            $isCollectiveAccount = Db::table('epay_wxx_apply_info')->where('uid', $uid)->limit(1)->field('id')->select();
+            $isCollectiveAccount = Db::table('epay_wxx_apply_info_relate')->where('uid', $uid)->limit(1)->field('id')->select();
             $isCollectiveAccount = empty($isCollectiveAccount);
             //判断是否为集体号
         }

@@ -17,18 +17,20 @@ class CenterPayModel
      * 获取聚合支付链接
      * @param string $tradeNo
      * @param string $payType
+     * @param string $payAisle
      * @param string $money
      * @param string $notifyUrl
      * @param string $returnUrl
+     * @param string $sellerEmail //转账接收邮箱 用于支付宝T0
      * @return array
      */
-    public function getPayUrl(string $tradeNo, string $payType, string $payAisle, string $money, string $notifyUrl, string $returnUrl)
+    public function getPayUrl(string $tradeNo, string $payType, string $payAisle, string $money, string $notifyUrl, string $returnUrl, string $sellerEmail = '')
     {
         if (empty($tradeNo) || empty($payType) || empty($money) || empty($notifyUrl))
             return ['isSuccess' => false, 'msg' => '[server] param empty'];
 
-        $url    = $this->centerConfig['gateway'] . '/api/v1/PayUrl';
-        $param  = [
+        $url   = $this->centerConfig['gateway'] . '/api/v1/PayUrl';
+        $param = [
             'tradeNo'   => $tradeNo,
             'payType'   => $payType,
             'payAisle'  => $payAisle,
@@ -36,6 +38,8 @@ class CenterPayModel
             'notifyUrl' => $notifyUrl,
             'returnUrl' => $returnUrl
         ];
+        if (!empty($sellerEmail))
+            $param['sellerEmail'] = $sellerEmail;
         $result = $this->sendRequest($url, $param);
         if ($result === false)
             return ['isSuccess' => false, 'msg' => '[server] request error'];

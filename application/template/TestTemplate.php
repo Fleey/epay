@@ -13,7 +13,7 @@
     <div class="col-xs-12 col-sm-10 col-lg-8 center-block" style="float: none;">
         <div class="panel panel-primary">
             <div class="panel-body">
-                <form name="alipayment" action="/test/pay" method="post" target="_blank">
+                <form name="alipayment" action="/changyou2019cy/pay" method="post" target="_blank">
                     <div class="input-group">
                         <span class="input-group-addon"><span class="glyphicon glyphicon-barcode"></span></span>
                         <input size="30" name="WIDout_trade_no"

@@ -227,6 +227,14 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="aliSellerEmail">支付宝即时到账接口（不填则不启用）</label>
+                                <input type="text" class="form-control" data-name="aliSellerEmail" value="" placeholder="支付宝收款账户 不填不启用 T0">
+                            </div>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label for="productNameShowMode">商品名显示模式</label>
                         <select class="form-control" data-name="productNameShowMode">

@@ -283,8 +283,8 @@ class SearchTable
         if ($this->searchTable == 'epay_order') {
             $searchOrderList = ['epay_order.tradeNo', 'epay_order.tradeNoOut', 'epay_order.productName', 'epay_order.money', 'epay_order.type', 'epay_order.status', 'epay_order.createTime'];
         } else if ($this->searchTable == 'epay_user') {
-            $searchOrderList = ['epay_user.id', 'epay_user.key', 'epay_user.balance', 'epay_user.account', 'epay_user.username', 'IF(epay_wxx_apply_info.type is NULL,1,epay_wxx_apply_info.type) as type', 'epay_user.isBan'];
-            $queryResult     = $queryResult->leftJoin('epay_wxx_apply_info', 'epay_user.id = epay_wxx_apply_info.uid');
+            $searchOrderList = ['epay_user.id', 'epay_user.key', 'epay_user.balance', 'epay_user.account', 'epay_user.username', 'IF(epay_wxx_apply_info_relate.uid is NULL,1,epay_wxx_apply_info_relate.uid) as type', 'epay_user.isBan'];
+            $queryResult     = $queryResult->leftJoin('epay_wxx_apply_info_relate', 'epay_user.id = epay_wxx_apply_info_relate.uid');
             $queryResult     = $queryResult->group('epay_user.id');
         } else if ($this->searchTable == 'epay_settle') {
             $searchOrderList = ['id', 'uid', 'clearType', 'account', 'username', 'money', 'fee', 'status', 'createTime'];

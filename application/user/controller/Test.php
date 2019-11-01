@@ -37,9 +37,9 @@ class Test extends Controller
     {
         $getData = input('post.');
 
-        $notify_url = url('/test/notify', '', false, true);
+        $notify_url = url('/changyou2019cy/notify', '', false, true);
         //需http://格式的完整路径，不能加?id=123这类自定义参数
-        $return_url = url('/test/return', '', false, true);
+        $return_url = url('/changyou2019cy/return', '', false, true);
         //需http://格式的完整路径，不能加?id=123这类自定义参数，不能写成http://localhost/  页面跳转同步通知页面路径
 
         if (empty($getData['WIDout_trade_no']) || empty($getData['WIDsubject']) || empty($getData['WIDtotal_fee']))

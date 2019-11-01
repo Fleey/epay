@@ -32,8 +32,8 @@ class CenterPay extends Controller
 //        $siteName = htmlentities(base64_decode(input('get.siteName')));
 //        if (empty($siteName))
 //            $siteName = '易支付';
-        $sign     = input('get.sign/s');
-        if(md5($tradeNo.'huaji')!=$sign)
+        $sign = input('get.sign/s');
+        if (md5($tradeNo . 'huaji') != $sign)
             return $this->fetch('/SystemMessage', ['msg' => '签名有误！']);
         if (strlen($tradeNo) != 19) {
             $tradeNo = substr($tradeNo, 0, 19);
@@ -73,9 +73,16 @@ class CenterPay extends Controller
         $config            = $systemPayConfig;
         $config['gateway'] = 'http://center.zmz999.com';
         $centerPayModel    = new CenterPayModel($config);
-        $requestResult     = $centerPayModel->getPayUrl($tradeNo, $payName, $userPayConfig[$payName]['payAisle'], ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);
+
+        $sellerEmail = '';
+
+        if ($result[0]['type'] == 3) {
+            $sellerEmail = getPayUserAttr($result[0]['uid'], 'aliSellerEmail');
+        }
+
+        $requestResult = $centerPayModel->getPayUrl($tradeNo, $payName, $userPayConfig[$payName]['payAisle'], ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl, $sellerEmail);
         if ($requestResult['isSuccess'] && (empty($requestResult['html'] && empty($requestResult['url']))))
-            $requestResult = $centerPayModel->getPayUrl($tradeNo, $payName, $userPayConfig[$payName]['payAisle'], ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl);
+            $requestResult = $centerPayModel->getPayUrl($tradeNo, $payName, $userPayConfig[$payName]['payAisle'], ($result[0]['money'] / 100), $this->notifyUrl, $this->returnUrl, $sellerEmail);
         if ($requestResult['isSuccess']) {
 //            if (empty($requestResult['html'])) {
 //                return redirect($requestResult['url'], [], 302);

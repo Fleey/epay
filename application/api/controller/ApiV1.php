@@ -155,153 +155,18 @@ class ApiV1 extends Controller
         $sign        = input('get.sign/s');
         $signType    = input('get.sign_type/s');
         //get param
-        if (is_null($uid) || is_null($type) || is_null($tradeNoOut) || is_null($notifyUrl) || is_null($productName) ||
-            is_null($money) || is_null($sign) || is_null($signType))
-            return json(['code' => 0, 'msg' => '参数不能为空']);
 
-        $userInfo = Db::table('epay_user')->where('id', $uid)->field('key,isBan')->limit(1)->select();
-        if (empty($userInfo))
-            return json(['code' => 0, 'msg' => '签名校验失败，请返回重试！']);
-        if (!PayModel::checkSign(input('get.'), $userInfo[0]['key'], $sign))
-            return json(['code' => 0, 'msg' => '签名校验失败，请返回重试！']);
-        //check sign
-        if ($userInfo[0]['isBan'])
-            return json(['code' => 0, 'msg' => '商户已封禁，无法支付！']);
-        //check sign and is ban user
-        $type = strtolower($type);
-        if ($type != 'qqpay' && $type != 'wxpay')
-            return json(['code' => 0, 'msg' => '支付方式有误']);
-        //check pay type
-        if (!preg_match('/^[0-9]+([.]{1}[0-9]+){0,1}$/', $money))
-            return json(['code' => 0, 'msg' => '金额(money) 格式不正确']);
-        //判断金额格式 禁止那些E
-        $money = decimalsToInt($money, 2);
-        if ($money <= 0)
-            return json(['code' => 0, 'msg' => '支付金额有误']);
-
-        $this->initParam();
-        //init param
-
-        $resultIsPayType = $this->isOpenPayType($type);
-        if ($resultIsPayType !== true)
-            return $resultIsPayType;
-        //check pay type is open
-
-        try {
-            PayModel::checkUserMaxPayMoney($money, $uid, $this->systemConfig);
-        } catch (Exception $exception) {
-            return json(['code' => 0, 'msg' => $exception->getMessage()]);
-        }
-        //check user max pay money
-
-        if (!preg_match('/^[a-zA-Z0-9.\_\-|]{1,64}+$/', $tradeNoOut))
-            return json(['code' => 0, 'msg' => '订单号(out_trade_no)格式不正确 最小订单号位一位 最大为64位']);
-        //check trade out
-
-        try {
-            PayModel::checkBadWord($this->systemConfig, $productName);
-        } catch (Exception $exception) {
-            return json(['code' => 0, 'msg' => $exception->getMessage()]);
-        }
-        //检测违禁词
-
-        $tradeNo       = date('YmdHis') . rand(11111, 99999);
-        $converPayType = PayModel::converPayName($type);
-        $clientIp      = getClientIp();
-
-        $tradeNoData = Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->limit(1)->field('id,status,productName')->select();
-        if (!empty($tradeNoData))
-            $tradeNo = date('YmdHis') . rand(11111, 99999);
-        //防止单号重复
-        if ($tradeNoData[0]['status'])
-            return json(['code' => 0, 'msg' => '交易已经完成无法再次支付！']);
-
-        $tradeNoOutData = Db::table('epay_order')->where([
-            'tradeNoOut' => $tradeNoOut,
-            'uid'        => $uid
-        ])->limit(1)->field('tradeNo,type')->select();
-
-        if (empty($tradeNoOutData)) {
-            $orderDiscountMoney = PayModel::getOrderDiscountMoney($uid, $money);
-            //减免订单金额
-            $discountMoneyAfter = $money - $orderDiscountMoney;
-            if ($discountMoneyAfter >= 0)
-                $money = $discountMoneyAfter;
-            //如果减免后金额小于或等于0则不进行减免操作
-
-            $orderCreateTime = getDateTime();
-
-            $result = Db::table('epay_order')->insertGetId([
-                'uid'         => $uid,
-                'tradeNo'     => $tradeNo,
-                'tradeNoOut'  => $tradeNoOut,
-                'notify_url'  => $notifyUrl,
-                'return_url'  => '',
-                'money'       => $money,
-                'type'        => $converPayType,
-                'productName' => $productName,
-                'ipv4'        => $clientIp,
-                'status'      => 0,
-                'createTime'  => getDateTime()
-            ]);
-            if (!$result)
-                return json(['code' => 0, 'msg' => '创建订单失败,请重试']);
-
-            if ($orderDiscountMoney != 0)
-                Db::table('epay_order_attr')->insert([
-                    'tradeNo'    => $tradeNo,
-                    'attrKey'    => 'discountMoney',
-                    'attrValue'  => $orderDiscountMoney,
-                    'createTime' => $orderCreateTime
-                ]);
-            //创建订单减免记录 如果减免金额为 0 则不创建
-        } else {
-            $tradeNo     = $tradeNoOutData[0]['tradeNo'];
-            $productName = $tradeNoData[0]['productName'];
-            if ($tradeNoOutData[0]['type'] != $converPayType)
-                Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $tradeNo])->limit(1)->update(['type' => $converPayType]);
-            //改变支付类型
-        }
-        //解决用户交易号重复问题
-        if ($type == 'wxpay') {
-            $wxPayModel    = new WxPayModel($this->systemConfig['wxpay'],'h5');
-            $requestResult = $wxPayModel->sendPayRequest([
-                'money'       => ($money / 100),
-                'tradeNo'     => $tradeNo,
-                'productName' => $productName
-            ], 'NATIVE', $this->wxNotifyUrl);
-            if (!empty($requestResult['return_msg'])) {
-                $requestResult['err_code_desc'] = $requestResult['return_msg'];
-                $requestResult['err_code']      = 10001;
-            }
-            if ($requestResult['return_code'] != 'SUCCESS' || $requestResult['result_code'] != 'SUCCESS')
-                return json(['code' => 0, 'msg' => '微信支付下单失败！[' . $requestResult['err_code'] . ']' . $requestResult['err_code_desc']]);
-        } else {
-            $qqPayModel    = new QQPayModel($this->systemConfig['qqpay']);
-            $param         = [
-                'out_trade_no'     => $tradeNo,
-                'body'             => $productName,
-                'fee_type'         => 'CNY',
-                'notify_url'       => $this->qqNotifyUrl,
-                'spbill_create_ip' => $clientIp,
-                'total_fee'        => ($money / 100),
-                'trade_type'       => 'NATIVE'
-            ];
-            $requestResult = $qqPayModel->sendPayRequest($param);
-            if (!empty($requestResult['return_msg'])) {
-                $requestResult['err_code_desc'] = $requestResult['return_msg'];
-                $requestResult['err_code']      = 10001;
-            }
-            if ($requestResult['return_code'] != 'SUCCESS' || $requestResult['result_code'] != 'SUCCESS')
-                return json(['code' => 0, 'msg' => 'QQ钱包支付下单失败！[' . $requestResult['err_code'] . ']' . $requestResult['err_code_desc']]);
-        }
-        return json([
-            'code'         => 1,
-            'msg'          => '下单成功！',
-            'trade_no'     => $tradeNo,
-            'out_trade_no' => $tradeNoOut,
-            'code_url'     => $requestResult['code_url']
-        ]);
+//        if (empty($uid))
+//            return json(['code' => 0, 'msg' => 'UID不能为空']);
+//        if (empty($type))
+//            return json(['code' => 0, 'msg' => 'Type支付类型不能为空']);
+//        return json([
+//            'code'         => 1,
+//            'msg'          => '下单成功！',
+//            'trade_no'     => $tradeNo,
+//            'out_trade_no' => $tradeNoOut,
+//            'code_url'     => $requestResult['code_url']
+//        ]);
     }
 
     /**

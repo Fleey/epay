@@ -18,7 +18,7 @@ class PayModel
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public static function getOrderRateMoney(int $uid, int $orderMoney, int $orderType = 0)
+    public static function getOrderRateMoney(int $uid, float $orderMoney, int $orderType = 0)
     {
         $rateConfig = getPayUserAttr($uid, 'payRate');
         if (!empty($rateConfig) && $orderType != 0) {
@@ -48,8 +48,15 @@ class PayModel
                 $rate = $selectResult[0]['rate'] / 100;
             }
         }
+        $aliSellerEmail = getPayUserAttr($uid, 'aliSellerEmail', 2);
+        if (!empty($aliSellerEmail[1])) {
+//            exit(dump($rate));
+            $rate += 2.3;
+        }
+        //第三方支付宝费率
 
         $addMoneyRate = $orderMoney * ($rate / 100);
+//        exit(dump([$addMoneyRate,$orderMoney,($rate / 100)]));
 //        $addMoneyRate = $addMoneyRate * 10;
         $addMoneyRate = number_format($addMoneyRate, 2, '.', '');
         //转成10进制
@@ -69,7 +76,7 @@ class PayModel
         $badWordList = str_replace('、', ',', $badWordList);
         $badWordList = explode(',', $badWordList);
         foreach ($badWordList as $key => $value) {
-            if(empty($value))
+            if (empty($value))
                 unset($badWordList[$key]);
         }
         if (!empty($badWordList)) {

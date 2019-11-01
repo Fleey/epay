@@ -857,23 +857,39 @@ function setServerConfig(string $key, string $value)
 /**
  * @param $uid
  * @param string $key
+ * @param int $ver
  * @return array|PDOStatement|string|\think\Collection
  */
-function getPayUserAttr($uid, string $key)
+function getPayUserAttr($uid, string $key, $ver = 1)
 {
-    try {
-        $result = \think\Db::table('epay_user_attr')->field('value')->limit(1)->where([
-            'uid' => $uid,
-            'key' => $key
-        ])->select();
-        if (empty($result))
+    if ($ver == 1) {
+        try {
+            $result = \think\Db::table('epay_user_attr')->field('value')->limit(1)->where([
+                'uid' => $uid,
+                'key' => $key
+            ])->select();
+            if (empty($result))
+                $result = '';
+            else
+                $result = $result[0]['value'];
+        } catch (Exception $exception) {
             $result = '';
-        else
-            $result = $result[0]['value'];
-    } catch (Exception $exception) {
-        $result = '';
+        }
+        return $result;
+    } else if ($ver == 2) {
+        try {
+            $result = \think\Db::table('epay_user_attr')->field('value')->limit(1)->where([
+                'uid' => $uid,
+                'key' => $key
+            ])->select();
+            if (empty($result))
+                return [false, ''];
+            return [true, $result[0]['value']];
+        } catch (Exception $exception) {
+            return [false, ''];
+        }
     }
-    return $result;
+    return '';
 }
 
 /**
@@ -886,7 +902,7 @@ function getPayUserAttr($uid, string $key)
  */
 function setPayUserAttr($uid, string $key, string $value)
 {
-    if (getPayUserAttr($uid, $key) != '') {
+    if (getPayUserAttr($uid, $key, 2)[0]) {
         return \think\Db::table('epay_user_attr')->where([
             'uid' => $uid,
             'key' => $key

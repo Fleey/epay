@@ -328,6 +328,8 @@ class Index extends Controller
         if ($data['clearType'] == 5 || $data['clearType'] == 6)
             $data['qrFileID'] = getPayUserAttr($uid, 'qrFileID');
         //获取二维码
+        $data['aliSellerEmail'] = getPayUserAttr($uid, 'aliSellerEmail');
+        //获取支付即使转账账户
         return json(['status' => 1, 'data' => $data]);
     }
 
@@ -745,6 +747,7 @@ class Index extends Controller
         $settleHour           = input('post.settleHour/d', 0);
         $settleFee            = input('post.settleFee/s', 0);
         $setUserFrozenBalance = input('post.setUserFrozenBalance/s', 0);
+        $aliSellerEmail       = input('post.aliSellerEmail/s');
 
         $rate       = input('post.rate/s', 0);
         $rateQQ     = input('post.rateQQ/s', 0);
@@ -836,6 +839,10 @@ class Index extends Controller
                 $productName = '这是默认商品名，请联系管理员处理';
             setPayUserAttr($uid, 'productName', $productName);
         }
+
+        setPayUserAttr($uid, 'aliSellerEmail', $aliSellerEmail);
+        //保存支付宝转账账户
+
 
         setPayUserAttr($uid, 'payRate', serialize([
             'rateWx'     => $rateWx,

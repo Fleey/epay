@@ -36,14 +36,11 @@ class Test extends Command
 //        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
 //        echo '4'.PHP_EOL;
 //        Db::table('epay_wxx_trade_record')->whereTime('createTime', '<=', $deleteTime)->delete();
-        $result = Db::table('epay_wxx_apply_info')->field('id,uid')->where('type',2)->cursor();
-        foreach ($result as $content) {
-            Db::table('epay_wxx_apply_info_relate')->insert([
-                'applyInfoID' => $content['id'],
-                'uid'         => $content['uid'],
-                'createTime'  => getDateTime()
-            ]);
-        }
+        $balance = '10000.00';
+        $rate    = PayModel::getOrderRateMoney(1000, 100, 3);
+        dump([
+            $rate
+        ]);
         exit(dump('ok'));
 
         $fileContent = file_get_contents('./id.txt');

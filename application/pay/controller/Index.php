@@ -178,7 +178,7 @@ class Index extends Controller
                     $isCollectiveAccount = empty($isCollectiveAccount);
                     //判断是否为集体号
                     if (!$isCollectiveAccount) {
-                        $orderRateMoney = PayModel::getOrderRateMoney($uid, $money);
+                        $orderRateMoney = PayModel::getOrderRateMoney($uid, $money,$converPayType);
                         if ($userData[0]['balance'] <= 0)
                             return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
                         if ($userData[0]['balance'] - $orderRateMoney < 0)
@@ -186,8 +186,23 @@ class Index extends Controller
                         PayModel::setOrderAttr($tradeNo, 'rateMoney', $orderRateMoney);
                     }
                     //如果非集体号走这里
+
+                    //如果为微信支付通道走这里
+                } else if ($converPayType == 3) {
+                    $aliSellerEmail = getPayUserAttr($uid, 'aliSellerEmail', 2);
+                    if (!empty($aliSellerEmail[1])) {
+//                        $aliSellerEmail = $aliSellerEmail[1];
+
+                        $orderRateMoney = PayModel::getOrderRateMoney($uid, $money,$converPayType);
+                        if ($userData[0]['balance'] <= 0)
+                            return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
+                        if ($userData[0]['balance'] - $orderRateMoney < 0)
+                            return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
+                        PayModel::setOrderAttr($tradeNo, 'rateMoney', $orderRateMoney);
+                    }
+
+                    //如果为支付宝通道走这里
                 }
-                //如果为微信支付通道走这里
             }
             //这里开始检查是否够钱扣除费率
 
@@ -241,17 +256,17 @@ class Index extends Controller
 
         DataModel::setData('order_total_count_' . $converPayType, date('Y-m-d H', time()), 1);
 
-        $sign = md5($tradeNo.'huaji');
+        $sign = md5($tradeNo . 'huaji');
 
         if (!empty($userPayConfig)) {
             if ($type == 'tenpay')
                 $type = 'qqpay';
             if ($userPayConfig[$type]['apiType'] == 1)
-                return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo.'&sign='.$sign, '', false, true));
+                return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo . '&sign=' . $sign, '', false, true));
         } else {
             if (isset($this->systemConfig[$type]['apiType']))
                 if ($this->systemConfig[$type]['apiType'] == 1)
-                    return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo.'&sign='.$sign, '', false, true));
+                    return redirect(url('/Pay/CenterPay/Submit?tradeNo=' . $tradeNo . '&sign=' . $sign, '', false, true));
         }
 
         //中央支付
@@ -260,14 +275,14 @@ class Index extends Controller
             //转跳到支付宝支付
         } else if ($converPayType == 1) {
             if (!empty($this->systemConfig['notifyDomain']))
-                return redirect($this->systemConfig['notifyDomain'] . '/Pay/WxPay/Pay?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign);
-            return redirect(url('/Pay/WxPay/Pay?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));
+                return redirect($this->systemConfig['notifyDomain'] . '/Pay/WxPay/Pay?tradeNo=' . $tradeNo . '&siteName=' . $siteName . '&sign=' . $sign);
+            return redirect(url('/Pay/WxPay/Pay?tradeNo=' . $tradeNo . '&siteName=' . $siteName . '&sign=' . $sign, '', false, true));
             //转跳到微信支付
         } else if ($converPayType == 2) {
-            return redirect(url('/Pay/QQPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));
+            return redirect(url('/Pay/QQPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName . '&sign=' . $sign, '', false, true));
             //转跳到财付通支付
         } else if ($converPayType == 4) {
-            return redirect(url('/Pay/BankPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName.'&sign='.$sign, '', false, true));
+            return redirect(url('/Pay/BankPay/Submit?tradeNo=' . $tradeNo . '&siteName=' . $siteName . '&sign=' . $sign, '', false, true));
             //银联支付
         }
         return $this->fetch('/SystemMessage', ['msg' => '支付类型有误请重试！']);

@@ -174,11 +174,11 @@ class Index extends Controller
             $orderRateMoney = 0;
             {
                 if ($converPayType == 1) {
-                    $isCollectiveAccount = Db::table('epay_wxx_apply_info')->where('uid', $uid)->limit(1)->field('id')->select();
+                    $isCollectiveAccount = DB::query('SELECT epay_wxx_apply_info_relate.id FROM epay_wxx_apply_info_relate INNER JOIN epay_wxx_apply_info ON epay_wxx_apply_info.id = epay_wxx_apply_info_relate.applyInfoID  WHERE epay_wxx_apply_info.uid = ' . $uid . ' AND epay_wxx_apply_info.type = 2');
                     $isCollectiveAccount = empty($isCollectiveAccount);
                     //判断是否为集体号
                     if (!$isCollectiveAccount) {
-                        $orderRateMoney = PayModel::getOrderRateMoney($uid, $money,$converPayType);
+                        $orderRateMoney = PayModel::getOrderRateMoney($uid, $money, $converPayType);
                         if ($userData[0]['balance'] <= 0)
                             return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
                         if ($userData[0]['balance'] - $orderRateMoney < 0)
@@ -191,9 +191,11 @@ class Index extends Controller
                 } else if ($converPayType == 3) {
                     $aliSellerEmail = getPayUserAttr($uid, 'aliSellerEmail', 2);
                     if (!empty($aliSellerEmail[1])) {
+
+                        //2019-11-01 20:48:19
 //                        $aliSellerEmail = $aliSellerEmail[1];
 
-                        $orderRateMoney = PayModel::getOrderRateMoney($uid, $money,$converPayType);
+                        $orderRateMoney = PayModel::getOrderRateMoney($uid, $money, $converPayType);
                         if ($userData[0]['balance'] <= 0)
                             return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);
                         if ($userData[0]['balance'] - $orderRateMoney < 0)

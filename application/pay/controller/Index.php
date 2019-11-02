@@ -174,7 +174,7 @@ class Index extends Controller
             $orderRateMoney = 0;
             {
                 if ($converPayType == 1) {
-                    $isCollectiveAccount = DB::query('SELECT epay_wxx_apply_info_relate.id FROM epay_wxx_apply_info_relate INNER JOIN epay_wxx_apply_info ON epay_wxx_apply_info.id = epay_wxx_apply_info_relate.applyInfoID  WHERE epay_wxx_apply_info.uid = ' . $uid . ' AND epay_wxx_apply_info.type = 2');
+                    $isCollectiveAccount = DB::query('SELECT epay_wxx_apply_info_relate.id FROM epay_wxx_apply_info_relate INNER JOIN epay_wxx_apply_info ON epay_wxx_apply_info.id = epay_wxx_apply_info_relate.applyInfoID  WHERE epay_wxx_apply_info_relate.uid = ' . $uid . ' AND epay_wxx_apply_info.type = 2');
                     $isCollectiveAccount = empty($isCollectiveAccount);
                     //判断是否为集体号
                     if (!$isCollectiveAccount) {

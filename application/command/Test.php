@@ -36,12 +36,38 @@ class Test extends Command
 //        Db::table('epay_log')->whereTime('createTime', '<=', $deleteTime)->delete();
 //        echo '4'.PHP_EOL;
 //        Db::table('epay_wxx_trade_record')->whereTime('createTime', '<=', $deleteTime)->delete();
-        $balance = '10000.00';
-        $rate    = PayModel::getOrderRateMoney(1000, 100, 3);
-        dump([
-            $rate
-        ]);
-        exit(dump('ok'));
+
+        //start 2019-11-01 18:25:28
+        //end 2019-11-01 21:30:00
+
+
+        $errorApplyInfo = Db::table('epay_wxx_apply_info')->where('type', 2)->field('id')->cursor();
+        foreach ($errorApplyInfo as $applyInfo) {
+            $id          = $applyInfo['id'];
+            $errorRelate = Db::table('epay_wxx_apply_info_relate')->where('applyInfoID', $id)->field('uid')->cursor();
+            foreach ($errorRelate as $errorRelate) {
+                $uid        = $errorRelate['uid'];
+                $errorData  = Db::table('epay_order')->where([
+                    'type'   => 1,
+                    'status' => 1,
+                    'uid'    => $uid
+                ])->where('createTime', '>=', '2019-11-01 21:15:00')->where('createTime', '<', '2019-11-01 21:30:00')->field('tradeNo,money')->cursor();
+                $totalMoney = 0;
+                foreach ($errorData as $content) {
+                    $data = PayModel::getOrderAttr($content['tradeNo'], 'rateMoney');
+                    if (empty($data)) {
+                        $removeMoney = PayModel::getOrderRateMoney($uid, $content['money']) + ($content['money'] * 10);
+                        $totalMoney  += $removeMoney;
+
+                        DB::table('epay_user')->where('id', $uid)->limit(1)->dec('balance', $removeMoney)->update();
+                        //错误单子
+                    }
+                }
+                echo 'uid => ' . $uid . ' money => ' . ($totalMoney / 1000) . PHP_EOL;
+            }
+        }
+
+        exit();
 
         $fileContent = file_get_contents('./id.txt');
         $row         = explode(PHP_EOL, $fileContent);

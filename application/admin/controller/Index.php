@@ -90,7 +90,7 @@ class Index extends Controller
         $orderInfo[0]['tradeNo'] = (string)$orderInfo[0]['tradeNo'];
 
         $discountMoney                 = PayModel::getOrderAttr($tradeNo, 'discountMoney');
-        $orderInfo[0]['discountMoney'] = empty($discountMoney) ? 0 : $discountMoney[0]['attrValue'];
+        $orderInfo[0]['discountMoney'] = empty($discountMoney) ? 0 : $discountMoney;
         $orderInfo[0]['discountMoney'] /= 100;
 
         $tradePayConfig             = PayModel::getOrderAttr($tradeNo, 'payConfig');

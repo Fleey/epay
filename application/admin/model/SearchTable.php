@@ -318,6 +318,8 @@ class SearchTable
                     $order = 'asc';
                 }
             }
+            if ('IF(epay_wxx_apply_info_relate.uid is NULL,1,epay_wxx_apply_info_relate.uid) as type' == $searchOrderList[$this->order[0]['column']])
+                $searchOrderList[$this->order[0]['column']] = 'type';
             $queryResult = $queryResult->order($searchOrderList[$this->order[0]['column']], $order);
         }
         $queryResult = $queryResult->group('id');

@@ -14,9 +14,9 @@
     <meta name="description" content="<?php echo $webName; ?>"/>
     <meta content="Fleey" name="author"/>
 
-    <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <link href="https://cdn.staticfile.org/animate.css/3.7.0/animate.min.css" rel="stylesheet">
+    <link href="https://s1.pstatp.com/cdn/expire-1-M/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://s1.pstatp.com/cdn/expire-1-M/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://s1.pstatp.com/cdn/expire-1-M/animate.css/3.7.0/animate.min.css" rel="stylesheet">
     <link href="/static/css/doc/style.min.css" rel="stylesheet"/>
     <link href="/static/css/doc/style-responsive.min.css" rel="stylesheet"/>
     <link href="/static/css/doc/blue.css" rel="stylesheet">
@@ -1242,9 +1242,9 @@
     </div>
 </div>
 
-<script src="https://cdn.staticfile.org/jquery/1.9.1/jquery.min.js"></script>
-<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.js"></script>
-<script src="https://cdn.staticfile.org/scrollmonitor/1.2.0/scrollMonitor.js"></script>
+<script src="https://s1.pstatp.com/cdn/expire-1-M/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://s1.pstatp.com/cdn/expire-1-M/twitter-bootstrap/3.3.7/css/bootstrap.min.js"></script>
+<script src="https://s1.pstatp.com/cdn/expire-1-M/scrollmonitor/1.2.0/scrollMonitor.js"></script>
 
 <script src="/static/js/doc/app.js"></script>
 <script>

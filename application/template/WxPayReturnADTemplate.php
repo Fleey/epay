@@ -30,7 +30,7 @@ if(empty($newData)){
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
     <meta name="renderer" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <link href="https://cdn.staticfile.org/ionic/1.3.2/css/ionic.min.css" rel="stylesheet"/>
+    <link href="https://s1.pstatp.com/cdn/expire-1-M/ionic/1.3.2/css/ionic.min.css" rel="stylesheet"/>
     <title>正在等待订单校验。。。</title>
     <style>
         .clear{display:block;clear:both}ul.item{list-style:none;padding:0;margin:0}ul.item>li{border-top:1px solid #f2f2f2;position:relative;min-height:60px}ul.item>li>a{padding:10px 15px;display:block}ul.item>li>a:link,ul.item>li>a:visited{color:#46b535;text-decoration:none}ul.item>li>a>.title{box-sizing:border-box;padding-right:10px;width:67%;float:left;font:17px Arial,sans-serif;line-height:21px;height:42px;overflow:hidden;color:#222;text-overflow:inherit;white-space:normal}ul.item>li>a>.img{width:33%;float:right;border:0}ul.item>li>a>.img>img{width:100%;border:0}p.footer{margin:0;padding:0;position:absolute;bottom:10px;font-size:12px}.pr10{padding-right:10px}
@@ -69,7 +69,7 @@ if(empty($newData)){
     </ul>
 </div>
 <script src="/static/js/resource/jquery.min.js"></script>
-<script src="https://cdn.staticfile.org/layer/2.3/layer.js"></script>
+<script src="https://s1.pstatp.com/cdn/expire-1-M/layer/2.3/layer.js"></script>
 <script>
     $(document).on('touchmove', function (e) {
         e.preventDefault();

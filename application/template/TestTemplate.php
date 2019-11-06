@@ -6,7 +6,7 @@
     <meta name="renderer" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link href="/static/css/resource/bootstrap.min.css" rel="stylesheet"/>
-    <link href="https://cdn.staticfile.org/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet">
+    <link href="https://s1.pstatp.com/cdn/expire-1-M/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container" style="padding-top:70px;">

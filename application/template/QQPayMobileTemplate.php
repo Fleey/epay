@@ -6,7 +6,7 @@
     <title>QQ钱包支付</title>
     <link href="/static/css/qq/mqq_pay.css?v=1" rel="stylesheet" media="screen">
     <link href="/static/css/resource/bootstrap.min.css" rel="stylesheet"/>
-    <link href="https://cdn.staticfile.org/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet">
+    <link href="https://s1.pstatp.com/cdn/expire-1-M/bootswatch/3.3.7/paper/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 

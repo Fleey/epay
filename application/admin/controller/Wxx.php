@@ -84,6 +84,19 @@ class Wxx extends Controller
         else
             $returnData['reservedMoney'] = '0';
 
+        $attrData = Db::table('epay_wxx_apply_info_attr')->where([
+            'applyInfoID' => $id,
+            'attrKey'     => 'checkBanArgs'
+        ])->limit(1)->field('attrValue')->select();
+        if (empty($attrData)) {
+            $returnData['banCheckDay']   = '';
+            $returnData['banCheckNight'] = '';
+        } else {
+            $attrData                    = json_decode($attrData[0]['attrValue'], true);
+            $returnData['banCheckDay']   = $attrData['banCheckDay'];
+            $returnData['banCheckNight'] = $attrData['banCheckNight'];
+        }
+
         return json(['status' => 1, 'data' => $returnData]);
     }
 
@@ -341,6 +354,8 @@ class Wxx extends Controller
         $contact           = input('post.contact/s', '');
         $contactPhone      = input('post.contactPhone/s', '');
 
+        $checkBanArgs = input('post.checkBanArgs/s', '');
+
         $reservedMoney = input('post.reservedMoney/d', '');
         //预留金额
 
@@ -383,8 +398,17 @@ class Wxx extends Controller
                 'contactPhone'      => $contactPhone,
                 'createTime'        => getDateTime()
             ]);
-            setPayUserAttr($uid, 'reservedMoney', $reservedMoney);
+//            setPayUserAttr($uid, 'reservedMoney', $reservedMoney);
             //设置预留金额
+
+            if (!empty($checkBanArgs) && $insertResult) {
+                Db::table('epay_wxx_apply_info_attr')->insert([
+                    'applyInfoID' => $insertResult,
+                    'attrKey'     => 'checkBanArgs',
+                    'attrValue'   => $checkBanArgs
+                ]);
+            }
+            //插入数据
             if (!$insertResult)
                 return json(['status' => 0, 'msg' => '新增用户信息失败，数据库异常，请重试。']);
             return json(['status' => 1, 'msg' => '新增用户信息成功']);
@@ -421,23 +445,51 @@ class Wxx extends Controller
             }
         }
         //diff change
-        if ($type == 2) {
-            setPayUserAttr($uid, 'reservedMoney', $reservedMoney);
-            if (!empty($reservedMoney)) {
-                $temp = getPayUserAttr($uid, 'reservedMoney');
-                if ($temp != $reservedMoney) {
-                    Db::table('epay_wxx_apply_list')->where('applyInfoID', $id)->update([
-                        'tempMoney' => 0,
-                        'rounds'    => 0
-                    ]);
-                    Db::table('epay_data_model')->limit(1)->where([
-                        'attrName'   => $uid . '_reservedMoney_temp',
-                        'createTime' => getDateTime(true)
-                    ])->update(['data' => 0]);
-                }
+//        if ($type == 2) {
+//            setPayUserAttr($uid, 'reservedMoney', $reservedMoney);
+//            if (!empty($reservedMoney)) {
+//                $temp = getPayUserAttr($uid, 'reservedMoney');
+//                if ($temp != $reservedMoney) {
+//                    Db::table('epay_wxx_apply_list')->where('applyInfoID', $id)->update([
+//                        'tempMoney' => 0,
+//                        'rounds'    => 0
+//                    ]);
+//                    Db::table('epay_data_model')->limit(1)->where([
+//                        'attrName'   => $uid . '_reservedMoney_temp',
+//                        'createTime' => getDateTime(true)
+//                    ])->update(['data' => 0]);
+//                }
+//            }
+//
+//
+//        }
+        //设置预留金额
+
+        if (!empty($checkBanArgs)) {
+            $tempData = Db::table('epay_wxx_apply_info_attr')->where([
+                'applyInfoID' => $id,
+                'attrKey'     => 'checkBanArgs'
+            ])->limit(1)->field('id')->select();
+            if (empty($tempData)) {
+                Db::table('epay_wxx_apply_info_attr')->insert([
+                    'applyInfoID' => $id,
+                    'attrKey'     => 'checkBanArgs',
+                    'attrValue'   => $checkBanArgs
+                ]);
+            } else {
+                Db::table('epay_wxx_apply_info_attr')->where([
+                    'applyInfoID' => $id,
+                    'attrKey'     => 'checkBanArgs'
+                ])->limit(1)->update([
+                    'attrValue' => $checkBanArgs
+                ]);
             }
         }
-        //设置预留金额
+
+        Db::table('epay_wxx_apply_list')->where('applyInfoID', $id)->update([
+            'tempMoney' => 0,
+            'rounds'    => 0
+        ]);
         Db::table('epay_wxx_apply_info')->where('id', $id)->update([
             'uid'               => $uid,
             'type'              => $type,

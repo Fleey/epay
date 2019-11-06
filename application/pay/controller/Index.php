@@ -191,10 +191,6 @@ class Index extends Controller
                 } else if ($converPayType == 3) {
                     $aliSellerEmail = getPayUserAttr($uid, 'aliSellerEmail', 2);
                     if (!empty($aliSellerEmail[1])) {
-
-                        //2019-11-01 20:48:19
-//                        $aliSellerEmail = $aliSellerEmail[1];
-
                         $orderRateMoney = PayModel::getOrderRateMoney($uid, $money, $converPayType);
                         if ($userData[0]['balance'] <= 0)
                             return $this->fetch('/SystemMessage', ['msg' => '账号金额不足，不能够拉起支付，请联系相关人员处理']);

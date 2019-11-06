@@ -323,6 +323,12 @@ class WxPay extends Controller
             return xml(['return_code' => 'SUCCESS', 'return_msg' => 'OK']);
         //订单已经付款成功
 
+        if (!empty($requestData['sub_mch_id'])) {
+            Db::table('epay_wxx_apply_list')->where('subMchID', $requestData['sub_mch_id'])->limit(1)->update([
+                'lastPayTime' => getDateTime()
+            ]);
+        }
+
         Db::table('epay_order')->where('tradeNo=:tradeNo', ['tradeNo' => $requestData['out_trade_no']])->limit(1)->update([
             'status'  => 1,
             'endTime' => getDateTime()

@@ -237,7 +237,23 @@
                                 <input data-name="contactPhone" class="form-control" placeholder="手机号码">
                             </div>
                         </div>
-
+                        <div class="col-md-12">
+                            <h4>封号检测配置</h4>
+                            <hr>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="contactPhone">白天检测间隔（分钟）</label>
+                                <input data-name="banCheckDay" class="form-control" placeholder="请输入整数 例如 6 为空则不启用">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="contactPhone">晚上检测间隔（分钟）</label>
+                                <input data-name="banCheckNight" class="form-control" placeholder="请输入整数 例如 3 为空则不启用">
+                            </div>
+                        </div>
+                        <!--检测账户状态参数-->
                     </div>
                 </div>
             </div>

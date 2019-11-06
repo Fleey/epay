@@ -602,6 +602,31 @@ function processOrder($tradeNo, $notify = true)
     } else {
         $result = \think\Db::table('epay_user')->limit(1)->where('id', $orderInfo[0]['uid'])->dec('balance', $rateMoney)->update();
         //如果存在rateMoney字段则进行扣除金额操作
+        if ($orderInfo['0']['type'] == 3) {
+            $tempDate       = date('Y-m-d', time()) . ' 00:00:00';
+            $userMoneyData  = \think\Db::table('epay_user_data_modal')->where([
+                'createTime' => $tempDate,
+                'uid'        => $orderInfo[0]['uid']
+            ])->field('id')->limit(1)->select();
+            $operationMoney = $rateMoney * 100;
+            //可能存在两位小数
+            if (empty($userMoneyData)) {
+                \think\Db::table('epay_user_data_modal')->insert([
+                    'uid'        => $orderInfo[0]['uid'],
+                    'attrName'   => 'alipayRateMoney',
+                    'data'       => $operationMoney,
+                    'createTime' => $tempDate
+                ]);
+                //不存在数据需要初始化
+            } else {
+                \think\Db::table('epay_user_data_modal')->where([
+                    'createTime' => $tempDate,
+                    'uid'        => $orderInfo[0]['uid']
+                ])->inc('data', $operationMoney)->update();
+                //存在数据增加即可
+            }
+        }
+        //如果为支付宝支付 且 需要扣除金额则进行记录
     }
     //处理用户余额部分
     if (!$result) {

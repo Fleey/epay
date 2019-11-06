@@ -266,7 +266,11 @@ $(function () {
             rate: rate,
             contact: contact,
             contactPhone: contactPhone,
-            reservedMoney: reservedMoney
+            reservedMoney: reservedMoney,
+            checkBanArgs: JSON.stringify({
+                'banCheckDay': $('#applyInfo [data-name="banCheckDay"]').val(),
+                'banCheckNight': $('#applyInfo [data-name="banCheckNight"]').val(),
+            })
         };
         if ($('#applyInfo #saveInfo').attr('data-type') !== 'add') {
             requestData['id'] = $('#applyInfo').attr('data-apply-id');
@@ -528,7 +532,7 @@ $(function () {
     });
     $('#relate').click(function () {
         var saveInfoType = $('#saveInfo').attr('data-type');
-        if(saveInfoType === 'add'){
+        if (saveInfoType === 'add') {
             alert('关联流程 -> 新增完信息 -> 查看更多 -> 关联商户号');
             return;
         }

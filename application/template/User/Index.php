@@ -8,7 +8,7 @@
     <title><?php echo $webName; ?></title>
     <link rel="stylesheet" href="/static/css/resource/sweetalert.min.css">
     <link rel="stylesheet" href="/static/css/resource/style.css">
-    <link rel="stylesheet" href="https://s1.pstatp.com/cdn/expire-1-M/select2/4.0.6/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/select2/4.0.7-rc.0/css/select2.min.css">
     <link rel="stylesheet" href="/static/css/resource/prism.css">
     <link rel="stylesheet" href="/static/css/admin/style.css">
     <link rel="stylesheet" href="/static/css/user/style.css">
@@ -69,8 +69,8 @@
 <script src="/static/js/resource/jquery.min.js"></script>
 <script src="/static/js/resource/popper.min.js"></script>
 <script src="/static/js/resource/bootstrap.min.js"></script>
-<script src="https://s1.pstatp.com/cdn/expire-1-M/select2/4.0.6/js/select2.min.js"></script>
-<script src="https://s1.pstatp.com/cdn/expire-1-M/select2/4.0.6/js/i18n/zh-CN.js"></script>
+<script src="https://cdn.staticfile.org/select2/4.0.7-rc.0/js/select2.min.js"></script>
+<script src="https://cdn.staticfile.org/select2/4.0.7-rc.0/js/i18n/zh-CN.js"></script>
 <script src="/static/js/resource/app.min.js"></script>
 <script src="/static/js/resource/app.init.js"></script>
 <script src="/static/js/resource/sweetalert.min.js"></script>

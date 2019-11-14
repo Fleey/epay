@@ -604,14 +604,15 @@ function processOrder($tradeNo, $notify = true)
         //如果存在rateMoney字段则进行扣除金额操作
         if ($orderInfo['0']['type'] == 3) {
             $tempDate       = date('Y-m-d', time()) . ' 00:00:00';
-            $userMoneyData  = \think\Db::table('epay_user_data_modal')->where([
+            $userMoneyData  = \think\Db::table('epay_user_data_model')->where([
+                'attrName'   => 'alipayRateMoney',
                 'createTime' => $tempDate,
                 'uid'        => $orderInfo[0]['uid']
             ])->field('id')->limit(1)->select();
             $operationMoney = $rateMoney * 100;
             //可能存在两位小数
             if (empty($userMoneyData)) {
-                \think\Db::table('epay_user_data_modal')->insert([
+                \think\Db::table('epay_user_data_model')->insert([
                     'uid'        => $orderInfo[0]['uid'],
                     'attrName'   => 'alipayRateMoney',
                     'data'       => $operationMoney,
@@ -619,10 +620,11 @@ function processOrder($tradeNo, $notify = true)
                 ]);
                 //不存在数据需要初始化
             } else {
-                \think\Db::table('epay_user_data_modal')->where([
+                \think\Db::table('epay_user_data_model')->where([
+                    'attrName'   => 'alipayRateMoney',
                     'createTime' => $tempDate,
                     'uid'        => $orderInfo[0]['uid']
-                ])->inc('data', $operationMoney)->update();
+                ])->inc('data', $operationMoney)->limit(1)->update();
                 //存在数据增加即可
             }
         }

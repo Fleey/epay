@@ -95,7 +95,8 @@ class SyncOrder extends Command
         }
     }
 
-    private function dataStatistics(){
+    private function dataStatistics()
+    {
         $cacheDashboardData = cache('DashboardData');
         if (empty($cacheDashboardData)) {
             $data['totalOrder'] = Db::table('epay_order')->count('id');
@@ -116,24 +117,53 @@ class SyncOrder extends Command
             }
             {
                 $buildOrderStatistics = function (string $date) {
-                    $totalOrder   = Db::table('epay_data_model')->where('attrName','in',[
+                    $totalOrder   = Db::table('epay_data_model')->where('attrName', 'in', [
                         'order_total_count_3',
                         'order_total_count_2',
                         'order_total_count_1'
-                    ])->whereBetweenTime('createTime', $date)->sum('data');
-                    $successOrder = Db::table('epay_data_model')->where('attrName','in',[
+                    ])->where([
+                        ['createTime', '>=', $date . ' 00:00:00'],
+                        ['createTime', '<=', $date . ' 23:59:59']
+                    ])->sum('data');
+                    $successOrder = Db::table('epay_data_model')->where('attrName', 'in', [
                         'order_total_count_success_3',
                         'order_total_count_success_2',
                         'order_total_count_success_1'
-                    ])->whereBetweenTime('createTime', $date)->sum('data');
+                    ])->where([
+                        ['createTime', '>=', $date . ' 00:00:00'],
+                        ['createTime', '<=', $date . ' 23:59:59']
+                    ])->sum('data');
                     if ($successOrder == 0 || $totalOrder == 0)
                         $ratio = '0';
                     else
                         $ratio = number_format($successOrder / $totalOrder * 100, 2);
+
+
+                    {
+                        $alipayA  = 0;
+                        $userList = Db::query('SELECT epay_user.id,epay_user_attr.`value` FROM epay_user INNER JOIN epay_user_attr ON epay_user.id = epay_user_attr.uid WHERE epay_user_attr.`key` = "aliSellerEmail" AND epay_user_attr.`value` <> ""');
+
+                        if (!empty($userList)) {
+                            foreach ($userList as $content) {
+                                if (empty($content['value']))
+                                    continue;
+                                $alipayA += Db::table('epay_user_data_model')->where([
+                                    'uid'      => $content['id'],
+                                    'attrName' => 'alipayRateMoney'
+                                ])->where([
+                                    ['createTime', '>=', $date . ' 00:00:00'],
+                                    ['createTime', '<=', $date . ' 23:59:59']
+                                ])->sum('data');
+                            }
+                        }
+                    }
+                    //上面这段是负责统计支付宝独立号数据的
+
                     return [
                         'totalOrder'   => $totalOrder,
                         'successOrder' => $successOrder,
-                        'ratio'        => $ratio
+                        'ratio'        => $ratio,
+                        'alipayA'      => $alipayA
                     ];
                 };
 
@@ -233,14 +263,14 @@ class SyncOrder extends Command
                         $o                                               = $i + 1;
                         $hoursStartStr                                   = ($i >= 10 ? $i . '' : '0' . $i) . ':00:00';
                         $hoursEndStr                                     = ($o >= 10 ? $o . '' : '0' . $o) . ':00:00';
-                        $orderDataComparison[$yesterday][$hoursStartStr] = Db::table('epay_data_model')->where('attrName','in',[
+                        $orderDataComparison[$yesterday][$hoursStartStr] = Db::table('epay_data_model')->where('attrName', 'in', [
                             'order_total_count_3',
                             'order_total_count_2',
                             'order_total_count_1'
                         ])
                             ->whereTime('createTime', '>=', $yesterday . ' ' . $hoursStartStr)
                             ->whereTime('createTime', '<=', $yesterday . ' ' . $hoursEndStr)->sum('data');
-                        $orderDataComparison[$today][$hoursStartStr]     = Db::table('epay_data_model')->where('attrName','in',[
+                        $orderDataComparison[$today][$hoursStartStr]     = Db::table('epay_data_model')->where('attrName', 'in', [
                             'order_total_count_3',
                             'order_total_count_2',
                             'order_total_count_1'

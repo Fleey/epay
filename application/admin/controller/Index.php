@@ -11,10 +11,6 @@ use app\pay\model\QQPayModel;
 use app\pay\model\WxPayModel;
 use think\Controller;
 use think\Db;
-use think\db\exception\DataNotFoundException;
-use think\db\exception\ModelNotFoundException;
-use think\Exception;
-use think\exception\DbException;
 use ZipArchive;
 
 class Index extends Controller
@@ -955,7 +951,10 @@ class Index extends Controller
             //总共订单
             $successOrder = Db::table('epay_order')->where('uid', $uid)->whereBetweenTime('endTime', $date)->where('status', 1)->cache(60)->count();
             //成功订单
-            $updateMoney = Db::table('epay_user_money_log')->where('uid', $uid)->whereBetweenTime('createTime', $date)->cache(60)->sum('money');
+            $updateMoney = Db::table('epay_user_money_log')->where('uid', $uid)->where([
+                ['createTime', '>=', $date . ' 00:00:00'],
+                ['createTime', '<=', $date . ' 23:59:59']
+            ])->cache(60)->sum('money');
             $updateMoney /= 1000;
             //增减金额总共
             $tradeMoney = Db::table('epay_order')->where([
@@ -965,7 +964,28 @@ class Index extends Controller
             ])->whereBetweenTime('endTime', $date)->cache(60)->sum('money');
             //没计算费率的交易金额
             $tradeMoneyRate = $tradeMoney * ($rate / 100);
+
+            $alipayRateMoney = Db::table('epay_user_data_model')->where([
+                'uid'      => $uid,
+                'attrName' => 'alipayRateMoney'
+            ])->where([
+                ['createTime', '>=', $date . ' 00:00:00'],
+                ['createTime', '<=', $date . ' 23:59:59']
+            ])->cache(60)->sum('data');
+            //支付宝扣除费率金额
+
+            $alipayTotalMoney = Db::table('epay_order')->where([
+                'uid'    => $uid,
+                'type'   => 3,
+                'status' => 1
+            ])->where([
+                ['endTime', '>=', $date . ' 00:00:00'],
+                ['endTime', '<=', $date . ' 23:59:59']
+            ])->cache(60)->sum('money');
+            //支付宝当日总金额
             return [
+                'alipayTotalMoney'  => $alipayTotalMoney,
+                'alipayRateMoney'   => $alipayRateMoney,
                 'totalOrder'        => $totalOrder,
                 'successOrder'      => $successOrder,
                 'updateMoney'       => $updateMoney,
@@ -1324,20 +1344,49 @@ class Index extends Controller
                         'order_total_count_3',
                         'order_total_count_2',
                         'order_total_count_1'
-                    ])->whereBetweenTime('createTime', $date)->sum('data');
+                    ])->where([
+                        ['createTime', '>=', $date . ' 00:00:00'],
+                        ['createTime', '<=', $date . ' 23:59:59']
+                    ])->sum('data');
                     $successOrder = Db::table('epay_data_model')->where('attrName', 'in', [
                         'order_total_count_success_3',
                         'order_total_count_success_2',
                         'order_total_count_success_1'
-                    ])->whereBetweenTime('createTime', $date)->sum('data');
+                    ])->where([
+                        ['createTime', '>=', $date . ' 00:00:00'],
+                        ['createTime', '<=', $date . ' 23:59:59']
+                    ])->sum('data');
                     if ($successOrder == 0 || $totalOrder == 0)
                         $ratio = '0';
                     else
                         $ratio = number_format($successOrder / $totalOrder * 100, 2);
+
+
+                    {
+                        $alipayA  = 0;
+                        $userList = Db::query('SELECT epay_user.id,epay_user_attr.`value` FROM epay_user INNER JOIN epay_user_attr ON epay_user.id = epay_user_attr.uid WHERE epay_user_attr.`key` = "aliSellerEmail" AND epay_user_attr.`value` <> ""');
+
+                        if (!empty($userList)) {
+                            foreach ($userList as $content) {
+                                if (empty($content['value']))
+                                    continue;
+                                $alipayA += Db::table('epay_user_data_model')->where([
+                                    'uid'      => $content['id'],
+                                    'attrName' => 'alipayRateMoney'
+                                ])->where([
+                                    ['createTime', '>=', $date . ' 00:00:00'],
+                                    ['createTime', '<=', $date . ' 23:59:59']
+                                ])->sum('data');
+                            }
+                        }
+                    }
+                    //上面这段是负责统计支付宝独立号数据的
+
                     return [
                         'totalOrder'   => $totalOrder,
                         'successOrder' => $successOrder,
-                        'ratio'        => $ratio
+                        'ratio'        => $ratio,
+                        'alipayA'      => $alipayA
                     ];
                 };
 

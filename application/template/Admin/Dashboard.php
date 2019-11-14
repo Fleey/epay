@@ -143,16 +143,20 @@
                             <div class="col-md-12">
                                 <b style="margin-bottom: 12px;font-size: 16px;font-weight: 400;"><?php echo $key; ?></b>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <p><b>订单总数</b>
                                     <br><?php echo $data['totalOrder']; ?></p>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-2">
                                 <p><b>成功总数</b> <br><?php echo $data['successOrder']; ?>
                                 </p>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-2">
                                 <p><b>成功率</b> <br><?php echo $data['ratio']; ?>%
+                                </p>
+                            </div>
+                            <div class="col-md-5">
+                                <p><b>支付宝（独立号）</b> <br>￥<?php echo $data['alipayA']/100000; ?>
                                 </p>
                             </div>
                         </div>
@@ -314,12 +318,12 @@
         series: [
             <?php
             foreach ($orderDataComparison as $key => $value) {
-                echo '{name:"'.$key.'",data: [';
+                echo '{name:"' . $key . '",data: [';
 
                 $tempData = '';
 
-                foreach ($value as $value1){
-                    $tempData.='"'.($value1).'",';
+                foreach ($value as $value1) {
+                    $tempData .= '"' . ($value1) . '",';
                 }
                 echo $tempData;
 

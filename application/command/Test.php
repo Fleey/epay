@@ -39,7 +39,26 @@ class Test extends Command
 
         //start 2019-11-01 18:25:28
         //end 2019-11-01 21:30:00
+        $alipayA  = 0;
+        $userList = Db::query('SELECT epay_user.id,epay_user_attr.`value` FROM epay_user INNER JOIN epay_user_attr ON epay_user.id = epay_user_attr.uid WHERE epay_user_attr.`key` = "aliSellerEmail" AND epay_user_attr.`value` <> ""');
 
+        if (!empty($userList)) {
+            foreach ($alipayA as $content) {
+                if (empty($content['value']))
+                    continue;
+                $alipayA += Db::table('epay_user_data_model')->where([
+                    'uid'      => $content['uid'],
+                    'attrName' => 'alipayRateMoney'
+                ])->where([
+                    ['createTime', '>=', $date . ' 00:00:00'],
+                    ['createTime', '<=', $date . ' 23:59:59']
+                ])->sum('data');
+            }
+        }
+
+        dump($userList);
+
+        exit();
 
         $errorApplyInfo = Db::table('epay_wxx_apply_info')->where('type', 2)->field('id')->cursor();
         foreach ($errorApplyInfo as $applyInfo) {

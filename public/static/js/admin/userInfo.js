@@ -617,6 +617,8 @@ $(function () {
                     html += '<div class="col-md-2"><p><b>当日利润</b><br>￥' + value['tradeMoneyProfits'] + '</p></div>';
                     html += '<div class="col-md-2"><p><b>操作余额</b><br>￥' + value['updateMoney'] + '</p></div>';
                     html += '<div class="col-md-2"><p><b>成功率</b><br>' + (value['successOrder'] / value['totalOrder'] * 100).toFixed(2) + '%</p></div>';
+                    html += '<div class="col-md-2"><p><b>支付宝扣除费率</b><br>￥' + (value['alipayRateMoney'] / 100000) + '</p></div>';
+                    html += '<div class="col-md-2"><p><b>支付宝总金额</b><br>￥' + (value['alipayTotalMoney'] / 100) + '</p></div>';
                     html += '</div>';
                 });
                 body.html(html);

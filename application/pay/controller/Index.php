@@ -201,6 +201,11 @@ class Index extends Controller
 
                     //如果为支付宝通道走这里
                 }
+                if (floatval($orderRateMoney) < 0) {
+                    trace('uid => ' . $uid . ' money => ' . $money . ' operation money => ' . $orderRateMoney, 'error');
+                    return $this->fetch('/SystemMessage', ['msg' => '系统出现致命异常，请联系管理员处理。']);
+                }
+                //这行负责检测计算费率是否异常
             }
             //这里开始检查是否够钱扣除费率
 

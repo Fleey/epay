@@ -1,9 +1,0 @@
-/.idea
-/.vscode
-*.log
-.env
-.DS_Store
-/config/database.php
-/config/config.txt
-/public/static/uploads
-/nginx.htaccess

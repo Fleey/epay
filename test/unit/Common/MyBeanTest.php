@@ -1,0 +1,34 @@
+<?php declare(strict_types=1);
+/**
+ * This file is part of Swoft.
+ *
+ * @link     https://swoft.org
+ * @document https://swoft.org/docs
+ * @contact  group@swoft.org
+ * @license  https://github.com/swoft-cloud/swoft/blob/master/LICENSE
+ */
+
+namespace AppTest\Unit\Common;
+
+use App\Common\MyBean;
+use PHPUnit\Framework\TestCase;
+use Swoft\Log\Helper\Log;
+use function bean;
+
+/**
+ * Class MyBeanTest
+ *
+ * @package AppTest\Unit\Common
+ */
+class MyBeanTest extends TestCase
+{
+    public function testMyMethod2(): void
+    {
+        $bean = bean(MyBean::class);
+
+        vdump('test message');
+        Log::info('test message');
+
+        $this->assertSame(MyBean::class . '::myMethod2', $bean->myMethod2());
+    }
+}
